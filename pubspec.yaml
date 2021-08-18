@@ -1,0 +1,25 @@
+name: pint
+description: A full implementation (scanner, parser, resolver and interpreter) of the Lox language in Dart.
+version: 1.0.0
+repository: https://github.com/mateusfccp/dlox
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  chalkdart: ^2.2.1
+  dart_style: ^2.3.6
+  exitcode: ^1.0.1
+  freezed_annotation: ^2.4.1
+  meta: ^1.15.0
+  quiver: ^3.2.1
+  recase: ^4.1.0
+
+dev_dependencies:
+  build_runner: ^2.4.11
+  freezed: ^2.5.3
+  lints: ^4.0.0
+  test: ^1.25.7
+
+# executables:
+#   dlox:

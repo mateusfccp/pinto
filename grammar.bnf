@@ -1,0 +1,11 @@
+<identifier> ::= <identifier_start> <identifier_part>*
+
+<identifier_start> ::= "a".."z" | "A".."Z" | "_" | "$"
+<identifier_part> ::= <identifier_start>  | <digit>
+<digit> ::= "0".."9"
+
+<program> ::= <type_declaration>*
+
+<type_declaration> ::= "type" <identifier> ( "(" <identifier> ( "," <identifier> )* ")" )? "=" <type_definition> ( "+" <type_definition> )*
+<type_definition> ::= <identifier> ( "(" <identifier> <identifier> ( "," <identifier> <identifier )* ")" )?
+

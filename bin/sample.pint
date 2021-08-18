@@ -1,0 +1,170 @@
+import pintter/std;
+import flutter/material;
+
+// Literals
+intDec = 0
+intHex = 0xFF
+intOct = 0o00
+intBin = 0b0100
+string = "String"
+char = ^a
+symbol = 'a
+double = .0
+list = [0 1]
+map = {:0 1}
+set = {0 1}
+tuple = (0 1)
+fn = || ()
+
+main = |arguments| runApp(MyApp())
+
+cubit CounterCubit :initialValue 0 {
+  increment = || emit(state + 1)
+  decrement = || emit(state - 1)
+}
+
+type Todo = Todo(
+  String id
+  String title
+  String description
+  bool completed
+)
+
+type TodosOverviewEvent =
+  TodosOverviewSubscriptionRequested +
+  TodosOverviewTodoCompletionToggled(
+    Todo todo
+    bool completed
+  ) +
+  TodosOverviewTodoDeleted(Todo todo) +
+  TodosOverviewFilterChanged(TodoFilter filter) +
+  TodosOverviewToggleAllRequested +
+  TodosOverviewClearCompletedRequested
+
+type TodosOverviewStatus = Initial + Loading + Success + Failure
+
+type TodosOverViewState = TodosOverviewState(
+  TodosOverviewStatus status
+  [Todo] todos
+  TodosViewFilter filter
+  Todo lastDeletedTodo
+)
+
+filteredTodos = |TodoOverviewState state| @filter.applyAll(@todos)
+
+bloc TodosOverviewBloc<TodosOverviewEvent, TodosOverviewState> {
+  on TodosOverviewSubscriptionRequested |event| {
+    emit state.copyWith(:status || TodosOverviewStatus.loading)
+
+    await emit.forEach(
+      _todosRepository.getTodos()
+      :onData |todos| state.copyWith(
+        :status || TodosOverviewStatus.success
+        :todos  || todos
+      ),
+      :onError || state.copyWith(
+        :status || TodosOverviewStatus.failure
+      ),
+    );
+  }
+  
+  on TodosOverviewTodoCompletionToggled |event| {}
+  on TodosOverviewTodoDeleted |event| {}
+  on TodosOverviewUndoDeletionRequested |event| {}
+  on TodosOverviewFilterChanged |event| {}
+  on TodosOverviewToggleAllRequested |event| {}
+  on TodosOverviewClearCompletedRequested |event| {}
+}
+
+stateless_widget MyButton {
+  Widget child;
+  VoidCallback onTap; // typealias VoidCallback = ƒ() -> ()
+
+  build = |build| 
+    GestureDetector(
+      ::onTap
+      Container(
+        :color Colors.red
+        :padding all(16.0)
+        ::child
+      )
+    )
+}
+
+stateful_widget MyApp {
+  String appName;
+  state Int count;
+
+  build = |context|
+    Scaffold(
+      :body Center(
+        Column(
+	  :children u[
+	    Text(i"You pressed the button $count times")
+	    MyButton(
+	      :onTap |details| {
+	        setState || count <- count + 1
+		setState || {
+		  let next = count + 1 in
+		  count <- next
+		}
+	      }
+	      :child
+	    )
+	  ]
+	)
+      )
+    )
+}
+
+interface CacheManager =
+  String -> ⊤ get ×
+  String × ⊤ -> () set
+
+class DefaultCacheManager implements CacheManager, ChangeNotifier {
+  {String, ⊤} !cache
+
+  get = |key| cache[key]
+  set = |key, value| {
+    cache[key] <- value
+    notifyListeners()
+  }
+}
+
+userDescription = ƒ(User user) {
+  let type = switch user.type {
+    Client(:clientId) => i"Client($clientId)"
+    Consultor(:consultorId) => i"Consultor($consultorId)"
+    Admin(:adminId :filialId) => i"Administrator($adminId) on filial $filialId"
+  } in
+  i"$type, called ${user.name}"
+}
+
+type Option = Some('T value) + None
+
+type Result = Value('T value) + Error('E error)
+
+type UserType =
+  Client(Id clientId) +
+  Consultor(Id consultorId × [Permission] permissions) +
+  Admin(
+    Id adminId ×
+    Id filialId ×
+    [Consultor] underlings
+  )
+
+type User =
+  Id id ×
+  String name ×
+  UserType type
+
+typealias VoidCallback = ƒ() -> ()
+type Id = @ℕ
+type Age = @Integer i with i > 18
+
+// ⊥              => Never, \never
+// ⊤              => Object?, \top
+// (T × U)        => (T, U), \x, as type definition
+// (t : T, u : U) => (t, u), as record instance
+// T + U          => sealed class with both terms
+// (T × U) -> V   => function with parameters T and U that returns V
