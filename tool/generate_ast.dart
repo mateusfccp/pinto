@@ -8,51 +8,35 @@ void main(List<String> args) {
     stderr.writeln('Usage: generate_ast <output directory>');
     exit(64); // exit(usage)
   } else {
-    final outputDir = args.first;
-    // _defineAst(
-    //   outputDir,
-    //   'Expression',
-    //   [
-    //     'Assign   : Token name, Expression value',
-    //     'Binary   : Expression left, Token operator, Expression right',
-    //     'Call     : Expression callee, Token parenthesis, List<Expression> arguments',
-    //     'Get      : Expression object, Token name',
-    //     'Grouping : Expression expression',
-    //     'Literal  : Object? value',
-    //     'Logical  : Expression left, Token operator, Expression right',
-    //     'Set      : Expression object, Token name, Expression value',
-    //     'Super    : Token keyword, Token method',
-    //     'This     : Token keyword',
-    //     'Unary    : Token operator, Expression right',
-    //     'Variable : Token name',
-    //   ],
-    //   ['token.dart'],
-    // );
+    final [outputDir] = args;
+
+    _defineAst(
+      outputDir,
+      'Node',
+      {
+        'TypeVariation': [
+          ('Token', 'name'),
+          ('List<TypeVariationParameterNode>', 'parameters'),
+        ],
+        'TypeVariationParameter': [
+          ('Token', 'type'),
+          ('Token', 'name'),
+        ],
+      },
+      ['token.dart'],
+    );
 
     _defineAst(
       outputDir,
       'Statement',
       {
-        'Type': [
+        'TypeDefinition': [
           ('Token', 'name'),
           ('List<Token>?', 'typeParameters'),
-          ('List<TypeDefinitionStatement>', 'definitions'),
+          ('List<TypeVariationNode>', 'variants'),
         ],
-        'TypeDefinition': [('Token', 'name'), ('List<(Token, Token)>', 'parameters')],
-        // 'Block      : List<Statement> statements',
-        // 'Class      : Token name, VariableExpression? superclass, List<FunctionStatement> methods',
-        // 'Expression : Expression expression',
-        // 'Function   : Token name, List<Token> parameters, List<Statement> body',
-        // 'If         : Expression condition, Statement thenBranch, Statement? elseBranch',
-        // 'Print      : Expression expression',
-        // 'Return     : Token keyword, Expression? value',
-        // 'Variable   : Token name, Expression? initializer',
-        // 'While      : Expression condition, Statement body',
       },
-      [
-        // 'expression.dart',
-        'token.dart',
-      ],
+      ['node.dart', 'token.dart'],
     );
   }
 }

@@ -1,14 +1,11 @@
 final class Id {
-  const Id({
-    required this.id,
-  });
+  const Id({required this.id});
 
   final int id;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is Id && other.id == id;
   }
 
@@ -29,16 +26,13 @@ final class Unit {
 sealed class Option<T> {}
 
 final class Some<T> implements Option<T> {
-  const Some({
-    required this.value,
-  });
+  const Some({required this.value});
 
   final T value;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is Some<T> && other.value == value;
   }
 
@@ -137,17 +131,20 @@ final class Two<T> {
   });
 
   final T a;
+
   final T b;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is Two<T> && other.a == a && other.b == b;
   }
 
   @override
-  int get hashCode => Object.hash(a, b);
+  int get hashCode => Object.hash(
+        a,
+        b,
+      );
 }
 
 final class Many {
@@ -181,36 +178,60 @@ final class Many {
   });
 
   final int a;
+
   final int b;
+
   final int c;
+
   final int d;
+
   final int e;
+
   final int f;
+
   final int g;
+
   final int h;
+
   final int i;
+
   final int j;
+
   final int k;
+
   final int l;
+
   final int m;
+
   final int n;
+
   final int o;
+
   final int p;
+
   final int q;
+
   final int r;
+
   final int s;
+
   final int t;
+
   final int u;
+
   final int v;
+
   final int w;
+
   final int x;
+
   final int y;
+
   final int z;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is Many &&
         other.a == a &&
         other.b == b &&
@@ -267,6 +288,6 @@ final class Many {
         w,
         x,
         y,
-        z
+        z,
       ]);
 }

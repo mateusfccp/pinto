@@ -31,6 +31,8 @@ final class Token {
 
   @override
   String toString() => '$type $lexeme $literal';
+
+  static bool same(Token a, Token b) => a.type == b.type && a.lexeme == b.lexeme;
 }
 
 /// The type of a token.
@@ -112,7 +114,7 @@ enum TokenType {
 
   /// The colon token (`:`)
   colon,
-  
+
   /// The double colon token (`::`)
   doubleColon,
 

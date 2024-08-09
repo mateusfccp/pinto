@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'error.dart';
+import 'node.dart';
 import 'statement.dart';
 import 'token.dart';
 
@@ -169,22 +168,22 @@ final class Parser {
       description: 'type name',
     );
 
-    final definitions = <TypeDefinitionStatement>[
-      _typeDefinition(true),
+    final variations = <TypeVariationNode>[
+      _typeVariant(true),
     ];
 
     while (_match(TokenType.plus)) {
-      definitions.add(_typeDefinition(false));
+      variations.add(_typeVariant(false));
     }
 
-    return TypeStatement(
+    return TypeDefinitionStatement(
       name,
       typeParameters,
-      definitions,
+      variations,
     );
   }
 
-  TypeDefinitionStatement _typeDefinition(bool isFirstDefinition) {
+  TypeVariationNode _typeVariant(bool isFirstDefinition) {
     final name = _consumeAfter(
       type: TokenType.identifier,
       after: isFirstDefinition //
@@ -192,7 +191,7 @@ final class Parser {
           : TokenType.plus,
     );
 
-    final parameters = <(Token, Token)>[];
+    final parameters = <TypeVariationParameterNode>[];
 
     if (_check(TokenType.leftParenthesis)) {
       _advance();
@@ -207,7 +206,9 @@ final class Parser {
         after: TokenType.leftParenthesis,
       );
 
-      parameters.add((type, name));
+      parameters.add(
+        TypeVariationParameterNode(type, name),
+      );
 
       while (_match(TokenType.comma)) {
         if (_check(TokenType.rightParenthesis)) break;
@@ -223,7 +224,9 @@ final class Parser {
           description: 'type parameter',
         );
 
-        parameters.add((type, name));
+        parameters.add(
+          TypeVariationParameterNode(type, name),
+        );
       }
 
       _consumeAfter(
@@ -233,7 +236,7 @@ final class Parser {
       );
     }
 
-    return TypeDefinitionStatement(
+    return TypeVariationNode(
       name,
       parameters,
     );

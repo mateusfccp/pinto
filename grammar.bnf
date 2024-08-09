@@ -6,6 +6,7 @@
 
 <program> ::= <type_declaration>*
 
-<type_declaration> ::= "type" <identifier> ( "(" <identifier> ( "," <identifier> )* ")" )? "=" <type_definition> ( "+" <type_definition> )*
-<type_definition> ::= <identifier> ( "(" <identifier> <identifier> ( "," <identifier> <identifier )* ")" )?
+<type_definition> ::= "type" <identifier> ( "(" <identifier> ( "," <identifier> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
+<type_variation> ::= <identifier> ( "(" <type_variation_parameter> ( "," <type_variation_parameter> )* ")" )?
+<type_variation_parameter> ::= <identifier> <identifier>
 

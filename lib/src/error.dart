@@ -9,10 +9,10 @@ import 'token.dart';
 part 'error.freezed.dart';
 
 /// A Lox error.
-sealed class LoxError {}
+sealed class PintoError {}
 
 /// An error that happened while the program was being scanend.
-sealed class ScanError implements LoxError {
+sealed class ScanError implements PintoError {
   ScanLocation get location;
 }
 
@@ -46,7 +46,7 @@ sealed class ScanLocation with _$ScanLocation {
 }
 
 /// An error that happened while the program was being parsed.
-sealed class ParseError implements LoxError {
+sealed class ParseError implements PintoError {
   Token get token;
 }
 
@@ -155,7 +155,7 @@ final class InvalidAssignmentTargetError implements ParseError {
 }
 
 /// An error that happened while the program was being resolved.
-sealed class ResolveError implements LoxError {
+sealed class ResolveError implements PintoError {
   Token get token;
 }
 
@@ -220,134 +220,13 @@ final class ThisUsedOutsideOfClassError implements ResolveError {
   final Token token;
 }
 
-/// An error that happened while the program was being run.
-sealed class RuntimeError implements LoxError {
-  const RuntimeError(this.token);
-
-  final Token token;
-}
-
-final class ArityError implements RuntimeError {
-  const ArityError({
-    required this.token,
-    required this.arity,
-    required this.argumentsCount,
-  });
-
-  @override
-  final Token token;
-
-  /// The expected arity for the function/method call.
-  final int arity;
-
-  /// The number of arguments passed to the function/method call.
-  final int argumentsCount;
-}
-
-final class ClassInheritsFromANonClassError implements RuntimeError {
-  const ClassInheritsFromANonClassError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class InvalidOperandsForNumericBinaryOperatorsError implements RuntimeError {
-  const InvalidOperandsForNumericBinaryOperatorsError({
-    required this.token,
-    required this.left,
-    required this.right,
-  });
-
-  @override
-  final Token token;
-
-  final Object? left;
-  final Object? right;
-}
-
-final class InvalidOperandForUnaryMinusOperatorError implements RuntimeError {
-  const InvalidOperandForUnaryMinusOperatorError({
-    required this.token,
-    required this.right,
-  });
-
-  @override
-  final Token token;
-
-  final Object? right;
-}
-
-final class InvalidOperandsForPlusOperatorError implements RuntimeError {
-  const InvalidOperandsForPlusOperatorError({
-    required this.token,
-    required this.left,
-    required this.right,
-  });
-
-  @override
-  final Token token;
-
-  final Object? left;
-  final Object? right;
-}
-
-final class NonRoutineCalledError implements RuntimeError {
-  const NonRoutineCalledError({
-    required this.token,
-    required this.callee,
-  });
-
-  @override
-  final Token token;
-
-  final Object? callee;
-}
-
-final class NonInstanceTriedToGetFieldError implements RuntimeError {
-  const NonInstanceTriedToGetFieldError({
-    required this.token,
-    required this.caller,
-  });
-
-  @override
-  final Token token;
-
-  final Object? caller;
-}
-
-final class NonInstanceTriedToSetFieldError implements RuntimeError {
-  const NonInstanceTriedToSetFieldError({
-    required this.token,
-    required this.caller,
-  });
-
-  @override
-  final Token token;
-
-  final Object? caller;
-}
-
-final class UndefinedPropertyError implements RuntimeError {
-  const UndefinedPropertyError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class UndefinedVariableError implements RuntimeError {
-  const UndefinedVariableError(this.token);
-
-  @override
-  final Token token;
-}
-
-/// An Lox error handler.
+/// An pint° error handler.
 final class ErrorHandler {
-  final _errors = <LoxError>[];
+  final _errors = <PintoError>[];
   final _listeners = <void Function()>[];
 
   /// The errors that were emitted by the handler.
-  UnmodifiableListView<LoxError> get errors => UnmodifiableListView(_errors);
+  UnmodifiableListView<PintoError> get errors => UnmodifiableListView(_errors);
 
   /// Whether at least one error was emitted.
   bool get hasError => _errors.isNotEmpty;
@@ -355,7 +234,7 @@ final class ErrorHandler {
   /// The last emitted error.
   ///
   /// If no error was emitted, `null` is returned.
-  LoxError? get lastError => hasError ? _errors[_errors.length - 1] : null;
+  PintoError? get lastError => hasError ? _errors[_errors.length - 1] : null;
 
   /// Adds a [listener] to the handler.
   ///
@@ -369,7 +248,7 @@ final class ErrorHandler {
   /// Emits an [error].
   ///
   /// The listeners will be notified of the error.
-  void emit(LoxError error) {
+  void emit(PintoError error) {
     _errors.add(error);
     for (final listener in _listeners) {
       listener.call();
