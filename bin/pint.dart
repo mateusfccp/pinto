@@ -154,12 +154,13 @@ PintoError? run(String source) {
   }
 
   final buffer = StringBuffer();
-
-  final visitor = Transpiler(buffer);
+  final visitor = Transpiler();
 
   for (final statement in statements) {
     statement.accept(visitor);
   }
+
+  visitor.writeToSink(buffer);
 
   final formatted = DartFormatter().format(buffer.toString());
 

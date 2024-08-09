@@ -1,4 +1,5 @@
 import 'error.dart';
+import 'import.dart';
 import 'node.dart';
 import 'statement.dart';
 import 'token.dart';
@@ -100,7 +101,12 @@ final class Parser {
 
   Statement? _declaration() {
     try {
-      return _type();
+      if (_match(TokenType.importKeyword)) {
+        return _import();
+      } else {
+        return _type();
+      }
+
       // if (_match(TokenType.classKeyword)) {
       //   return _class();
       // } else if (_match(TokenType.funKeyword)) {
@@ -114,6 +120,52 @@ final class Parser {
       _synchronize();
       return null;
     }
+  }
+
+  Statement _import() {
+    final ImportType type;
+
+    final String package;
+
+    if (_match(TokenType.at)) {
+      type = ImportType.dart;
+
+      final packageIdentifier = _consumeAfter(
+        type: TokenType.identifier,
+        after: TokenType.at,
+      );
+
+      package = packageIdentifier.lexeme;
+    } else {
+      type = ImportType.package;
+
+      final root = _consumeAfter(
+        type: TokenType.identifier,
+        after: TokenType.importKeyword,
+      );
+
+      final subdirectories = <Token>[];
+
+      while (_match(TokenType.slash)) {
+        final subdirectory = _consumeAfter(
+          type: TokenType.identifier,
+          after: TokenType.slash,
+        );
+
+        subdirectories.add(subdirectory);
+      }
+
+      if (subdirectories.isEmpty) {
+        subdirectories.add(root);
+      }
+
+      package = [
+        root.lexeme,
+        for (final subdirectory in subdirectories) subdirectory.lexeme,
+      ].join('/');
+    }
+
+    return ImportStatement(type, package);
   }
 
   Statement _type() {

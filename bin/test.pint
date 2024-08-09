@@ -1,40 +1,5 @@
-type Id = Id(int id)
-
-type Unit = Unit
+import @async
+import code_builder
+import flutter/material
 
 type Option(T) = Some(T value) + None
-
-type LogLevel = Debug + Info + Warn + Error + Fatal
-
-type Bool = True + False
-
-type Two(T) = Two(T a, T b)
-
-type Many = Many(
-int a,
-int b,
-int c,
-int d,
-int e,
-int f,
-int g,
-int h,
-int i,
-int j,
-int k,
-int l,
-int m,
-int n,
-int o,
-int p,
-int q,
-int r,
-int s,
-int t,
-int u,
-int v,
-int w,
-int x,
-int y,
-int z,
-)

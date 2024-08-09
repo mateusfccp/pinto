@@ -1,31 +1,63 @@
 import 'dart:collection';
 
+import 'package:built_collection/built_collection.dart';
+import 'package:code_builder/code_builder.dart' hide ClassBuilder;
+
 import 'class_builder.dart';
+import 'import.dart';
 import 'node.dart';
 import 'token.dart';
 import 'statement.dart';
 
 final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
-  Transpiler(this.sink);
-
-  final StringSink sink;
-
   final _context = DoubleLinkedQueue<Object?>();
 
   Object? get _currentContext => _context.last;
 
+  final _directives = ListBuilder<Directive>();
+  final _body = ListBuilder<Spec>();
+
   ClassBuilder? _currentClass;
+
+  void writeToSink(StringSink sink) {
+    final emmiter = DartEmitter(
+      orderDirectives: true,
+      useNullSafetySyntax: true,
+    );
+
+    final library = Library((builder) {
+      builder.directives = _directives;
+      builder.body = _body;
+    });
+
+    sink.write(library.accept(emmiter));
+  }
+
+  @override
+  void visitImportStatement(ImportStatement statement) {
+    assert(_currentContext == null);
+    assert(_currentClass == null);
+
+    final url = switch (statement.type) {
+      ImportType.dart => 'dart:${statement.package}',
+      ImportType.package => 'package:${statement.package}.dart',
+    };
+
+    _directives.add(
+      Directive.import(url),
+    );
+  }
 
   @override
   void visitTypeDefinitionStatement(TypeDefinitionStatement statement) {
     _context.addLast(statement);
 
-    if (statement.variations case [final definition]) {
+    if (statement.variants case [final definition]) {
       definition.accept(this);
     } else {
       final topClass = ClassBuilder(name: statement.name.lexeme);
-      _currentClass = topClass;
 
+      _pushClass(topClass);
       topClass.sealed = true;
 
       final typeParameters = statement.typeParameters;
@@ -36,11 +68,13 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
         }
       }
 
-      topClass.writeToSink(sink);
+      _body.add(
+        topClass.asCodeBuilderClass(),
+      );
 
-      _currentClass = null;
+      _popClass();
 
-      for (final definition in statement.variations) {
+      for (final definition in statement.variants) {
         definition.accept(this);
       }
     }
@@ -78,9 +112,9 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
       withEquality: true,
     )..final$ = true;
 
-    _currentClass = variantClass;
+    _pushClass(variantClass);
 
-    final shouldStreamline = context.variations.length == 1;
+    final shouldStreamline = context.variants.length == 1;
     final implementingTypeParameters = <String>[];
 
     for (final parameter in node.parameters) {
@@ -108,9 +142,17 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
       );
     }
 
-    variantClass.writeToSink(sink);
-
-    _currentClass = null;
+    _popClass();
     // _context.removeLast();
+  }
+
+  void _pushClass(ClassBuilder classBuilder) => _currentClass = classBuilder;
+
+  void _popClass() {
+    assert(_currentClass != null);
+
+    final class$ = _currentClass!.asCodeBuilderClass();
+    _body.add(class$);
+    _currentClass = null;
   }
 }

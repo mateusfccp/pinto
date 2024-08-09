@@ -30,6 +30,10 @@ void main(List<String> args) {
       outputDir,
       'Statement',
       {
+        'Import': [
+          ('ImportType', 'type'),
+          ('String', 'package'),
+        ],
         'TypeDefinition': [
           ('Token', 'name'),
           ('List<Token>?', 'typeParameters'),

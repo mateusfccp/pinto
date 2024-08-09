@@ -10,6 +10,11 @@ final class Resolver implements NodeVisitor<void>, StatementVisitor<void> {
   Environment _environment = Environment.root();
 
   @override
+  void visitImportStatement(ImportStatement statement) {
+    // TODO: implement visitImportStatement
+  }
+
+  @override
   void visitTypeDefinitionStatement(TypeDefinitionStatement statement) {
     final environment = _environment;
 
@@ -21,7 +26,7 @@ final class Resolver implements NodeVisitor<void>, StatementVisitor<void> {
       }
     }
 
-    for (final variant in statement.variations) {
+    for (final variant in statement.variants) {
         variant.accept(this);
     }
 

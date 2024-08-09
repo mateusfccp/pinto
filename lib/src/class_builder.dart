@@ -56,13 +56,8 @@ final class ClassBuilder {
     );
   }
 
-  void writeToSink(StringSink sink) {
-    final emmiter = DartEmitter.scoped(
-      orderDirectives: true,
-      useNullSafetySyntax: true,
-    );
-
-    final class$ = Class((builder) {
+  Class asCodeBuilderClass() {
+    return Class((builder) {
       builder.name = name;
       builder.types = ListBuilder([
         for (final parameter in _typeParameters) refer(parameter),
@@ -98,8 +93,6 @@ final class ClassBuilder {
         ]);
       }
     });
-
-    sink.write(class$.accept(emmiter));
   }
 
   Method _equals() {

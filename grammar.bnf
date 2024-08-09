@@ -4,7 +4,11 @@
 <identifier_part> ::= <identifier_start>  | <digit>
 <digit> ::= [0-9]
 
-<program> ::= <type_declaration>*
+<program> ::= <import>* <type_definition>*
+
+<import> ::= "import" ( <dart_import> |  <package_import> )
+<dart_import> ::= "@" <identifier>
+<package_import> ::= <identifier> ( "/" <identifier> )*
 
 <type_definition> ::= "type" <identifier> ( "(" <identifier> ( "," <identifier> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
 <type_variation> ::= <identifier> ( "(" <type_variation_parameter> ( "," <type_variation_parameter> )* ")" )?

@@ -1,0 +1,1 @@
+enum ImportType { dart, package }

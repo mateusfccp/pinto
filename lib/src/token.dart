@@ -37,6 +37,9 @@ final class Token {
 
 /// The type of a token.
 enum TokenType {
+  /// The at token (`@`).
+  at,
+
   /// The left parenthesis token (`(`).
   leftParenthesis,
 
@@ -184,6 +187,9 @@ enum TokenType {
   /// The `in` keyword token.
   inKeyword,
 
+  /// The `import` keyword token.
+  importKeyword,
+
   /// The `while` keyword token.
   whileKeyword,
 
@@ -193,6 +199,7 @@ enum TokenType {
   @override
   String toString() {
     return switch (this) {
+      at => '@',
       leftParenthesis => '(',
       rightParenthesis => ')',
       leftBracket => '[',
@@ -242,6 +249,7 @@ enum TokenType {
       typeKeyword => 'type',
       typealiasKeyword => 'typealias',
       inKeyword => 'in',
+      importKeyword => 'import',
       whileKeyword => 'while',
       endOfFile => 'EOF',
     };

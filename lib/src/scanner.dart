@@ -28,6 +28,7 @@ final class Scanner {
     'fn': TokenType.fnKeyword,
     'if': TokenType.ifKeyword,
     'in': TokenType.inKeyword,
+    'import': TokenType.importKeyword,
     'let': TokenType.letKeyword,
     'or': TokenType.orKeyword,
     'super': TokenType.superKeyword,
@@ -63,6 +64,7 @@ final class Scanner {
   void _scanToken() {
     final character = _advance();
     return switch (character) {
+      '@' => _addToken(TokenType.at),
       '(' => _addToken(TokenType.leftParenthesis),
       ')' => _addToken(TokenType.rightParenthesis),
       '[' => _addToken(TokenType.leftBracket),
