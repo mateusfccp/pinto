@@ -124,7 +124,7 @@ final class Scanner {
   void _character(String character) {
     if (_isDigit(character)) {
       _number();
-    } else if (_isAlpha(character)) {
+    } else if (_isIdentifierStart(character)) {
       _identifier();
     } else {
       _errorHandler?.emit(
@@ -195,14 +195,14 @@ final class Scanner {
     return int.tryParse(character) != null;
   }
 
-  bool _isAlpha(String character) {
+  bool _isIdentifierStart(String character) {
     assert(character.length == 1);
-    return RegExp('[A-Za-z_]').hasMatch(character);
+    return RegExp(r'[A-Za-z_$]').hasMatch(character);
   }
 
-  bool _isAlphanumeric(String character) {
+  bool _isIdentifierPart(String character) {
     assert(character.length == 1);
-    return RegExp(r'\w').hasMatch(character);
+    return RegExp(r'[A-Za-z_$0-9]').hasMatch(character);
   }
 
   void _string() {
@@ -284,7 +284,7 @@ final class Scanner {
   }
 
   void _identifier() {
-    while (_isAlphanumeric(_peek)) {
+    while (_isIdentifierPart(_peek)) {
       _advance();
     }
 

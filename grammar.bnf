@@ -1,8 +1,8 @@
 <identifier> ::= <identifier_start> <identifier_part>*
 
-<identifier_start> ::= "a".."z" | "A".."Z" | "_" | "$"
+<identifier_start> ::= [A-Za-z_$]
 <identifier_part> ::= <identifier_start>  | <digit>
-<digit> ::= "0".."9"
+<digit> ::= [0-9]
 
 <program> ::= <type_declaration>*
 
