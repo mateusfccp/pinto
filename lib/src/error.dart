@@ -178,6 +178,13 @@ final class ClassInheritsFromItselfError implements ResolveError {
 //   final Expression value;
 // }
 
+final class NoSymbolInScopeError implements ResolveError {
+  const NoSymbolInScopeError(this.token);
+
+  @override
+  final Token token;
+}
+
 final class VariableAlreadyInScopeError implements ResolveError {
   const VariableAlreadyInScopeError(this.token);
 

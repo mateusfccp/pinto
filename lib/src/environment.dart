@@ -1,6 +1,3 @@
-import 'error.dart';
-import 'token.dart';
-
 /// An environment that carries the context's identifiers.
 ///
 /// An environment can belong to another [enclosing] environment, which  will be
@@ -12,13 +9,60 @@ final class Environment {
   /// global scope of the program.
   Environment({this.enclosing});
 
+  Environment.root() : enclosing = null {
+    // TODO(mateusfccp): import from `dart:core`
+    _values.add('BigInt');
+    _values.add('bool');
+    _values.add('Comparable');
+    _values.add('DateTime');
+    _values.add('Deprecated');
+    _values.add('double');
+    _values.add('Duration');
+    _values.add('Enum');
+    _values.add('Expando');
+    _values.add('Finalizer');
+    _values.add('Function');
+    _values.add('Future');
+    _values.add('int');
+    _values.add('Invocation');
+    _values.add('Iterable');
+    _values.add('Iterator');
+    _values.add('List');
+    _values.add('Map');
+    _values.add('Mapentry');
+    _values.add('Match');
+    _values.add('Null');
+    _values.add('num');
+    _values.add('Object');
+    _values.add('Pattern');
+    _values.add('pragma');
+    _values.add('Record');
+    _values.add('Regexp');
+    _values.add('Regexpmatch');
+    _values.add('Runeiterator');
+    _values.add('Runes');
+    _values.add('Set');
+    _values.add('Sink');
+    _values.add('Stacktrace');
+    _values.add('Stopwatch');
+    _values.add('Stream');
+    _values.add('String');
+    _values.add('Stringbuffer');
+    _values.add('Stringsink');
+    _values.add('Symbol');
+    _values.add('Type');
+    _values.add('Uri');
+    _values.add('Uridata');
+    _values.add('Weakreference');
+  }
+
   /// The enclosing environment.
   ///
   /// If `null`, the environment is a root environment, usually the global
   /// scope of the program.
   final Environment? enclosing;
 
-  final _values = <String, Object?>{};
+  final _values = <String>[];
 
   /// Get a variable with the given [name] in the environment.
   ///
@@ -27,55 +71,22 @@ final class Environment {
   ///
   /// If this environment is a root environment and [name] is not found, `null`
   /// will be returned.
-  Object? get(Token name) {
-    if (_values[name.lexeme] case final value?) {
-      return value;
+  bool hasSymbol(String name) {
+    if (_values.contains(name)) {
+      return true;
     } else if (enclosing case final enclosing?) {
-      return enclosing.get(name);
+      return enclosing.hasSymbol(name);
     } else {
-      throw UndefinedVariableError(name);
-    }
-  }
-
-  /// Sets the [value] for [name] in the environment.
-  ///
-  /// If the environment has not the expected [name], it will rescursively look
-  /// in the [enclosing] environment until it is found, and then set the [value]
-  /// in the environment in which the [name] was found.
-  ///
-  /// If this environment is a root environment and [name] is not found, the
-  /// assignment will fail and a [RuntimeError] will be thrown.
-  void assign(Token name, Object? value) {
-    if (_values.containsKey(name.lexeme)) {
-      _values[name.lexeme] = value;
-    } else if (enclosing case final enclosing?) {
-      enclosing.assign(name, value);
-    } else {
-      throw UndefinedVariableError(name);
+      return false;
     }
   }
 
   /// Defines a [name] in the environment with the passed [value].
-  void define(String name, Object? value) => _values[name] = value;
-
-  /// Gets [name] in the [distance]ᵗʰ ancestor.
-  Object? getAt(int distance, String name) => ancestor(distance)._values[name];
-
-  /// Sets [name] to [value] in the [distance]ᵗʰ ancestor.
-  void assignAt(int distance, Token name, Object? value) => ancestor(distance)._values[name.lexeme] = value;
-
-  /// Gets the [distance]ᵗʰ ancestor environment.
-  Environment ancestor(int distance) {
-    var environment = this;
-
-    for (int i = 0; i < distance; i++) {
-      if (environment.enclosing case final enclosing?) {
-        environment = enclosing;
-      } else {
-        throw StateError('Expected to find ancestor up to $distance, but maximum depth was $i');
-      }
+  void defineSymbol(String name) {
+    if (!hasSymbol(name)) {
+      _values.add(name);
     }
-
-    return environment;
   }
+
+  Environment fork() => Environment(enclosing: this);
 }
