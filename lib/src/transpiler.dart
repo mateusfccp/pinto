@@ -59,7 +59,6 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
 
   @override
   void visitProgram(Program program) {
-    print('Visiting program with ${program.imports.length} imports and ${program.body.length} statements.');
     for (final import in program.imports) {
       import.accept(this);
     }
