@@ -1,5 +1,5 @@
+import 'ast/token.dart';
 import 'error.dart';
-import 'token.dart';
 
 /// A Lox scanner.
 final class Scanner {
@@ -53,7 +53,6 @@ final class Scanner {
       Token(
         type: TokenType.endOfFile,
         lexeme: '',
-        literal: null,
         column: _column,
         line: _line,
       ),
@@ -64,11 +63,14 @@ final class Scanner {
   void _scanToken() {
     final character = _advance();
     return switch (character) {
+      '⊤' => _addToken(TokenType.topTypeSymbol),
+      '⊥' => _addToken(TokenType.bottomTypeSymbol),
       '@' => _addToken(TokenType.at),
+      '?' => _addToken(TokenType.questionMark),
       '(' => _addToken(TokenType.leftParenthesis),
       ')' => _addToken(TokenType.rightParenthesis),
       '[' => _addToken(TokenType.leftBracket),
-      ']' => _addToken(TokenType.rightBrace),
+      ']' => _addToken(TokenType.rightBracket),
       '{' => _addToken(TokenType.leftBrace),
       '}' => _addToken(TokenType.rightBrace),
       ',' => _addToken(TokenType.comma),
@@ -147,7 +149,6 @@ final class Scanner {
     final token = Token(
       type: type,
       lexeme: text,
-      literal: literal,
       column: _column,
       line: _line,
     );

@@ -3,21 +3,31 @@ import 'dart:collection';
 import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart' hide ClassBuilder;
 
+import 'ast/ast.dart';
+import 'ast/default_type_literal_visitor.dart';
+import 'ast/node.dart';
+import 'ast/program.dart';
+import 'ast/statement.dart';
+import 'ast/type_literal.dart';
 import 'class_builder.dart';
 import 'import.dart';
-import 'node.dart';
-import 'token.dart';
-import 'statement.dart';
+import 'resolver.dart';
+import 'type.dart';
 
-final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
+final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<void> {
+  Transpiler({required this.resolver});
+
+  final Resolver resolver;
+
+  ClassBuilder? _currentClass;
+  List<Type>? _currentDefinitionTypes;
+  List<Type>? _currentVariantTypes;
   final _context = DoubleLinkedQueue<Object?>();
 
   Object? get _currentContext => _context.last;
 
   final _directives = ListBuilder<Directive>();
   final _body = ListBuilder<Spec>();
-
-  ClassBuilder? _currentClass;
 
   void writeToSink(StringSink sink) {
     final emmiter = DartEmitter(
@@ -49,8 +59,20 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
   }
 
   @override
+  void visitProgram(Program program) {
+    for (final import in program.imports) {
+      import.accept(this);
+    }
+
+    for (final statement in program.body) {
+      statement.accept(this);
+    }
+  }
+
+  @override
   void visitTypeDefinitionStatement(TypeDefinitionStatement statement) {
     _context.addLast(statement);
+    _currentDefinitionTypes = [];
 
     if (statement.variants case [final definition]) {
       definition.accept(this);
@@ -64,13 +86,11 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
 
       if (typeParameters != null) {
         for (final parameter in typeParameters) {
-          topClass.addParameter(parameter);
+          final type = resolver.annotations[parameter]!;
+          _currentDefinitionTypes!.add(type);
+          parameter.accept(this);
         }
       }
-
-      _body.add(
-        topClass.asCodeBuilderClass(),
-      );
 
       _popClass();
 
@@ -79,33 +99,67 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
       }
     }
 
+    _currentDefinitionTypes = null;
     _context.removeLast();
   }
 
   @override
-  void visitTypeVariationParameterNode(TypeVariationParameterNode node) {
-    assert(_currentContext is TypeDefinitionStatement);
+  void visitTypeLiteral(TypeLiteral typeLiteral) {
     assert(_currentClass != null);
+    final class$ = _currentClass!;
 
-    final context = _currentContext as TypeDefinitionStatement;
+    final type = resolver.annotations[typeLiteral]!;
 
-    if (context.typeParameters case final typeParameters?) {
-      bool equal(Token t) => Token.same(t, node.type);
+    if (_currentContext is TypeDefinitionStatement) {
+      class$.addParameter(type);
+    } else if (_currentContext is TypeVariantNode) {
+      if (type.package == 'LOCAL') {
+        class$.addParameter(type);
+      }
 
-      if (typeParameters.any(equal)) {
-        _currentClass!.addParameter(node.type);
+      if (_currentDefinitionTypes case final definitionTypes?) {
+        final definition = _context.lastEntry()!.previousEntry()?.element as TypeDefinitionStatement;
+        final shouldStreamline = definition.variants.length == 1;
+
+        if (!shouldStreamline) {
+          final typeParameters = _typeParametersFromTypeList(_currentVariantTypes!);
+          
+          for (final type in definitionTypes) {
+            final String parameter;
+
+            if (typeParameters.contains(type)) {
+              // TODO(mateusfccp): Refactor this out
+              final parametersString = type.parameters.isEmpty ? '' : '<${type.parameters.map((parameter) => parameter.name).join(', ')}>';
+              parameter = '${type.name}$parametersString';
+            } else {
+              parameter = 'Never';
+            }
+
+            class$.addParameterToSupertype(definition.name.lexeme, parameter);
+          }
+        }
       }
     }
-
-    _currentClass!.addField(node);
   }
 
   @override
-  void visitTypeVariationNode(TypeVariationNode node) {
-    assert(_currentContext is TypeDefinitionStatement);
-    final context = _currentContext as TypeDefinitionStatement;
+  void visitTypeVariantParameterNode(TypeVariantParameterNode node) {
+    assert(_currentContext is TypeVariantNode);
+    assert(_currentClass != null);
 
-    // _context.addLast(node);
+    final class$ = _currentClass!;
+
+    node.type.accept(this);
+
+    final type = resolver.annotations[node.type]!;
+    class$.addField(type, node);
+  }
+
+  @override
+  void visitTypeVariantNode(TypeVariantNode node) {
+    assert(_currentContext is TypeDefinitionStatement);
+
+    _context.addLast(node);
 
     final variantClass = ClassBuilder(
       name: node.name.lexeme,
@@ -113,37 +167,17 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
     )..final$ = true;
 
     _pushClass(variantClass);
-
-    final shouldStreamline = context.variants.length == 1;
-    final implementingTypeParameters = <String>[];
+    _currentVariantTypes = [
+      for (final parameter in node.parameters) resolver.annotations[parameter.type]!,
+    ];
 
     for (final parameter in node.parameters) {
       parameter.accept(this);
     }
 
-    if (context.typeParameters case final definitionTypeParameters?) {
-      for (final parameter in definitionTypeParameters) {
-        bool equal(TypeVariationParameterNode t) => Token.same(t.type, parameter);
-
-        final parameterIsUsed = node.parameters.any(equal);
-
-        if (parameterIsUsed) {
-          implementingTypeParameters.add(parameter.lexeme);
-        } else {
-          implementingTypeParameters.add('Never');
-        }
-      }
-    }
-
-    if (!shouldStreamline) {
-      variantClass.setSupertype(
-        context.name.lexeme,
-        implementingTypeParameters,
-      );
-    }
-
+    _currentVariantTypes = null;
     _popClass();
-    // _context.removeLast();
+    _context.removeLast();
   }
 
   void _pushClass(ClassBuilder classBuilder) => _currentClass = classBuilder;
@@ -155,4 +189,17 @@ final class Transpiler implements StatementVisitor<void>, NodeVisitor<void> {
     _body.add(class$);
     _currentClass = null;
   }
+}
+
+List<Type> _typeParametersFromTypeList(List<Type> list) {
+  final parameters = {
+    for (final type in list) ...[
+      if (type.package == 'LOCAL') type,
+      ..._typeParametersFromTypeList(type.parameters),
+    ]
+  };
+
+  assert(parameters.every((parameter) => parameter.package == 'LOCAL'));
+
+  return parameters.toList();
 }

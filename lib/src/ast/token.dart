@@ -9,7 +9,6 @@ final class Token {
     required this.lexeme,
     required this.line,
     required this.column,
-    this.literal,
   });
 
   /// The type of the token.
@@ -24,21 +23,20 @@ final class Token {
   /// The column in which the token was scanned.
   final int column;
 
-  /// The literal represented by the token.
-  ///
-  /// If the token does not represent any literal, this will be `null`.
-  final Object? literal;
-
   @override
-  String toString() => '$type $lexeme $literal';
-
-  static bool same(Token a, Token b) => a.type == b.type && a.lexeme == b.lexeme;
+  String toString() => 'Token(type: $type, lexeme: $lexeme)';
 }
 
 /// The type of a token.
 enum TokenType {
   /// The at token (`@`).
   at,
+
+  /// The top type symbol token (`⊤`).
+  topTypeSymbol,
+
+  /// The bottom type symbol token (`⊥`).
+  bottomTypeSymbol,
 
   /// The left parenthesis token (`(`).
   leftParenthesis,
@@ -63,6 +61,9 @@ enum TokenType {
 
   /// The dot token (`.`).
   dot,
+
+  /// The question mark token (`?`).
+  questionMark,
 
   /// The minus sign token (`-`).
   minus,
@@ -200,6 +201,8 @@ enum TokenType {
   String toString() {
     return switch (this) {
       at => '@',
+      topTypeSymbol => '⊤',
+      bottomTypeSymbol => '⊥',
       leftParenthesis => '(',
       rightParenthesis => ')',
       leftBracket => '[',
@@ -208,6 +211,7 @@ enum TokenType {
       rightBrace => '}',
       comma => ',',
       dot => '.',
+      questionMark => '?',
       minus => '-',
       plus => '+',
       semicolon => ';',

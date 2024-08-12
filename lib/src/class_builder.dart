@@ -1,8 +1,8 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:pint/src/node.dart';
 
-import 'token.dart';
+import 'ast/node.dart';
+import 'type.dart';
 
 final class ClassBuilder {
   ClassBuilder({
@@ -16,28 +16,21 @@ final class ClassBuilder {
   final _typeParameters = <String>{};
   final _constructorParameters = ListBuilder<Parameter>();
   final _fields = ListBuilder<Field>();
-  TypeReference? _supertype;
+  TypeReferenceBuilder? _supertype;
 
   bool sealed = false;
   bool final$ = false;
 
-  void setSupertype(String supertype, [List<String> parameters = const []]) {
-    _supertype = TypeReference((builder) {
-      builder.symbol = supertype;
-
-      for (final parameter in parameters) {
-        builder.types.add(
-          refer(parameter),
-        );
-      }
-    });
+  void addParameterToSupertype(String supertype, String parameter) {
+    _supertype ??= TypeReferenceBuilder()..symbol = supertype;
+    _supertype?.types.add(refer(parameter));
   }
 
-  void addParameter(Token parameter) {
-    _typeParameters.add(parameter.lexeme);
+  void addParameter(Type parameter) {
+    _typeParameters.add(parameter.name);
   }
 
-  void addField(TypeVariationParameterNode field) {
+  void addField(Type type, TypeVariantParameterNode field) {
     _constructorParameters.add(
       Parameter((builder) {
         builder.name = field.name.lexeme;
@@ -51,7 +44,7 @@ final class ClassBuilder {
       Field((builder) {
         builder.modifier = FieldModifier.final$;
         builder.name = field.name.lexeme;
-        builder.type = refer(field.type.lexeme);
+        builder.type = _buildType(type);
       }),
     );
   }
@@ -70,7 +63,13 @@ final class ClassBuilder {
       builder.sealed = sealed;
 
       if (_supertype case final supertype?) {
-        builder.implements.add(supertype);
+        builder.implements.add(
+          TypeReference((builder) {
+            // TODO(mateusfccp): fix this
+            builder.symbol = supertype.symbol;
+            builder.types = supertype.types;
+          }),
+        );
       }
 
       if (!sealed) {
@@ -90,8 +89,42 @@ final class ClassBuilder {
         builder.methods.addAll([
           _equals(),
           _hashCode(),
+          _toString(),
         ]);
       }
+    });
+  }
+
+  Method _toString() {
+    return Method((builder) {
+      builder.annotations.add(
+        refer('override'),
+      );
+      builder.returns = refer('String');
+      builder.name = 'toString';
+      builder.lambda = true;
+
+      final fieldsDescription = StringBuffer();
+
+      if (_fields.isNotEmpty) {
+        final fields = _fields.build();
+        fieldsDescription.write('(');
+
+        for (int i = 0; i < fields.length; i = i + 1) {
+          fieldsDescription.write(fields[i].name);
+          fieldsDescription.write(r': $');
+          fieldsDescription.write(fields[i].name);
+
+          if (i < fields.length - 1) {
+            fieldsDescription.write(', ');
+          }
+        }
+
+        fieldsDescription.write(')');
+      }
+
+      final string = '$name$fieldsDescription';
+      builder.body = literalString(string).code;
     });
   }
 
@@ -179,4 +212,14 @@ final class ClassBuilder {
       builder.body = expression.code;
     });
   }
+}
+
+Reference _buildType(Type type) {
+  return TypeReference((builder) {
+    builder.symbol = type.name;
+
+    for (final type in type.parameters) {
+      builder.types.add(_buildType(type));
+    }
+  });
 }

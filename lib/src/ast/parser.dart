@@ -1,8 +1,11 @@
-import 'error.dart';
-import 'import.dart';
 import 'node.dart';
+import 'program.dart';
 import 'statement.dart';
 import 'token.dart';
+import 'type_literal.dart';
+
+import '../error.dart';
+import '../import.dart';
 
 /// A Lox parser.
 final class Parser {
@@ -26,11 +29,20 @@ final class Parser {
 
   bool get _isNotAtEnd => !_isAtEnd;
 
-  List<Statement> parse() {
-    return [
-      for (; !_isAtEnd;)
-        if (_declaration() case final declaration?) declaration,
-    ];
+  Program parse() {
+    final imports = <ImportStatement>[];
+    while (_match(TokenType.importKeyword)) {
+      imports.add(_import());
+    }
+
+    final body = <Statement>[];
+    while (_match(TokenType.typeKeyword)) {
+      body.add(_typeDefinition());
+    }
+
+    assert(_isAtEnd);
+
+    return Program(imports, body);
   }
 
   bool _match(TokenType type1, [TokenType? type2, TokenType? type3, TokenType? type4]) {
@@ -60,6 +72,16 @@ final class Parser {
       _errorHandler?.emit(error);
       throw error;
     }
+  }
+
+  Token _consumeExpecting(TokenType type) {
+    return _consume(
+      type,
+      ExpectError(
+        token: _peek,
+        expectation: TokenExpectation(token: type),
+      ),
+    );
   }
 
   Token _consumeAfter({
@@ -104,7 +126,7 @@ final class Parser {
       if (_match(TokenType.importKeyword)) {
         return _import();
       } else {
-        return _type();
+        return _typeDefinition();
       }
 
       // if (_match(TokenType.classKeyword)) {
@@ -122,7 +144,7 @@ final class Parser {
     }
   }
 
-  Statement _import() {
+  ImportStatement _import() {
     final ImportType type;
 
     final String package;
@@ -168,27 +190,16 @@ final class Parser {
     return ImportStatement(type, package);
   }
 
-  Statement _type() {
-    _consume(
-      TokenType.typeKeyword,
-      ExpectError(
-        token: _peek,
-        expectation: ExpectationType.token(token: TokenType.typeKeyword),
-      ),
-    );
-
+  TypeDefinitionStatement _typeDefinition() {
     final name = _consumeAfter(
       type: TokenType.identifier,
       after: TokenType.typeKeyword,
     );
 
-    final typeParameters = <Token>[];
+    final typeParameters = <NamedTypeLiteral>[];
 
     if (_match(TokenType.leftParenthesis)) {
-      final firstTypeParameter = _consumeAfter(
-        type: TokenType.identifier,
-        after: TokenType.leftParenthesis,
-      );
+      final firstTypeParameter = _namedTypeLiteral();
 
       typeParameters.add(firstTypeParameter);
 
@@ -199,10 +210,7 @@ final class Parser {
           description: 'type parameter',
         );
 
-        final typeParameter = _consumeAfter(
-          type: TokenType.identifier,
-          after: TokenType.leftParenthesis,
-        );
+        final typeParameter = _namedTypeLiteral();
 
         typeParameters.add(typeParameter);
       }
@@ -220,22 +228,22 @@ final class Parser {
       description: 'type name',
     );
 
-    final variations = <TypeVariationNode>[
+    final variants = <TypeVariantNode>[
       _typeVariant(true),
     ];
 
     while (_match(TokenType.plus)) {
-      variations.add(_typeVariant(false));
+      variants.add(_typeVariant(false));
     }
 
     return TypeDefinitionStatement(
       name,
       typeParameters,
-      variations,
+      variants,
     );
   }
 
-  TypeVariationNode _typeVariant(bool isFirstDefinition) {
+  TypeVariantNode _typeVariant(bool isFirstDefinition) {
     final name = _consumeAfter(
       type: TokenType.identifier,
       after: isFirstDefinition //
@@ -243,54 +251,102 @@ final class Parser {
           : TokenType.plus,
     );
 
-    final parameters = <TypeVariationParameterNode>[];
+    final parameters = <TypeVariantParameterNode>[];
 
-    if (_check(TokenType.leftParenthesis)) {
-      _advance();
-
-      final type = _consumeAfter(
-        type: TokenType.identifier,
-        after: TokenType.leftParenthesis,
-      );
-
-      final name = _consumeAfter(
-        type: TokenType.identifier,
-        after: TokenType.leftParenthesis,
-      );
-
-      parameters.add(
-        TypeVariationParameterNode(type, name),
-      );
+    if (_match(TokenType.leftParenthesis)) {
+      parameters.add(_typeVariationParameter());
 
       while (_match(TokenType.comma)) {
-        if (_check(TokenType.rightParenthesis)) break;
+        if (_match(TokenType.rightParenthesis)) break;
 
-        final type = _consumeAfter(
-          type: TokenType.identifier,
-          after: TokenType.comma,
-        );
-
-        final name = _consumeAfter(
-          type: TokenType.identifier,
-          after: TokenType.identifier,
-          description: 'type parameter',
-        );
-
-        parameters.add(
-          TypeVariationParameterNode(type, name),
-        );
+        parameters.add(_typeVariationParameter());
       }
 
       _consumeAfter(
         type: TokenType.rightParenthesis,
         after: TokenType.identifier,
-        description: 'parameter',
       );
     }
 
-    return TypeVariationNode(
+    return TypeVariantNode(
       name,
       parameters,
     );
+  }
+
+  TypeVariantParameterNode _typeVariationParameter() {
+    final type = _typeLiteral();
+
+    final name = _consumeAfter(
+      type: TokenType.identifier,
+      after: TokenType.leftParenthesis, // TODO(mateusfccp): Fix it
+      description: 'parameter type',
+    );
+
+    return TypeVariantParameterNode(type, name);
+  }
+
+  TypeLiteral _typeLiteral() {
+    if (_match(TokenType.topTypeSymbol)) {
+      return TopTypeLiteral();
+    } else if (_match(TokenType.bottomTypeSymbol)) {
+      return BottomTypeLiteral();
+    } else if (_match(TokenType.leftBracket)) {
+      final literal = _typeLiteral();
+
+      _consumeAfter(
+        type: TokenType.rightBracket,
+        after: TokenType.identifier, // TODO(mateusfccp): Fix this
+      );
+
+      return ListTypeLiteral(literal);
+    } else if (_match(TokenType.leftBrace)) {
+      final literal = _typeLiteral();
+
+      final valueLiteral = _match(TokenType.colon) ? _typeLiteral() : null;
+
+      _consumeAfter(
+        type: TokenType.rightBrace,
+        after: TokenType.identifier, // TODO(mateusfccp): Fix this
+      );
+
+      if (valueLiteral == null) {
+        return SetTypeLiteral(literal);
+      } else {
+        return MapTypeLiteral(literal, valueLiteral);
+      }
+    } else {
+      final innerLiteral = _namedTypeLiteral();
+      final parameters = <TypeLiteral>[];
+      final TypeLiteral literal;
+
+      if (_match(TokenType.leftParenthesis)) {
+        parameters.add(_typeLiteral());
+
+        while (_match(TokenType.comma)) {
+          parameters.add(_typeLiteral());
+        }
+
+        _consumeAfter(
+          type: TokenType.rightParenthesis,
+          after: TokenType.identifier, // TODO(mateusfccp): Fix this
+        );
+
+        literal = ParameterizedTypeLiteral(innerLiteral, parameters);
+      } else {
+        literal = innerLiteral;
+      }
+
+      if (_match(TokenType.questionMark)) {
+        return OptionTypeLiteral(literal);
+      } else {
+        return literal;
+      }
+    }
+  }
+
+  NamedTypeLiteral _namedTypeLiteral() {
+    final identifier = _consumeExpecting(TokenType.identifier);
+    return NamedTypeLiteral(identifier);
   }
 }

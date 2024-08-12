@@ -1,5 +1,6 @@
-import @async
-import code_builder
-import flutter/material
-
 type Option(T) = Some(T value) + None
+
+// [T] or List(T) => type of List<T>
+// {T} or Set(T)  => type of Set<T>
+// {K: V} or Map(K, V) => type of Map<K, V>
+// (A)

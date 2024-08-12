@@ -1,5 +1,5 @@
 export 'src/error.dart';
-export 'src/parser.dart';
+export 'src/ast/parser.dart';
 export 'src/scanner.dart';
-export 'src/statement.dart';
-export 'src/token.dart';
+export 'src/ast/statement.dart';
+export 'src/ast/token.dart';

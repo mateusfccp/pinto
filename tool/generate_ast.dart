@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:recase/recase.dart';
 
@@ -12,18 +13,40 @@ void main(List<String> args) {
 
     _defineAst(
       outputDir,
+      'TypeLiteral',
+      {
+        'Top': [],
+        'Bottom': [],
+        'List': [('TypeLiteral', 'literal')],
+        'Set': [('TypeLiteral', 'literal')],
+        'Map': [
+          ('TypeLiteral', 'keyLiteral'),
+          ('TypeLiteral', 'valueLiteral'),
+        ],
+        'Parameterized': [
+          ('NamedTypeLiteral', 'literal'),
+          ('List<TypeLiteral>', 'parameters'),
+        ],
+        'Named': [('Token', 'identifier')],
+        'Option': [('TypeLiteral', 'literal')],
+      },
+      ['token.dart'],
+    );
+
+    _defineAst(
+      outputDir,
       'Node',
       {
-        'TypeVariation': [
+        'TypeVariant': [
           ('Token', 'name'),
-          ('List<TypeVariationParameterNode>', 'parameters'),
+          ('List<TypeVariantParameterNode>', 'parameters'),
         ],
-        'TypeVariationParameter': [
-          ('Token', 'type'),
+        'TypeVariantParameter': [
+          ('TypeLiteral', 'type'),
           ('Token', 'name'),
         ],
       },
-      ['token.dart'],
+      ['token.dart', 'type_literal.dart'],
     );
 
     _defineAst(
@@ -36,11 +59,11 @@ void main(List<String> args) {
         ],
         'TypeDefinition': [
           ('Token', 'name'),
-          ('List<Token>?', 'typeParameters'),
-          ('List<TypeVariationNode>', 'variants'),
+          ('List<NamedTypeLiteral>?', 'typeParameters'),
+          ('List<TypeVariantNode>', 'variants'),
         ],
       },
-      ['node.dart', 'token.dart'],
+      ['node.dart', '../import.dart', 'token.dart', 'type_literal.dart'],
     );
   }
 }
@@ -56,119 +79,148 @@ void _defineAst(
   final file = File(path);
   file.createSync(recursive: true);
 
-  // Imports
-  final importsString = imports.map((import) => "import '$import';").join('\n');
+  final library = Library((builder) {
+    for (final import in imports) {
+      builder.directives.add(
+        Directive.import(import),
+      );
+    }
 
-  // Base class
-  final baseClassString = _generateClass(
-    className: baseName,
-    abstract: true,
-    interface: true,
-    content: '''
-    R accept<R>(${baseName}Visitor<R> visitor);
-    ''',
+    builder.body.add(
+      _defineBaseClass(baseName),
+    );
+
+    builder.body.add(
+      _defineVisitor(baseName, types),
+    );
+
+    for (final MapEntry(key: name, value: fields) in types.entries) {
+      final className = '$name$baseName';
+
+      builder.body.add(
+        _defineType(baseName, className, fields),
+      );
+    }
+  });
+
+  final emitter = DartEmitter(
+    orderDirectives: true,
+    useNullSafetySyntax: true,
   );
 
-  final visitorInterfaceString = _defineVisitor(baseName, types);
-
-  // AST classes
-  final astClassesString = StringBuffer();
-
-  for (final MapEntry(:key, :value) in types.entries) {
-    final className = '$key$baseName';
-    astClassesString.writeln(
-      _defineType(baseName, className, value),
-    );
-  }
-
-  final fileContent = '''
-      $importsString
-      
-      $baseClassString
-      $visitorInterfaceString
-      $astClassesString
-  ''';
-
+  final content = library.accept(emitter);
   final formatter = DartFormatter();
-  final formattedString = formatter.format(fileContent);
+  final formattedString = formatter.format('$content');
 
   file.writeAsStringSync(formattedString);
 }
 
-String _defineType(String baseName, String className, List<(String, String)> fields) {
-  final content = StringBuffer();
+Class _defineBaseClass(String name) {
+  return Class((builder) {
+    builder.sealed = true;
+    builder.name = name;
+    builder.methods.add(
+      Method((builder) {
+        builder.returns = refer('R');
+        builder.name = 'accept';
+        builder.types.add(refer('R'));
 
-  // Constructor
-  content.writeln('const $className(');
-
-  for (final (_, fieldName) in fields) {
-    content.writeln('this.$fieldName,');
-  }
-
-  content.writeln(');');
-
-  // Class fields
-  for (final (fieldType, fieldName) in fields) {
-    content.writeln('final $fieldType $fieldName;');
-  }
-
-  // Accept method
-  content.writeln('''
-  @override
-  R accept<R>(${baseName}Visitor<R> visitor) {
-    return visitor.visit$className(this);
-  }
-  ''');
-
-  return _generateClass(
-    final_: true,
-    className: className,
-    content: content.toString(),
-    implementsClass: baseName,
-  );
+        builder.requiredParameters.add(
+          Parameter((builder) {
+            builder.type = TypeReference((builder) {
+              builder.symbol = '${name}Visitor';
+              builder.types.add(refer('R'));
+            });
+            builder.name = 'visitor';
+          }),
+        );
+      }),
+    );
+  });
 }
 
-String _defineVisitor(String baseName, Map<String, List<(String, String)>> types) {
-  final methodsString = StringBuffer();
-  for (final type in types.keys) {
-    final typeName = '$type$baseName';
-    methodsString.writeln('R visit$type$baseName($typeName ${baseName.toLowerCase()});');
-  }
+Class _defineType(String baseName, String className, List<(String, String)> fields) {
+  return Class((builder) {
+    builder.modifier = ClassModifier.final$;
+    builder.name = className;
+    builder.implements.add(refer(baseName));
 
-  return _generateClass(
-    className: '${baseName}Visitor',
-    abstract: true,
-    interface: true,
-    generics: ['R'],
-    content: methodsString.toString(),
-  );
+    builder.constructors.add(
+      Constructor((builder) {
+        builder.constant = true;
+
+        for (final (_, name) in fields) {
+          builder.requiredParameters.add(
+            Parameter((builder) {
+              builder.toThis = true;
+              builder.name = name;
+            }),
+          );
+        }
+      }),
+    );
+
+    for (final (type, name) in fields) {
+      builder.fields.add(
+        Field((builder) {
+          builder.modifier = FieldModifier.final$;
+          builder.type = refer(type);
+          builder.name = name;
+        }),
+      );
+    }
+
+    builder.methods.add(
+      Method((builder) {
+        builder.annotations.add(refer('override'));
+        builder.returns = refer('R');
+        builder.name = 'accept';
+        builder.types.add(refer('R'));
+
+        builder.requiredParameters.add(
+          Parameter((builder) {
+            builder.type = TypeReference(
+              (builder) {
+                builder.symbol = '${baseName}Visitor';
+                builder.types.add(refer('R'));
+              },
+            );
+            builder.name = 'visitor';
+          }),
+        );
+
+        builder.lambda = true;
+        builder.body = refer('visitor') //
+            .property('visit$className')
+            .call([refer('this')]) //
+            .code;
+      }),
+    );
+  });
 }
 
-String _generateClass({
-  required String className,
-  String content = '',
-  bool final_ = false,
-  bool abstract = false,
-  bool interface = false,
-  String? extendsClass,
-  String? implementsClass,
-  List<String>? generics,
-}) {
-  assert(final_ != abstract && final_ != interface);
+Class _defineVisitor(String baseName, Map<String, List<(String, String)>> types) {
+  return Class((builder) {
+    builder.name = '${baseName}Visitor';
+    builder.abstract = true;
+    builder.modifier = ClassModifier.interface;
+    builder.types.add(refer('R'));
 
-  const classTemplate = '''
-  {final} {abstract} {interface} class {className}{generics} {extends} {implements} {
-    {content}
-  }
-  ''';
+    for (final type in types.keys) {
+      final typeName = '$type$baseName';
 
-  return classTemplate
-      .replaceAll('{final}', final_ ? 'final' : '')
-      .replaceAll('{abstract}', abstract ? 'abstract' : '')
-      .replaceAll('{interface}', interface ? 'interface' : '')
-      .replaceAll('{className}', className)
-      .replaceAll('{generics}', generics == null || generics.isEmpty ? '' : '<${generics.join(', ')}>')
-      .replaceAll('{extends}', extendsClass == null ? '' : 'extends $extendsClass')
-      .replaceAll('{implements}', implementsClass == null ? '' : 'implements $implementsClass')
-      .replaceAll('{content}', content);
+      final method = Method((builder) {
+        builder.returns = refer('R');
+        builder.name = 'visit$type$baseName';
+        builder.requiredParameters.add(
+          Parameter((builder) {
+            builder.type = refer(typeName);
+            builder.name = ReCase(baseName).camelCase;
+          }),
+        );
+      });
+
+      builder.methods.add(method);
+    }
+  });
 }

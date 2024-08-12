@@ -10,7 +10,24 @@
 <dart_import> ::= "@" <identifier>
 <package_import> ::= <identifier> ( "/" <identifier> )*
 
-<type_definition> ::= "type" <identifier> ( "(" <identifier> ( "," <identifier> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
-<type_variation> ::= <identifier> ( "(" <type_variation_parameter> ( "," <type_variation_parameter> )* ")" )?
-<type_variation_parameter> ::= <identifier> <identifier>
+<type_definition> ::= "type" <identifier> ( "(" <named_type_literal> ( "," <named_type_literal> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
+<type_variant> ::= <identifier> ( "(" <type_variant_parameter> ( "," <type_variant_parameter> )* ")" )?
+<type_variant_parameter> ::= <type_literal> <identifier>
 
+<type_literal> ::= <top_type_literal>
+		 | <bottom_type_literal>
+		 | <list_type_literal>
+                 | <set_type_literal>
+		 | <map_type_literal>
+		 | <parameterized_type_literal>
+		 | <named_type_literal>
+		 | <option_type_literal>
+
+<top_type_literal> ::= "⊤"
+<bottom_type_literal> ::= "⊥"
+<list_type_literal> ::= "[" <type_literal> "]"
+<set_type_literal> ::= "{" <type_literal> "}"
+<map_type_literal> ::= "{" <type_literal> ":" <type_literal> "}"
+<parameterized_type_literal> ::= <named_type_literal> ( "(" <type_literal> ( "," <type_literal> )* ")" )
+<named_type_literal> ::= <identifier>
+<option_type_literal> ::= <type_literal> "?"

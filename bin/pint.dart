@@ -6,23 +6,24 @@ import 'package:dart_style/dart_style.dart';
 import 'package:pint/pint.dart';
 import 'package:exitcode/exitcode.dart';
 import 'package:pint/src/resolver.dart';
+import 'package:pint/src/symbols_resolver.dart';
 import 'package:pint/src/transpiler.dart';
 import 'package:quiver/strings.dart';
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async {
   if (args.length > 1) {
     stderr.writeln('Usage: dlox [script]');
     exit(usage);
   } else if (args.length == 1) {
-    runFile(args.single);
+    await runFile(args.single);
   } else {
     runPrompt();
   }
 }
 
-void runFile(String path) {
+Future<void> runFile(String path) async {
   final fileString = File(path).readAsStringSync();
-  final error = run(fileString);
+  final error = await run(fileString);
 
   switch (error) {
     case PintoError():
@@ -41,7 +42,7 @@ void runPrompt() {
   }
 }
 
-PintoError? run(String source) {
+Future<PintoError?> run(String source) async {
   final errorHandler = ErrorHandler();
 
   final lineSplitter = LineSplitter(); // TODO(mateusfccp): Convert the handler into an interface and put this logic inside
@@ -92,14 +93,14 @@ PintoError? run(String source) {
       ParseError() when error.token.type == TokenType.endOfFile => '[${error.token.line}:${error.token.column}] Error at end:',
       ParseError() => "[${error.token.line}:${error.token.column}]:",
       ResolveError() => "[${error.token.line}:${error.token.column}] Error at '${error.token.lexeme}':",
-      ScanError() => '[${error.location.line}:${error.location.column}]:'
+      ScanError() => '[${error.location.line}:${error.location.column}]:',
     };
 
     final errorMessage = switch (error) {
       // Parse errors
-      ExpectError(:final expectation) => 'Expected to find $expectation.',
-      ExpectAfterError(:final token, :final expectation, :final after) => "Expected to find $expectation after $after. Found '${token.lexeme}'.",
-      ExpectBeforeError(:final expectation, :final before) => 'Expected to find $expectation before $before.',
+      ExpectError(:final expectation) => "Expected to find '$expectation'.",
+      ExpectAfterError(:final token, :final expectation, :final after) => "Expected to find '$expectation' after $after. Found '${token.lexeme}'.",
+      ExpectBeforeError(:final expectation, :final before) => "Expected to find '$expectation' before $before.",
       ParametersLimitError() => "A function/method can't have more than 255 parameters.",
       ArgumentsLimitError() => "A function/method call can't have more than 255 arguments.",
       InvalidAssignmentTargetError() => 'Invalid assignment target.',
@@ -141,22 +142,30 @@ PintoError? run(String source) {
     errorHandler: errorHandler,
   );
 
-  final statements = parser.parse();
+  final program = parser.parse();
 
   if (errorHandler.hasError) {
     return errorHandler.lastError;
   }
 
-  final resolver = Resolver(errorHandler: errorHandler);
+  final resolver = Resolver(
+    program: program,
+    symbolsResolver: SymbolsResolver(
+      projectRoot: Directory.current.path,
+    ),
+    errorHandler: errorHandler,
+  );
 
-  for (final statement in statements) {
-    statement.accept(resolver);
-  }
+  await resolver.resolve();
 
   final buffer = StringBuffer();
-  final visitor = Transpiler();
+  final visitor = Transpiler(resolver: resolver);
 
-  for (final statement in statements) {
+  for (final statement in program.imports) {
+    statement.accept(visitor);
+  }
+
+  for (final statement in program.body) {
     statement.accept(visitor);
   }
 

@@ -3,8 +3,8 @@ import 'dart:collection';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 // import 'expression.dart';
-import 'statement.dart';
-import 'token.dart';
+import 'ast/statement.dart';
+import 'ast/token.dart';
 
 part 'error.freezed.dart';
 

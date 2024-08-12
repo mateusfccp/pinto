@@ -4,9 +4,10 @@ version: 0.0.1
 repository: https://github.com/mateusfccp/pinto
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
+  analyzer: ^6.8.0
   built_collection: ^5.1.1
   code_builder: ^4.10.0
   chalkdart: ^2.2.1
@@ -14,6 +15,7 @@ dependencies:
   exitcode: ^1.0.1
   freezed_annotation: ^2.4.1
   meta: ^1.15.0
+  path: ^1.9.0
   quiver: ^3.2.1
   recase: ^4.1.0
 

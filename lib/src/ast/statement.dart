@@ -1,8 +1,9 @@
-import 'import.dart';
+import '../import.dart';
 import 'node.dart';
 import 'token.dart';
+import 'type_literal.dart';
 
-abstract interface class Statement {
+sealed class Statement {
   R accept<R>(StatementVisitor<R> visitor);
 }
 
@@ -16,12 +17,14 @@ final class ImportStatement implements Statement {
     this.type,
     this.package,
   );
+
   final ImportType type;
+
   final String package;
+
   @override
-  R accept<R>(StatementVisitor<R> visitor) {
-    return visitor.visitImportStatement(this);
-  }
+  R accept<R>(StatementVisitor<R> visitor) =>
+      visitor.visitImportStatement(this);
 }
 
 final class TypeDefinitionStatement implements Statement {
@@ -30,11 +33,14 @@ final class TypeDefinitionStatement implements Statement {
     this.typeParameters,
     this.variants,
   );
+
   final Token name;
-  final List<Token>? typeParameters;
-  final List<TypeVariationNode> variants;
+
+  final List<NamedTypeLiteral>? typeParameters;
+
+  final List<TypeVariantNode> variants;
+
   @override
-  R accept<R>(StatementVisitor<R> visitor) {
-    return visitor.visitTypeDefinitionStatement(this);
-  }
+  R accept<R>(StatementVisitor<R> visitor) =>
+      visitor.visitTypeDefinitionStatement(this);
 }
