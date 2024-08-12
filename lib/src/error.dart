@@ -85,6 +85,12 @@ sealed class ExpectationType with _$ExpectationType {
   //   String? description,
   // }) = ExpressionExpectation;
 
+  
+  const factory ExpectationType.oneOf({
+    required List<ExpectationType> expectations,
+    String? description,
+  }) = OneOfExpectation;
+
   const factory ExpectationType.statement({
     required Statement statement,
     String? description,
@@ -100,8 +106,9 @@ sealed class ExpectationType with _$ExpectationType {
     return description ??
         switch (this) {
           // ExpressionExpectation() => 'expression',
-          StatementExpectation() => 'statement',
-          TokenExpectation(:final token) => '$token',
+          OneOfExpectation(:final expectations) => "${ expectations.length > 1 ? 'one of ': '' }${expectations.join(', ')}",
+          StatementExpectation() => 'a statement',
+          TokenExpectation(:final token) => "'$token'",
         };
   }
 }
@@ -225,6 +232,21 @@ final class ThisUsedOutsideOfClassError implements ResolveError {
 
   @override
   final Token token;
+}
+
+final class WrongNumberOfArgumentsError implements ResolveError {
+  const WrongNumberOfArgumentsError({
+    required this.token,
+    required this.argumentsCount,
+    required this.expectedArgumentsCount,
+  }) : assert(argumentsCount != expectedArgumentsCount);
+
+  @override
+  final Token token;
+
+  final int argumentsCount;
+
+  final int expectedArgumentsCount;
 }
 
 /// An pint° error handler.

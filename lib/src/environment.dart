@@ -1,3 +1,5 @@
+import 'package:pint/src/class_builder.dart';
+
 import 'type.dart';
 
 /// An environment that carries the context's identifiers.
@@ -38,12 +40,27 @@ final class Environment {
 
   /// Defines a [name] in the environment with the passed [value].
   void defineType(Type type) {
-    assert(() {
-      final existingType = getType(type.name);
-      return existingType == null || existingType.package == type.package;
-    }());
+    final name = buildTypeName(type);
 
-    _definedTypes[type.name] = type;
+    if (type is TopType) {
+      throw "Can't redefine the top type.";
+    }
+
+    if (type is BottomType) {
+      throw "Can't redefine the bottom type.";
+    }
+
+    final existingType = getType(name);
+
+    if (type case MonomorphicType(:final source) || PolymorphicType(:final source)) {
+      if (existingType case MonomorphicType(source: final existingTypeSource) || PolymorphicType(source: final existingTypeSource)) {
+        if (source != existingTypeSource) {
+          // Type is being shadowed
+        }
+      }
+    }
+
+    _definedTypes[name] = type;
   }
 
   Environment fork() => Environment(enclosing: this);

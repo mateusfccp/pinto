@@ -3,7 +3,7 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/src/util/sdk.dart';
-import 'package:analyzer/src/context/packages.dart';
+import 'package:analyzer/src/context/packages.dart' hide Package;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/src/dart/sdk/sdk.dart';
@@ -62,21 +62,27 @@ final class SymbolsResolver {
     final library = await _analysisContextCollection.contexts.first.currentSession.getResolvedLibrary(uri);
 
     if (library is ResolvedLibraryResult) {
+      final source = switch (statement.type) {
+        ImportType.dart => DartCore(name: statement.package),
+        ImportType.package => Package(name: statement.package),
+      };
       return [
         for (var element in library.element.exportNamespace.definedNames.values)
           if (element is InterfaceElement)
-            Type(
-              name: element.name,
-              package: uri,
-              parameters: [
-                for (final supertype in element.typeParameters)
-                  Type(
-                    name: supertype.name,
-                    package: 'LOCAL',
-                    parameters: [],
-                  )
-              ],
-            ),
+            if (element.typeParameters case List(isEmpty: false) && final typeParameters)
+              PolymorphicType(
+                name: element.name,
+                source: source,
+                arguments: [
+                  for (final typeParameter in typeParameters) //
+                    TypeParameterType(name: typeParameter.name),
+                ],
+              )
+            else
+              MonomorphicType(
+                name: element.name,
+                source: source,
+              ),
       ];
     } else {
       throw 'Heheheh';

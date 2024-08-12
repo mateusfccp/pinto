@@ -1,6 +1,8 @@
-type Option(T) = Some(T value) + None
+import @async
+import @collection
 
-// [T] or List(T) => type of List<T>
-// {T} or Set(T)  => type of Set<T>
-// {K: V} or Map(K, V) => type of Map<K, V>
-// (A)
+type B(A, A) = B(A value)
+
+// type List(T) = Cons(T head, List tail) + Nil
+
+// type Option(T) = Some(T value) + None

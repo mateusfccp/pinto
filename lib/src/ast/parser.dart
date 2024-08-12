@@ -31,18 +31,52 @@ final class Parser {
 
   Program parse() {
     final imports = <ImportStatement>[];
-    while (_match(TokenType.importKeyword)) {
-      imports.add(_import());
-    }
-
     final body = <Statement>[];
-    while (_match(TokenType.typeKeyword)) {
-      body.add(_typeDefinition());
-    }
 
-    assert(_isAtEnd);
+    while (_isNotAtEnd) {
+      try {
+        if (body.isEmpty) {
+          if (_match(TokenType.importKeyword)) {
+            imports.add(_import());
+            continue;
+          }
+        }
+
+        _consume(
+          TokenType.typeKeyword,
+          ExpectAfterError(
+            token: _peek,
+            expectation: ExpectationType.oneOf(
+              expectations: [
+                if (body.isEmpty) ExpectationType.token(token: TokenType.importKeyword),
+                ExpectationType.token(token: TokenType.typeKeyword),
+              ],
+            ),
+            after: body.isEmpty //
+                ? ExpectationType.token(token: TokenType.identifier)
+                : ExpectationType.statement(statement: body[body.length - 1]),
+          ),
+        );
+        
+        body.add(_typeDefinition());
+      } on ParseError {
+        _synchronize();
+      }
+    }
 
     return Program(imports, body);
+  }
+
+  void _synchronize() {
+    _advance();
+    while (_isNotAtEnd) {
+      switch (_peek.type) {
+        case TokenType.importKeyword || TokenType.typeKeyword:
+          return;
+        default:
+          _advance();
+      }
+    }
   }
 
   bool _match(TokenType type1, [TokenType? type2, TokenType? type3, TokenType? type4]) {
@@ -100,25 +134,6 @@ final class Parser {
         ),
       ),
     );
-  }
-
-  void _synchronize() {
-    _advance();
-    while (_isNotAtEnd) {
-      if (_previous.type == TokenType.semicolon) {
-        return;
-      } else {
-        switch (_peek.type) {
-          case TokenType.classKeyword:
-          case TokenType.forKeyword:
-          case TokenType.ifKeyword:
-          case TokenType.whileKeyword:
-            return;
-          default:
-            _advance();
-        }
-      }
-    }
   }
 
   Statement? _declaration() {

@@ -21,7 +21,6 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
 
   ClassBuilder? _currentClass;
   List<Type>? _currentDefinitionTypes;
-  List<Type>? _currentVariantTypes;
   final _context = DoubleLinkedQueue<Object?>();
 
   Object? get _currentContext => _context.last;
@@ -60,6 +59,7 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
 
   @override
   void visitProgram(Program program) {
+    print('Visiting program with ${program.imports.length} imports and ${program.body.length} statements.');
     for (final import in program.imports) {
       import.accept(this);
     }
@@ -113,31 +113,8 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
     if (_currentContext is TypeDefinitionStatement) {
       class$.addParameter(type);
     } else if (_currentContext is TypeVariantNode) {
-      if (type.package == 'LOCAL') {
+      if (type is TypeParameterType) {
         class$.addParameter(type);
-      }
-
-      if (_currentDefinitionTypes case final definitionTypes?) {
-        final definition = _context.lastEntry()!.previousEntry()?.element as TypeDefinitionStatement;
-        final shouldStreamline = definition.variants.length == 1;
-
-        if (!shouldStreamline) {
-          final typeParameters = _typeParametersFromTypeList(_currentVariantTypes!);
-          
-          for (final type in definitionTypes) {
-            final String parameter;
-
-            if (typeParameters.contains(type)) {
-              // TODO(mateusfccp): Refactor this out
-              final parametersString = type.parameters.isEmpty ? '' : '<${type.parameters.map((parameter) => parameter.name).join(', ')}>';
-              parameter = '${type.name}$parametersString';
-            } else {
-              parameter = 'Never';
-            }
-
-            class$.addParameterToSupertype(definition.name.lexeme, parameter);
-          }
-        }
       }
     }
   }
@@ -159,6 +136,8 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
   void visitTypeVariantNode(TypeVariantNode node) {
     assert(_currentContext is TypeDefinitionStatement);
 
+    final typeDefinitionStatement = _currentContext as TypeDefinitionStatement;
+
     _context.addLast(node);
 
     final variantClass = ClassBuilder(
@@ -167,15 +146,36 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
     )..final$ = true;
 
     _pushClass(variantClass);
-    _currentVariantTypes = [
-      for (final parameter in node.parameters) resolver.annotations[parameter.type]!,
-    ];
 
     for (final parameter in node.parameters) {
       parameter.accept(this);
     }
 
-    _currentVariantTypes = null;
+    if (_currentDefinitionTypes case final definitionTypes?) {
+      // If there's a single definition, it's going to be streamlined
+      if (typeDefinitionStatement.variants.length > 1) {
+        final currentVariantTypes = [
+          for (final parameter in node.parameters) resolver.annotations[parameter.type]!,
+        ];
+
+        final typeParameters = _typeParametersFromTypeList(currentVariantTypes);
+
+        for (final type in definitionTypes) {
+          if (typeParameters.contains(type)) {
+            variantClass.addParameterToSupertype(
+              typeDefinitionStatement.name.lexeme,
+              type,
+            );
+          } else {
+            variantClass.addParameterToSupertype(
+              typeDefinitionStatement.name.lexeme,
+              const BottomType(),
+            );
+          }
+        }
+      }
+    }
+
     _popClass();
     _context.removeLast();
   }
@@ -194,12 +194,14 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
 List<Type> _typeParametersFromTypeList(List<Type> list) {
   final parameters = {
     for (final type in list) ...[
-      if (type.package == 'LOCAL') type,
-      ..._typeParametersFromTypeList(type.parameters),
+      if (type is TypeParameterType) //
+        type
+      else if (type is PolymorphicType)
+        ..._typeParametersFromTypeList(type.arguments),
     ]
   };
 
-  assert(parameters.every((parameter) => parameter.package == 'LOCAL'));
+  assert(parameters.every((parameter) => parameter is TypeParameterType));
 
   return parameters.toList();
 }

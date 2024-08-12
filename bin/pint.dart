@@ -98,15 +98,21 @@ Future<PintoError?> run(String source) async {
 
     final errorMessage = switch (error) {
       // Parse errors
-      ExpectError(:final expectation) => "Expected to find '$expectation'.",
-      ExpectAfterError(:final token, :final expectation, :final after) => "Expected to find '$expectation' after $after. Found '${token.lexeme}'.",
-      ExpectBeforeError(:final expectation, :final before) => "Expected to find '$expectation' before $before.",
+      ExpectError(:final expectation) => "Expected to find $expectation.",
+      ExpectAfterError(:final token, :final expectation, :final after) => "Expected to find $expectation after $after. Found '${token.lexeme}'.",
+      ExpectBeforeError(:final expectation, :final before) => "Expected to find $expectation before $before.",
       ParametersLimitError() => "A function/method can't have more than 255 parameters.",
       ArgumentsLimitError() => "A function/method call can't have more than 255 arguments.",
       InvalidAssignmentTargetError() => 'Invalid assignment target.',
       // Resolve errors
       ClassInheritsFromItselfError() => "A class can't inherit from itself.",
       NoSymbolInScopeError(:final token) => "The symbol ${token.lexeme} was not found in the scope.",
+      WrongNumberOfArgumentsError(:final token, argumentsCount: 1, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but 1 argument was provided.",
+      WrongNumberOfArgumentsError(:final token, :final argumentsCount, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but $argumentsCount arguments were provided.",
+      WrongNumberOfArgumentsError(:final token, argumentsCount: 0, :final expectedArgumentsCount) => "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but none was provided.",
+      WrongNumberOfArgumentsError(:final token, argumentsCount: 1, :final expectedArgumentsCount) => "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but 1 was provided.",
+      WrongNumberOfArgumentsError(:final token, :final argumentsCount, :final expectedArgumentsCount) =>
+        "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but $argumentsCount were provided.",
       // ClassInitializerReturnsValueError(:final value) => "A class initializer can't return a value. Tried to return the expression '$value'.",
       SuperUsedInAClassWithoutSuperclassError() => "The keyword 'super' can't be used in a class with no superclass.",
       SuperUsedOutsideOfClassError() => "The keyword 'super' can't be used outside of a class.",
@@ -144,10 +150,6 @@ Future<PintoError?> run(String source) async {
 
   final program = parser.parse();
 
-  if (errorHandler.hasError) {
-    return errorHandler.lastError;
-  }
-
   final resolver = Resolver(
     program: program,
     symbolsResolver: SymbolsResolver(
@@ -158,16 +160,14 @@ Future<PintoError?> run(String source) async {
 
   await resolver.resolve();
 
+  if (errorHandler.hasError) {
+    return errorHandler.lastError;
+  }
+
   final buffer = StringBuffer();
   final visitor = Transpiler(resolver: resolver);
 
-  for (final statement in program.imports) {
-    statement.accept(visitor);
-  }
-
-  for (final statement in program.body) {
-    statement.accept(visitor);
-  }
+  visitor.visitProgram(program);
 
   visitor.writeToSink(buffer);
 

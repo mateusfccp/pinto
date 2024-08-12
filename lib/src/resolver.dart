@@ -32,7 +32,11 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
 
   @override
   Future<void> visitTypeLiteral(TypeLiteral typeLiteral) async {
-    annotations[typeLiteral] = _resolveType(typeLiteral);
+    try {
+      annotations[typeLiteral] = _resolveType(typeLiteral);
+    } on ResolveError catch (error) {
+      _errorHandler?.emit(error);
+    }
   }
 
   @override
@@ -63,15 +67,29 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
   Future<void> visitTypeDefinitionStatement(TypeDefinitionStatement statement) async {
     final environment = _environment;
 
+    final source = Package(name: 'LOCAL');
+
+    final definitionType = switch (statement.typeParameters) {
+      null || [] => MonomorphicType(
+          name: statement.name.lexeme,
+          source: source,
+        ),
+      final elements => PolymorphicType(
+          name: statement.name.lexeme,
+          source: source,
+          arguments: [
+            for (final element in elements) TypeParameterType(name: element.identifier.lexeme),
+          ],
+        ),
+    };
+
+    _environment.defineType(definitionType);
+
     _environment = _environment.fork();
 
     if (statement.typeParameters case final typeParameters?) {
       for (final typeParameter in typeParameters) {
-        final type = Type(
-          name: typeParameter.identifier.lexeme,
-          package: 'LOCAL',
-          parameters: [], // TODO(mateusfccp): Refactor local type resolution
-        );
+        final type = TypeParameterType(name: typeParameter.identifier.lexeme);
 
         _environment.defineType(type);
         typeParameter.accept(this);
@@ -98,71 +116,85 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
   }
 
   Type _resolveType(TypeLiteral literal) {
-    final Type? resolvedType;
-
     switch (literal) {
       case TopTypeLiteral():
-        resolvedType = Type(
-          name: 'Object?',
-          package: 'dart:core',
-          parameters: [],
-        ); // TODO(mateusfccp): will nullable work?
+        return const TopType();
       case BottomTypeLiteral():
-        resolvedType = Type(
-          name: 'Never',
-          package: 'dart:core',
-          parameters: [],
-        );
+        return const BottomType();
       case ListTypeLiteral():
-        resolvedType = Type(
+        return PolymorphicType(
           name: 'List',
-          package: 'dart:core',
-          parameters: [_resolveType(literal.literal)],
+          source: DartCore(name: 'core'),
+          arguments: [_resolveType(literal.literal)],
         );
       case SetTypeLiteral():
-        resolvedType = Type(
+        return PolymorphicType(
           name: 'Set',
-          package: 'dart:core',
-          parameters: [_resolveType(literal.literal)],
+          source: DartCore(name: 'core'),
+          arguments: [_resolveType(literal.literal)],
         );
       case MapTypeLiteral():
-        resolvedType = Type(
+        return PolymorphicType(
           name: 'Map',
-          package: 'dart:core',
-          parameters: [
+          source: DartCore(name: 'core'),
+          arguments: [
             _resolveType(literal.keyLiteral),
             _resolveType(literal.valueLiteral),
           ],
         );
       case ParameterizedTypeLiteral literal:
-        final baseLiteral = _resolveType(literal.literal);
+        final baseType = _environment.getType(literal.literal.identifier.lexeme);
 
-        resolvedType = Type(
-          name: baseLiteral.name,
-          package: baseLiteral.package,
-          parameters: [
+        if (baseType == null) {
+          throw NoSymbolInScopeError(literal.literal.identifier);
+        } else if (baseType is PolymorphicType) {
+          final arguments = [
             for (final parameter in literal.parameters) _resolveType(parameter),
-          ],
-        );
+          ];
+
+          if (arguments.length != baseType.arguments.length) {
+            throw WrongNumberOfArgumentsError(
+              token: literal.literal.identifier,
+              argumentsCount: arguments.length,
+              expectedArgumentsCount: baseType.arguments.length,
+            );
+          }
+
+          return PolymorphicType(
+            name: baseType.name,
+            source: baseType.source,
+            arguments: arguments,
+          );
+        } else {
+          throw WrongNumberOfArgumentsError(
+            token: literal.literal.identifier,
+            argumentsCount: literal.parameters.length,
+            expectedArgumentsCount: 0,
+          );
+        }
       case NamedTypeLiteral literal:
-        resolvedType = _environment.getType(literal.identifier.lexeme);
+        final type = _environment.getType(literal.identifier.lexeme);
+
+        if (type == null) {
+          throw NoSymbolInScopeError(literal.identifier);
+        } else if (type is PolymorphicType) {
+          throw WrongNumberOfArgumentsError(
+            token: literal.identifier,
+            argumentsCount: 0,
+            expectedArgumentsCount: type.arguments.length,
+          );
+        } else {
+          return type;
+        }
       case OptionTypeLiteral literal:
         final innerType = _resolveType(literal.literal);
-        resolvedType = Type(
-          name: '${innerType.name}?',
-          package: innerType.package,
-          parameters: [],
+
+        return PolymorphicType(
+          // TODO(mateusfccp): fix this
+          name: '?',
+          source: DartCore(name: 'core'),
+          arguments: [innerType],
         );
-    }
-
-    if (resolvedType == null) {
-      throw 'Resolve error with type';
-      // final error = NoSymbolInScopeError(literal); // TODO(mateusfccp): use proper error
-      // _errorHandler?.emit(error);
-
-      // throw error; // TODO(mateusfccp): Should we have a synchronization here too?
-    } else {
-      return resolvedType;
     }
   }
 }
