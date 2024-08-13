@@ -151,7 +151,7 @@ Future<PintoError?> run(String source) async {
   }
 
   final buffer = StringBuffer();
-  final visitor = Transpiler(resolver: resolver);
+  final visitor = Compiler(resolver: resolver);
 
   visitor.visitProgram(program);
 

@@ -20,7 +20,9 @@ mixin _$ScanLocation {
   int get line => throw _privateConstructorUsedError;
   int get column => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ScanLocation
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ScanLocationCopyWith<ScanLocation> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -44,6 +46,8 @@ class _$ScanLocationCopyWithImpl<$Res, $Val extends ScanLocation>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ScanLocation
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -87,6 +91,8 @@ class __$$ScanLocationImplCopyWithImpl<$Res>
       _$ScanLocationImpl _value, $Res Function(_$ScanLocationImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ScanLocation
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -142,7 +148,9 @@ class _$ScanLocationImpl implements _ScanLocation {
   @override
   int get hashCode => Object.hash(runtimeType, offset, line, column);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ScanLocation
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ScanLocationImplCopyWith<_$ScanLocationImpl> get copyWith =>
@@ -161,8 +169,11 @@ abstract class _ScanLocation implements ScanLocation {
   int get line;
   @override
   int get column;
+
+  /// Create a copy of ScanLocation
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ScanLocationImplCopyWith<_$ScanLocationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -172,7 +183,9 @@ mixin _$ExpectError {
   Token get token => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ExpectErrorCopyWith<ExpectError> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -198,6 +211,8 @@ class _$ExpectErrorCopyWithImpl<$Res, $Val extends ExpectError>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ExpectError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -216,6 +231,8 @@ class _$ExpectErrorCopyWithImpl<$Res, $Val extends ExpectError>
     ) as $Val);
   }
 
+  /// Create a copy of ExpectError
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ExpectationTypeCopyWith<$Res> get expectation {
@@ -247,6 +264,8 @@ class __$$ExpectErrorImplCopyWithImpl<$Res>
       _$ExpectErrorImpl _value, $Res Function(_$ExpectErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ExpectError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -294,7 +313,9 @@ class _$ExpectErrorImpl implements _ExpectError {
   @override
   int get hashCode => Object.hash(runtimeType, token, expectation);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ExpectErrorImplCopyWith<_$ExpectErrorImpl> get copyWith =>
@@ -310,8 +331,11 @@ abstract class _ExpectError implements ExpectError {
   Token get token;
   @override
   ExpectationType get expectation;
+
+  /// Create a copy of ExpectError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExpectErrorImplCopyWith<_$ExpectErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -322,7 +346,9 @@ mixin _$ExpectAfterError {
   ExpectationType get expectation => throw _privateConstructorUsedError;
   ExpectationType get after => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ExpectAfterErrorCopyWith<ExpectAfterError> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -349,6 +375,8 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -372,6 +400,8 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
     ) as $Val);
   }
 
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ExpectationTypeCopyWith<$Res> get expectation {
@@ -380,6 +410,8 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
     });
   }
 
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ExpectationTypeCopyWith<$Res> get after {
@@ -413,6 +445,8 @@ class __$$ExpectAfterErrorImplCopyWithImpl<$Res>
       $Res Function(_$ExpectAfterErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -469,7 +503,9 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
   @override
   int get hashCode => Object.hash(runtimeType, token, expectation, after);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ExpectAfterErrorImplCopyWith<_$ExpectAfterErrorImpl> get copyWith =>
@@ -489,8 +525,11 @@ abstract class _ExpectAfterError implements ExpectAfterError {
   ExpectationType get expectation;
   @override
   ExpectationType get after;
+
+  /// Create a copy of ExpectAfterError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExpectAfterErrorImplCopyWith<_$ExpectAfterErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -501,7 +540,9 @@ mixin _$ExpectBeforeError {
   ExpectationType get expectation => throw _privateConstructorUsedError;
   ExpectationType get before => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ExpectBeforeErrorCopyWith<ExpectBeforeError> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -528,6 +569,8 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -551,6 +594,8 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
     ) as $Val);
   }
 
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ExpectationTypeCopyWith<$Res> get expectation {
@@ -559,6 +604,8 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
     });
   }
 
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ExpectationTypeCopyWith<$Res> get before {
@@ -592,6 +639,8 @@ class __$$ExpectBeforeErrorImplCopyWithImpl<$Res>
       $Res Function(_$ExpectBeforeErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -648,7 +697,9 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
   @override
   int get hashCode => Object.hash(runtimeType, token, expectation, before);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ExpectBeforeErrorImplCopyWith<_$ExpectBeforeErrorImpl> get copyWith =>
@@ -668,8 +719,11 @@ abstract class _ExpectBeforeError implements ExpectBeforeError {
   ExpectationType get expectation;
   @override
   ExpectationType get before;
+
+  /// Create a copy of ExpectBeforeError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExpectBeforeErrorImplCopyWith<_$ExpectBeforeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -727,7 +781,9 @@ mixin _$ExpectationType {
   }) =>
       throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ExpectationTypeCopyWith<ExpectationType> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -751,6 +807,8 @@ class _$ExpectationTypeCopyWithImpl<$Res, $Val extends ExpectationType>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -784,6 +842,8 @@ class __$$OneOfExpectationImplCopyWithImpl<$Res>
       $Res Function(_$OneOfExpectationImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -837,7 +897,9 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   int get hashCode => Object.hash(runtimeType,
       const DeepCollectionEquality().hash(_expectations), description);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OneOfExpectationImplCopyWith<_$OneOfExpectationImpl> get copyWith =>
@@ -927,8 +989,11 @@ abstract class OneOfExpectation extends ExpectationType {
   List<ExpectationType> get expectations;
   @override
   String? get description;
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OneOfExpectationImplCopyWith<_$OneOfExpectationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -952,6 +1017,8 @@ class __$$StatementExpectationImplCopyWithImpl<$Res>
       $Res Function(_$StatementExpectationImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -996,7 +1063,9 @@ class _$StatementExpectationImpl extends StatementExpectation {
   @override
   int get hashCode => Object.hash(runtimeType, statement, description);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$StatementExpectationImplCopyWith<_$StatementExpectationImpl>
@@ -1087,8 +1156,11 @@ abstract class StatementExpectation extends ExpectationType {
   Statement get statement;
   @override
   String? get description;
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$StatementExpectationImplCopyWith<_$StatementExpectationImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -1112,6 +1184,8 @@ class __$$TokenExpectationImplCopyWithImpl<$Res>
       $Res Function(_$TokenExpectationImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1155,7 +1229,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   int get hashCode => Object.hash(runtimeType, token, description);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$TokenExpectationImplCopyWith<_$TokenExpectationImpl> get copyWith =>
@@ -1245,8 +1321,11 @@ abstract class TokenExpectation extends ExpectationType {
   TokenType get token;
   @override
   String? get description;
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$TokenExpectationImplCopyWith<_$TokenExpectationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

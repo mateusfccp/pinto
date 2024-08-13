@@ -7,8 +7,8 @@ import 'package:pinto/semantic.dart';
 
 import 'class_builder.dart';
 
-final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<void> {
-  Transpiler({required this.resolver});
+final class Compiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<void> {
+  Compiler({required this.resolver});
 
   final Resolver resolver;
 
@@ -66,8 +66,8 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
     _context.addLast(statement);
     _currentDefinitionTypes = [];
 
-    if (statement.variants case [final definition]) {
-      definition.accept(this);
+    if (statement.variants case [final variant]) {
+      variant.accept(this);
     } else {
       final topClass = ClassBuilder(name: statement.name.lexeme);
 
@@ -86,8 +86,8 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
 
       _popClass();
 
-      for (final definition in statement.variants) {
-        definition.accept(this);
+      for (final variant in statement.variants) {
+        variant.accept(this);
       }
     }
 
@@ -98,14 +98,14 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
   @override
   void visitTypeLiteral(TypeLiteral typeLiteral) {
     assert(_currentClass != null);
-    final class$ = _currentClass!;
 
+    final class$ = _currentClass!;
     final type = resolver.annotations[typeLiteral]!;
 
     if (_currentContext is TypeDefinitionStatement) {
       class$.addParameter(type);
     } else if (_currentContext is TypeVariantNode) {
-      if (type is TypeParameterType) {
+      for (final type in _typeParametersFromType(type)) {
         class$.addParameter(type);
       }
     }
@@ -116,12 +116,10 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
     assert(_currentContext is TypeVariantNode);
     assert(_currentClass != null);
 
-    final class$ = _currentClass!;
-
     node.type.accept(this);
 
     final type = resolver.annotations[node.type]!;
-    class$.addField(type, node);
+    _currentClass!.addField(type, node);
   }
 
   @override
@@ -183,17 +181,14 @@ final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisito
   }
 }
 
-List<Type> _typeParametersFromTypeList(List<Type> list) {
+List<TypeParameterType> _typeParametersFromType(Type type) {
+  return switch (type) { TopType() || MonomorphicType() || BottomType() => const [], PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments), TypeParameterType() => [type] };
+}
+
+List<TypeParameterType> _typeParametersFromTypeList(List<Type> list) {
   final parameters = {
-    for (final type in list) ...[
-      if (type is TypeParameterType) //
-        type
-      else if (type is PolymorphicType)
-        ..._typeParametersFromTypeList(type.arguments),
-    ]
+    for (final type in list) ..._typeParametersFromType(type),
   };
 
-  assert(parameters.every((parameter) => parameter is TypeParameterType));
-
-  return parameters.toList();
+  return [...parameters];
 }
