@@ -3,42 +3,37 @@ import 'dart:io';
 
 import 'package:chalkdart/chalkstrings.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:pint/pint.dart';
 import 'package:exitcode/exitcode.dart';
-import 'package:pint/src/resolver.dart';
-import 'package:pint/src/symbols_resolver.dart';
-import 'package:pint/src/transpiler.dart';
-import 'package:quiver/strings.dart';
+import 'package:pinto/ast.dart';
+import 'package:pinto/compiler.dart';
+import 'package:pinto/error.dart';
+import 'package:pinto/semantic.dart';
 
 Future<void> main(List<String> args) async {
-  if (args.length > 1) {
-    stderr.writeln('Usage: dlox [script]');
-    exit(usage);
-  } else if (args.length == 1) {
+  if (args.length == 1) {
     await runFile(args.single);
   } else {
-    runPrompt();
+    stderr.writeln('Usage: pinto [script]');
+    exit(usage);
   }
 }
 
 Future<void> runFile(String path) async {
-  final fileString = File(path).readAsStringSync();
-  final error = await run(fileString);
+  final file = File(path);
 
-  switch (error) {
-    case PintoError():
-      exit(dataerr);
-    case null:
-      break;
-  }
-}
+  if (await file.exists()) {
+    final fileString = file.readAsStringSync();
+    final error = await run(fileString);
 
-void runPrompt() {
-  for (;;) {
-    stdout.write('› ');
-    final line = stdin.readLineSync();
-    if (line == null || isBlank(line)) break;
-    run(line);
+    switch (error) {
+      case PintoError():
+        exit(dataerr);
+      case null:
+        break;
+    }
+  } else {
+    stderr.writeln('The informed file $path does not exist.');
+    exit(noinput);
   }
 }
 
@@ -101,11 +96,8 @@ Future<PintoError?> run(String source) async {
       ExpectError(:final expectation) => "Expected to find $expectation.",
       ExpectAfterError(:final token, :final expectation, :final after) => "Expected to find $expectation after $after. Found '${token.lexeme}'.",
       ExpectBeforeError(:final expectation, :final before) => "Expected to find $expectation before $before.",
-      ParametersLimitError() => "A function/method can't have more than 255 parameters.",
-      ArgumentsLimitError() => "A function/method call can't have more than 255 arguments.",
-      InvalidAssignmentTargetError() => 'Invalid assignment target.',
+
       // Resolve errors
-      ClassInheritsFromItselfError() => "A class can't inherit from itself.",
       NoSymbolInScopeError(:final token) => "The symbol ${token.lexeme} was not found in the scope.",
       TypeAlreadyDefinedError(:final token) => "The type parameter '${token.lexeme}' is already defined for this type. Try removing it or changing it's name.",
       WrongNumberOfArgumentsError(:final token, argumentsCount: 1, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but 1 argument was provided.",
@@ -114,16 +106,9 @@ Future<PintoError?> run(String source) async {
       WrongNumberOfArgumentsError(:final token, argumentsCount: 1, :final expectedArgumentsCount) => "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but 1 was provided.",
       WrongNumberOfArgumentsError(:final token, :final argumentsCount, :final expectedArgumentsCount) =>
         "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but $argumentsCount were provided.",
-      // ClassInitializerReturnsValueError(:final value) => "A class initializer can't return a value. Tried to return the expression '$value'.",
-      SuperUsedInAClassWithoutSuperclassError() => "The keyword 'super' can't be used in a class with no superclass.",
-      SuperUsedOutsideOfClassError() => "The keyword 'super' can't be used outside of a class.",
-      ThisUsedOutsideOfClassError() => "The keyword 'this' can't be used outside of a class.",
-      VariableAlreadyInScopeError(:final token) => "There's already a variable named `${token.lexeme}` in this scope.",
-      VariableInitializerReadsItselfError() => "A local variable can't read itself in its own initializer.",
-      ReturnUsedOnTopLevelError() => "The 'return' keyword can't be used in top-level code. It should be within a function or method.",
+
       // Scan errors
       UnexpectedCharacterError() => "Unexpected character '${error.character}'.",
-      UnterminatedStringError() => 'Unexpected string termination.',
     };
 
     final lineHint = switch (error) {

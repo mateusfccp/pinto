@@ -1,4 +1,4 @@
-import '../import.dart';
+import 'import.dart';
 import 'node.dart';
 import 'token.dart';
 import 'type_literal.dart';

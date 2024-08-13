@@ -2,17 +2,10 @@ import 'dart:collection';
 
 import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart' hide ClassBuilder;
+import 'package:pinto/ast.dart';
+import 'package:pinto/semantic.dart';
 
-import 'ast/ast.dart';
-import 'ast/default_type_literal_visitor.dart';
-import 'ast/node.dart';
-import 'ast/program.dart';
-import 'ast/statement.dart';
-import 'ast/type_literal.dart';
 import 'class_builder.dart';
-import 'import.dart';
-import 'resolver.dart';
-import 'type.dart';
 
 final class Transpiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<void> {
   Transpiler({required this.resolver});

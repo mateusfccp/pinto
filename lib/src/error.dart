@@ -2,7 +2,6 @@ import 'dart:collection';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-// import 'expression.dart';
 import 'ast/statement.dart';
 import 'ast/token.dart';
 
@@ -26,13 +25,6 @@ final class UnexpectedCharacterError implements ScanError {
   final ScanLocation location;
 
   final String character;
-}
-
-final class UnterminatedStringError implements ScanError {
-  const UnterminatedStringError({required this.location});
-
-  @override
-  final ScanLocation location;
 }
 
 /// A location while the program is being scanned.
@@ -80,11 +72,6 @@ sealed class ExpectBeforeError with _$ExpectBeforeError implements ParseError {
 sealed class ExpectationType with _$ExpectationType {
   const ExpectationType._();
 
-  // const factory ExpectationType.expression({
-  //   Expression? expression,
-  //   String? description,
-  // }) = ExpressionExpectation;
-
   const factory ExpectationType.oneOf({
     required List<ExpectationType> expectations,
     String? description,
@@ -112,77 +99,10 @@ sealed class ExpectationType with _$ExpectationType {
   }
 }
 
-final class ParametersLimitError implements ParseError {
-  const ParametersLimitError({required this.token});
-
-  @override
-  final Token token;
-
-  @override
-  bool operator ==(Object other) {
-    return other is ParametersLimitError && //
-        token == other.token;
-  }
-
-  @override
-  int get hashCode => token.hashCode;
-}
-
-final class ArgumentsLimitError implements ParseError {
-  const ArgumentsLimitError({required this.token});
-
-  @override
-  final Token token;
-
-  @override
-  bool operator ==(Object other) {
-    return other is ArgumentsLimitError && //
-        token == other.token;
-  }
-
-  @override
-  int get hashCode => token.hashCode;
-}
-
-final class InvalidAssignmentTargetError implements ParseError {
-  const InvalidAssignmentTargetError({required this.token});
-
-  @override
-  final Token token;
-
-  @override
-  bool operator ==(Object other) {
-    return other is InvalidAssignmentTargetError && //
-        token == other.token;
-  }
-
-  @override
-  int get hashCode => token.hashCode;
-}
-
 /// An error that happened while the program was being resolved.
 sealed class ResolveError implements PintoError {
   Token get token;
 }
-
-final class ClassInheritsFromItselfError implements ResolveError {
-  const ClassInheritsFromItselfError(this.token);
-
-  @override
-  final Token token;
-}
-
-// final class ClassInitializerReturnsValueError implements ResolveError {
-//   const ClassInitializerReturnsValueError({
-//     required this.token,
-//     required this.value,
-//   });
-
-//   @override
-//   final Token token;
-
-//   final Expression value;
-// }
 
 final class NoSymbolInScopeError implements ResolveError {
   const NoSymbolInScopeError(this.token);
@@ -193,48 +113,6 @@ final class NoSymbolInScopeError implements ResolveError {
 
 final class TypeAlreadyDefinedError implements ResolveError {
   const TypeAlreadyDefinedError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class VariableAlreadyInScopeError implements ResolveError {
-  const VariableAlreadyInScopeError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class VariableInitializerReadsItselfError implements ResolveError {
-  const VariableInitializerReadsItselfError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class ReturnUsedOnTopLevelError implements ResolveError {
-  const ReturnUsedOnTopLevelError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class SuperUsedInAClassWithoutSuperclassError implements ResolveError {
-  const SuperUsedInAClassWithoutSuperclassError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class SuperUsedOutsideOfClassError implements ResolveError {
-  const SuperUsedOutsideOfClassError(this.token);
-
-  @override
-  final Token token;
-}
-
-final class ThisUsedOutsideOfClassError implements ResolveError {
-  const ThisUsedOutsideOfClassError(this.token);
 
   @override
   final Token token;

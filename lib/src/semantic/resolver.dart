@@ -1,14 +1,7 @@
-import 'package:pint/src/ast/default_type_literal_visitor.dart';
+import 'package:pinto/ast.dart';
+import 'package:pinto/error.dart';
 
-import 'ast/ast.dart';
-
-import 'ast/node.dart';
-import 'ast/program.dart';
-import 'ast/statement.dart';
-import 'ast/type_literal.dart';
 import 'environment.dart';
-import 'error.dart';
-import 'import.dart';
 import 'symbols_resolver.dart';
 import 'type.dart';
 
@@ -67,7 +60,7 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
   Future<void> visitTypeDefinitionStatement(TypeDefinitionStatement statement) async {
     final environment = _environment;
 
-    final source = Package(name: 'LOCAL');
+    final source = ExternalPackage(name: 'LOCAL');
 
     final definitionType = switch (statement.typeParameters) {
       null || [] => MonomorphicType(
@@ -133,19 +126,19 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
       case ListTypeLiteral():
         return PolymorphicType(
           name: 'List',
-          source: DartCore(name: 'core'),
+          source: DartSdkPackage(name: 'core'),
           arguments: [_resolveType(literal.literal)],
         );
       case SetTypeLiteral():
         return PolymorphicType(
           name: 'Set',
-          source: DartCore(name: 'core'),
+          source: DartSdkPackage(name: 'core'),
           arguments: [_resolveType(literal.literal)],
         );
       case MapTypeLiteral():
         return PolymorphicType(
           name: 'Map',
-          source: DartCore(name: 'core'),
+          source: DartSdkPackage(name: 'core'),
           arguments: [
             _resolveType(literal.keyLiteral),
             _resolveType(literal.valueLiteral),
@@ -201,7 +194,7 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
         return PolymorphicType(
           // TODO(mateusfccp): fix this
           name: '?',
-          source: DartCore(name: 'core'),
+          source: DartSdkPackage(name: 'core'),
           arguments: [innerType],
         );
     }

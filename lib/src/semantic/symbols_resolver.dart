@@ -7,9 +7,8 @@ import 'package:analyzer/src/context/packages.dart' hide Package;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/src/dart/sdk/sdk.dart';
+import 'package:pinto/ast.dart';
 
-import 'ast/statement.dart';
-import 'import.dart';
 import 'type.dart';
 
 final class SymbolsResolver {
@@ -63,8 +62,8 @@ final class SymbolsResolver {
 
     if (library is ResolvedLibraryResult) {
       final source = switch (statement.type) {
-        ImportType.dart => DartCore(name: statement.package),
-        ImportType.package => Package(name: statement.package),
+        ImportType.dart => DartSdkPackage(name: statement.package),
+        ImportType.package => ExternalPackage(name: statement.package),
       };
       return [
         for (var element in library.element.exportNamespace.definedNames.values)

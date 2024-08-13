@@ -1,4 +1,4 @@
-import 'package:pint/src/class_builder.dart';
+import 'package:pinto/compiler.dart';
 
 import 'type.dart';
 

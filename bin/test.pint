@@ -1,8 +1,0 @@
-import @async
-import @collection
-
-type B(A, A) = B(A value)
-
-// type List(T) = Cons(T head, List tail) + Nil
-
-// type Option(T) = Some(T value) + None

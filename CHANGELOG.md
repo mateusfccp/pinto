@@ -1,9 +1,4 @@
-## 1.0.0
-
-- Finish implementaion of base Lox
-- Provide documentation
-- Improve general API
-
 ## 0.0.1
 
-- Expression parsing and evaluation
+- Basic resolver and parser
+- Basic binary that vomits the compiled file into stdout

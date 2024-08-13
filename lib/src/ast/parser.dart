@@ -1,11 +1,11 @@
+import 'package:pinto/error.dart';
+
+import 'import.dart';
 import 'node.dart';
 import 'program.dart';
 import 'statement.dart';
 import 'token.dart';
 import 'type_literal.dart';
-
-import '../error.dart';
-import '../import.dart';
 
 /// A Lox parser.
 final class Parser {
@@ -136,29 +136,6 @@ final class Parser {
     );
   }
 
-  Statement? _declaration() {
-    try {
-      if (_match(TokenType.importKeyword)) {
-        return _import();
-      } else {
-        return _typeDefinition();
-      }
-
-      // if (_match(TokenType.classKeyword)) {
-      //   return _class();
-      // } else if (_match(TokenType.funKeyword)) {
-      //   return _function(RoutineType.function);
-      // } else if (_match(TokenType.varKeyword)) {
-      //   return _variableDeclaration();
-      // } else {
-      //   return _statement();
-      // }
-    } on ParseError {
-      _synchronize();
-      return null;
-    }
-  }
-
   ImportStatement _import() {
     final ImportType type;
 
@@ -238,7 +215,7 @@ final class Parser {
     }
 
     _consumeAfter(
-      type: TokenType.equal,
+      type: TokenType.equalitySign,
       after: TokenType.identifier,
       description: 'type name',
     );
@@ -247,7 +224,7 @@ final class Parser {
       _typeVariant(true),
     ];
 
-    while (_match(TokenType.plus)) {
+    while (_match(TokenType.plusSign)) {
       variants.add(_typeVariant(false));
     }
 
@@ -262,8 +239,8 @@ final class Parser {
     final name = _consumeAfter(
       type: TokenType.identifier,
       after: isFirstDefinition //
-          ? TokenType.equal
-          : TokenType.plus,
+          ? TokenType.equalitySign
+          : TokenType.plusSign,
     );
 
     final parameters = <TypeVariantParameterNode>[];
@@ -302,9 +279,9 @@ final class Parser {
   }
 
   TypeLiteral _typeLiteral() {
-    if (_match(TokenType.topTypeSymbol)) {
+    if (_match(TokenType.verum)) {
       return TopTypeLiteral();
-    } else if (_match(TokenType.bottomTypeSymbol)) {
+    } else if (_match(TokenType.falsum)) {
       return BottomTypeLiteral();
     } else if (_match(TokenType.leftBracket)) {
       final literal = _typeLiteral();
@@ -352,7 +329,7 @@ final class Parser {
         literal = innerLiteral;
       }
 
-      if (_match(TokenType.questionMark)) {
+      if (_match(TokenType.eroteme)) {
         return OptionTypeLiteral(literal);
       } else {
         return literal;

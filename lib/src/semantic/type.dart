@@ -1,72 +1,39 @@
-// final class Type {
-//   const Type({
-//     required this.name,
-//     this.package,
-//     required this.parameters,
-//   });
-
-//   final String name;
-
-//   final String? package;
-
-//   final List<Type> parameters;
-
-//   @override
-//   bool operator ==(Object other) {
-//     if (identical(this, other)) return true;
-//     return other is Type &&
-//         other.name == name &&
-//         other.package == package &&
-//         other.parameters == parameters;
-//   }
-
-//   @override
-//   int get hashCode => Object.hash(
-//         name,
-//         package,
-//         parameters,
-//       );
-
-//   @override
-//   String toString() => 'Type(String name, String package, List parameters)';
-// }
-
 sealed class TypeSource {}
 
-final class DartCore implements TypeSource {
-  const DartCore({required this.name});
+final class DartSdkPackage implements TypeSource {
+  const DartSdkPackage({required this.name});
 
   final String name;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is DartCore && other.name == name;
+    return other is DartSdkPackage && other.name == name;
   }
 
   @override
   int get hashCode => name.hashCode;
 
   @override
-  String toString() => 'DartCore(name: $name)';
+  String toString() => 'DartSdkPackage(name: $name)';
 }
 
-final class Package implements TypeSource {
-  const Package({required this.name});
+final class ExternalPackage implements TypeSource {
+  const ExternalPackage({required this.name});
 
   final String name;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is Package && other.name == name;
+    return other is ExternalPackage && other.name == name;
   }
 
   @override
   int get hashCode => name.hashCode;
 
   @override
-  String toString() => 'Package(name: $name)';
+  String toString() => 'ExternalPackage(name: $name)';
 }
 
 sealed class Type {}
