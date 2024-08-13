@@ -107,6 +107,7 @@ Future<PintoError?> run(String source) async {
       // Resolve errors
       ClassInheritsFromItselfError() => "A class can't inherit from itself.",
       NoSymbolInScopeError(:final token) => "The symbol ${token.lexeme} was not found in the scope.",
+      TypeAlreadyDefinedError(:final token) => "The type parameter '${token.lexeme}' is already defined for this type. Try removing it or changing it's name.",
       WrongNumberOfArgumentsError(:final token, argumentsCount: 1, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but 1 argument was provided.",
       WrongNumberOfArgumentsError(:final token, :final argumentsCount, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but $argumentsCount arguments were provided.",
       WrongNumberOfArgumentsError(:final token, argumentsCount: 0, :final expectedArgumentsCount) => "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but none was provided.",

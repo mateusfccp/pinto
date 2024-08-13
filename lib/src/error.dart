@@ -85,7 +85,6 @@ sealed class ExpectationType with _$ExpectationType {
   //   String? description,
   // }) = ExpressionExpectation;
 
-  
   const factory ExpectationType.oneOf({
     required List<ExpectationType> expectations,
     String? description,
@@ -106,7 +105,7 @@ sealed class ExpectationType with _$ExpectationType {
     return description ??
         switch (this) {
           // ExpressionExpectation() => 'expression',
-          OneOfExpectation(:final expectations) => "${ expectations.length > 1 ? 'one of ': '' }${expectations.join(', ')}",
+          OneOfExpectation(:final expectations) => "${expectations.length > 1 ? 'one of ' : ''}${expectations.join(', ')}",
           StatementExpectation() => 'a statement',
           TokenExpectation(:final token) => "'$token'",
         };
@@ -187,6 +186,13 @@ final class ClassInheritsFromItselfError implements ResolveError {
 
 final class NoSymbolInScopeError implements ResolveError {
   const NoSymbolInScopeError(this.token);
+
+  @override
+  final Token token;
+}
+
+final class TypeAlreadyDefinedError implements ResolveError {
+  const TypeAlreadyDefinedError(this.token);
 
   @override
   final Token token;

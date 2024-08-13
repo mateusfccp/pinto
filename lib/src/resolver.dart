@@ -89,9 +89,18 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
 
     if (statement.typeParameters case final typeParameters?) {
       for (final typeParameter in typeParameters) {
-        final type = TypeParameterType(name: typeParameter.identifier.lexeme);
+        final definedType = _environment.getType(typeParameter.identifier.lexeme);
 
-        _environment.defineType(type);
+        if (definedType is TypeParameterType) {
+          _errorHandler?.emit(
+            TypeAlreadyDefinedError(typeParameter.identifier),
+          );
+        } else {
+          final type = TypeParameterType(name: typeParameter.identifier.lexeme);
+
+          _environment.defineType(type);
+        }
+
         typeParameter.accept(this);
       }
     }
