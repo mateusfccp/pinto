@@ -34,20 +34,23 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
 
   @override
   Future<void> visitImportStatement(ImportStatement statement) async {
-    final symbols = await symbolsResolver.getSymbolsFor(statement: statement);
+    try {
+      final symbols = await symbolsResolver.getSymbolsForImportStatement(statement: statement);
 
-    for (final symbol in symbols) {
-      _environment.defineType(symbol);
+      for (final symbol in symbols) {
+        _environment.defineType(symbol);
+      }
+    } on ResolveError catch (error) {
+      _errorHandler?.emit(error);
     }
   }
 
   @override
   Future<void> visitProgram(Program program) async {
-    // TODO(mateusfccp): maybe find a better place for this
-    final core = ImportStatement(ImportType.dart, 'core');
-    await core.accept(this);
+    final core = DartSdkPackage(name: 'core');
 
     await Future.wait([
+      _resolvePackage(core),
       for (final import in program.imports) import.accept(this),
     ]);
 
@@ -86,7 +89,7 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
 
         if (definedType is TypeParameterType) {
           _errorHandler?.emit(
-            TypeAlreadyDefinedError(typeParameter.identifier),
+            TypeParameterAlreadyDefinedError(typeParameter.identifier),
           );
         } else {
           final type = TypeParameterType(name: typeParameter.identifier.lexeme);
@@ -148,7 +151,7 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
         final baseType = _environment.getType(literal.literal.identifier.lexeme);
 
         if (baseType == null) {
-          throw NoSymbolInScopeError(literal.literal.identifier);
+          throw SymbolNotInScopeError(literal.literal.identifier);
         } else if (baseType is PolymorphicType) {
           final arguments = [
             for (final parameter in literal.parameters) _resolveType(parameter),
@@ -178,7 +181,7 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
         final type = _environment.getType(literal.identifier.lexeme);
 
         if (type == null) {
-          throw NoSymbolInScopeError(literal.identifier);
+          throw SymbolNotInScopeError(literal.identifier);
         } else if (type is PolymorphicType) {
           throw WrongNumberOfArgumentsError(
             token: literal.identifier,
@@ -197,6 +200,14 @@ final class Resolver with DefaultTypeLiteralVisitor<Future<void>> implements Ast
           source: DartSdkPackage(name: 'core'),
           arguments: [innerType],
         );
+    }
+  }
+
+  Future<void> _resolvePackage(Package package) async {
+    final symbols = await symbolsResolver.getSymbolForPackage(package: package);
+
+    for (final symbol in symbols) {
+      _environment.defineType(symbol);
     }
   }
 }

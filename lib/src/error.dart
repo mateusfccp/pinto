@@ -104,15 +104,22 @@ sealed class ResolveError implements PintoError {
   Token get token;
 }
 
-final class NoSymbolInScopeError implements ResolveError {
-  const NoSymbolInScopeError(this.token);
+final class ImportedPackageNotAvailableError implements ResolveError {
+  const ImportedPackageNotAvailableError(this.token);
 
   @override
   final Token token;
 }
 
-final class TypeAlreadyDefinedError implements ResolveError {
-  const TypeAlreadyDefinedError(this.token);
+final class SymbolNotInScopeError implements ResolveError {
+  const SymbolNotInScopeError(this.token);
+
+  @override
+  final Token token;
+}
+
+final class TypeParameterAlreadyDefinedError implements ResolveError {
+  const TypeParameterAlreadyDefinedError(this.token);
 
   @override
   final Token token;

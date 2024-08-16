@@ -13,28 +13,6 @@ void main(List<String> args) {
 
     _defineAst(
       outputDir,
-      'TypeLiteral',
-      {
-        'Top': [],
-        'Bottom': [],
-        'List': [('TypeLiteral', 'literal')],
-        'Set': [('TypeLiteral', 'literal')],
-        'Map': [
-          ('TypeLiteral', 'keyLiteral'),
-          ('TypeLiteral', 'valueLiteral'),
-        ],
-        'Parameterized': [
-          ('NamedTypeLiteral', 'literal'),
-          ('List<TypeLiteral>', 'parameters'),
-        ],
-        'Named': [('Token', 'identifier')],
-        'Option': [('TypeLiteral', 'literal')],
-      },
-      ['token.dart'],
-    );
-
-    _defineAst(
-      outputDir,
       'Node',
       {
         'TypeVariant': [
@@ -55,7 +33,7 @@ void main(List<String> args) {
       {
         'Import': [
           ('ImportType', 'type'),
-          ('String', 'package'),
+          ('Token', 'identifier'),
         ],
         'TypeDefinition': [
           ('Token', 'name'),
@@ -63,7 +41,29 @@ void main(List<String> args) {
           ('List<TypeVariantNode>', 'variants'),
         ],
       },
-      ['node.dart', '../import.dart', 'token.dart', 'type_literal.dart'],
+      ['node.dart', 'import.dart', 'token.dart', 'type_literal.dart'],
+    );
+
+    _defineAst(
+      outputDir,
+      'TypeLiteral',
+      {
+        'Top': [],
+        'Bottom': [],
+        'List': [('TypeLiteral', 'literal')],
+        'Set': [('TypeLiteral', 'literal')],
+        'Map': [
+          ('TypeLiteral', 'keyLiteral'),
+          ('TypeLiteral', 'valueLiteral'),
+        ],
+        'Parameterized': [
+          ('NamedTypeLiteral', 'literal'),
+          ('List<TypeLiteral>', 'parameters'),
+        ],
+        'Named': [('Token', 'identifier')],
+        'Option': [('TypeLiteral', 'literal')],
+      },
+      ['token.dart'],
     );
   }
 }

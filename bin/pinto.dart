@@ -1,13 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
+import 'package:analyzer/file_system/physical_file_system.dart';
+import 'package:analyzer/src/dart/sdk/sdk.dart';
+import 'package:analyzer/src/util/sdk.dart';
 import 'package:chalkdart/chalkstrings.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:exitcode/exitcode.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/compiler.dart';
 import 'package:pinto/error.dart';
+import 'package:pinto/localization.dart';
 import 'package:pinto/semantic.dart';
+
+final _resourceProvider = PhysicalResourceProvider.INSTANCE;
 
 Future<void> main(List<String> args) async {
   if (args.length == 1) {
@@ -23,7 +30,24 @@ Future<void> runFile(String path) async {
 
   if (await file.exists()) {
     final fileString = file.readAsStringSync();
-    final error = await run(fileString);
+
+    stdout.writeln('Included paths: ${file.absolute.path}');
+
+    final analysisContextCollection = AnalysisContextCollection(
+      includedPaths: [file.absolute.path],
+      resourceProvider: _resourceProvider,
+    );
+
+    final sdk = FolderBasedDartSdk(
+      _resourceProvider,
+      _resourceProvider.getFolder(getSdkPath()),
+    );
+
+    final error = await run(
+      source: fileString,
+      analysisContextCollection: analysisContextCollection,
+      sdk: sdk,
+    );
 
     switch (error) {
       case PintoError():
@@ -37,7 +61,11 @@ Future<void> runFile(String path) async {
   }
 }
 
-Future<PintoError?> run(String source) async {
+Future<PintoError?> run({
+  required String source,
+  required AnalysisContextCollection analysisContextCollection,
+  required AbstractDartSdk sdk,
+}) async {
   final errorHandler = ErrorHandler();
 
   final lineSplitter = LineSplitter(); // TODO(mateusfccp): Convert the handler into an interface and put this logic inside
@@ -91,25 +119,7 @@ Future<PintoError?> run(String source) async {
       ScanError() => '[${error.location.line}:${error.location.column}]:',
     };
 
-    final errorMessage = switch (error) {
-      // Parse errors
-      ExpectError(:final expectation) => "Expected to find $expectation.",
-      ExpectAfterError(:final token, :final expectation, :final after) => "Expected to find $expectation after $after. Found '${token.lexeme}'.",
-      ExpectBeforeError(:final expectation, :final before) => "Expected to find $expectation before $before.",
-
-      // Resolve errors
-      NoSymbolInScopeError(:final token) => "The symbol ${token.lexeme} was not found in the scope.",
-      TypeAlreadyDefinedError(:final token) => "The type parameter '${token.lexeme}' is already defined for this type. Try removing it or changing it's name.",
-      WrongNumberOfArgumentsError(:final token, argumentsCount: 1, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but 1 argument was provided.",
-      WrongNumberOfArgumentsError(:final token, :final argumentsCount, expectedArgumentsCount: 0) => "The type '${token.lexeme}' don't accept arguments, but $argumentsCount arguments were provided.",
-      WrongNumberOfArgumentsError(:final token, argumentsCount: 0, :final expectedArgumentsCount) => "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but none was provided.",
-      WrongNumberOfArgumentsError(:final token, argumentsCount: 1, :final expectedArgumentsCount) => "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but 1 was provided.",
-      WrongNumberOfArgumentsError(:final token, :final argumentsCount, :final expectedArgumentsCount) =>
-        "The type '${token.lexeme}' expects $expectedArgumentsCount arguments, but $argumentsCount were provided.",
-
-      // Scan errors
-      UnexpectedCharacterError() => "Unexpected character '${error.character}'.",
-    };
+    final errorMessage = messageFromError(error);
 
     final lineHint = switch (error) {
       ScanError() => getLineWithErrorPointer(error.location.line, error.location.column, 1),
@@ -136,11 +146,15 @@ Future<PintoError?> run(String source) async {
 
   final program = parser.parse();
 
+  final symbolsResolver = SymbolsResolver(
+    resourceProvider: _resourceProvider,
+    analysisContextCollection: analysisContextCollection,
+    sdk: sdk,
+  );
+
   final resolver = Resolver(
     program: program,
-    symbolsResolver: SymbolsResolver(
-      projectRoot: Directory.current.path,
-    ),
+    symbolsResolver: symbolsResolver,
     errorHandler: errorHandler,
   );
 

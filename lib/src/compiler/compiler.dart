@@ -41,8 +41,8 @@ final class Compiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<
     assert(_currentClass == null);
 
     final url = switch (statement.type) {
-      ImportType.dart => 'dart:${statement.package}',
-      ImportType.package => 'package:${statement.package}.dart',
+      ImportType.dart => 'dart:${statement.identifier.lexeme.substring(1)}',
+      ImportType.package => 'package:${statement.identifier.lexeme}.dart',
     };
 
     _directives.add(

@@ -57,7 +57,7 @@ final class Parser {
                 : ExpectationType.statement(statement: body[body.length - 1]),
           ),
         );
-        
+
         body.add(_typeDefinition());
       } on ParseError {
         _synchronize();
@@ -137,49 +137,17 @@ final class Parser {
   }
 
   ImportStatement _import() {
+    final identifier = _consumeExpecting(TokenType.importIdentifier);
+
     final ImportType type;
 
-    final String package;
-
-    if (_match(TokenType.at)) {
+    if (identifier.lexeme[0] == '@') {
       type = ImportType.dart;
-
-      final packageIdentifier = _consumeAfter(
-        type: TokenType.identifier,
-        after: TokenType.at,
-      );
-
-      package = packageIdentifier.lexeme;
     } else {
       type = ImportType.package;
-
-      final root = _consumeAfter(
-        type: TokenType.identifier,
-        after: TokenType.importKeyword,
-      );
-
-      final subdirectories = <Token>[];
-
-      while (_match(TokenType.slash)) {
-        final subdirectory = _consumeAfter(
-          type: TokenType.identifier,
-          after: TokenType.slash,
-        );
-
-        subdirectories.add(subdirectory);
-      }
-
-      if (subdirectories.isEmpty) {
-        subdirectories.add(root);
-      }
-
-      package = [
-        root.lexeme,
-        for (final subdirectory in subdirectories) subdirectory.lexeme,
-      ].join('/');
     }
 
-    return ImportStatement(type, package);
+    return ImportStatement(type, identifier);
   }
 
   TypeDefinitionStatement _typeDefinition() {

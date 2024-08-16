@@ -1,6 +1,6 @@
-sealed class TypeSource {}
+sealed class Package {}
 
-final class DartSdkPackage implements TypeSource {
+final class DartSdkPackage implements Package {
   const DartSdkPackage({required this.name});
 
   final String name;
@@ -18,7 +18,7 @@ final class DartSdkPackage implements TypeSource {
   String toString() => 'DartSdkPackage(name: $name)';
 }
 
-final class ExternalPackage implements TypeSource {
+final class ExternalPackage implements Package {
   const ExternalPackage({required this.name});
 
   final String name;
@@ -59,7 +59,7 @@ final class MonomorphicType implements Type {
 
   final String name;
 
-  final TypeSource source;
+  final Package source;
 
   @override
   bool operator ==(Object other) {
@@ -86,7 +86,7 @@ final class PolymorphicType implements Type {
 
   final String name;
 
-  final TypeSource source;
+  final Package source;
 
   final List<Type> arguments;
 

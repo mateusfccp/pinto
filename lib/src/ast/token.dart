@@ -52,7 +52,7 @@ enum TokenType {
   /// The falsum token (`⊥`).
   falsum,
 
-  /// The identifier token.
+  /// An identifier.
   ///
   /// pint°'s identifier follows Dart's one. The grammar is the following:
   ///
@@ -62,6 +62,15 @@ enum TokenType {
   /// <identifier_part>  ::= <identifier_start> | [0-9]
   /// ```
   identifier,
+
+  /// An import identifier.
+  ///
+  /// The import identifier follows the grammar:
+  ///
+  ///```bnf
+  /// <import_identifier> ::= "@"? <identifier> ( "/" <identifier> )*
+  ///```
+  importIdentifier,
 
   /// The `import` keyword token.
   importKeyword,
@@ -107,6 +116,7 @@ enum TokenType {
       eroteme => '?',
       falsum => '⊥',
       identifier => 'identifier',
+      importIdentifier => 'import identifier',
       importKeyword => 'import',
       leftBrace => '{',
       leftBracket => '[',

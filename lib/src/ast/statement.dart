@@ -15,12 +15,12 @@ abstract interface class StatementVisitor<R> {
 final class ImportStatement implements Statement {
   const ImportStatement(
     this.type,
-    this.package,
+    this.identifier,
   );
 
   final ImportType type;
 
-  final String package;
+  final Token identifier;
 
   @override
   R accept<R>(StatementVisitor<R> visitor) =>

@@ -50,7 +50,7 @@ final class Scanner {
     return switch (character) {
       '⊤' => _addToken(TokenType.verum),
       '⊥' => _addToken(TokenType.falsum),
-      '@' => _addToken(TokenType.at),
+      '@' => _identifier(true),
       '?' => _addToken(TokenType.eroteme),
       '(' => _addToken(TokenType.leftParenthesis),
       ')' => _addToken(TokenType.rightParenthesis),
@@ -88,7 +88,7 @@ final class Scanner {
 
   void _character(String character) {
     if (_isIdentifierStart(character)) {
-      _identifier();
+      _identifier(false);
     } else {
       _errorHandler?.emit(
         UnexpectedCharacterError(
@@ -150,8 +150,6 @@ final class Scanner {
 
   String get _peek => _isAtEnd ? '\x00' : _source[_current];
 
-  String get _peekNext => _current + 1 >= _source.length ? '\x00' : _source[_current + 1];
-
   bool _isIdentifierStart(String character) {
     assert(character.length == 1);
     return RegExp(r'[A-Za-z_$]').hasMatch(character);
@@ -162,13 +160,29 @@ final class Scanner {
     return RegExp(r'[A-Za-z_$0-9]').hasMatch(character);
   }
 
-  void _identifier() {
+  void _identifier(bool isImportIdentifier) {
     while (_isIdentifierPart(_peek)) {
       _advance();
     }
 
+    while (_peek == '/') {
+      isImportIdentifier = true;
+
+      while (_isIdentifierPart(_peek)) {
+        _advance();
+      }
+    }
+
     final text = _source.substring(_start, _current);
-    final tokenType = _keywords[text] ?? TokenType.identifier;
+    final TokenType tokenType;
+
+    if (isImportIdentifier) {
+      tokenType = TokenType.importIdentifier;
+    } else if (_keywords[text] case final keyword?) {
+      tokenType = keyword;
+    } else {
+      tokenType = TokenType.identifier;
+    }
 
     _addToken(tokenType);
   }
