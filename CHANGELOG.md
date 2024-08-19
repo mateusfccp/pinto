@@ -1,3 +1,8 @@
+## 0.0.3
+
+- Provide basic LSP implementation through `pinto_server`
+- Add resolve error for invalid import
+
 ## 0.0.2
 
 - Fix class generation for case where a type parameter is not directly used in
