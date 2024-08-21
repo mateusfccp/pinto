@@ -16,6 +16,7 @@ String messageFromError(PintoError error) {
 
     // Scan errors
     UnexpectedCharacterError error => unexpectedCharacterError(error.character),
+    UnterminatedStringError() => unterminatedStringError(),
   };
 }
 
@@ -56,7 +57,7 @@ String importedPackageNotAvailableError(String import) {
     name: 'importedPackageNotAvailableErrorMessage',
     args: [import],
     desc: 'The error describing that the package that is being imported does '
-    'exist or was not fetched by `pub get`',
+        'exist or was not fetched by `pub get`',
   );
 }
 
@@ -113,5 +114,14 @@ String unexpectedCharacterError(String character) {
     name: 'unexpectedCharacterErrorMessage',
     args: [character],
     desc: "The error message from when the scanner finds a character that it's not supposed to scan.",
+  );
+}
+
+String unterminatedStringError() {
+  return Intl.message(
+    "Unexpected string termination.",
+    name: 'unterminatedStringErrorMessage',
+    args: [],
+    desc: "The error message from when the scanner can't find the end of a string literal.",
   );
 }

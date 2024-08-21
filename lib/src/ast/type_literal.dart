@@ -10,8 +10,7 @@ abstract interface class TypeLiteralVisitor<R> {
   R visitListTypeLiteral(ListTypeLiteral typeLiteral);
   R visitSetTypeLiteral(SetTypeLiteral typeLiteral);
   R visitMapTypeLiteral(MapTypeLiteral typeLiteral);
-  R visitParameterizedTypeLiteral(ParameterizedTypeLiteral typeLiteral);
-  R visitNamedTypeLiteral(NamedTypeLiteral typeLiteral);
+  R visitIdentifiedTypeLiteral(IdentifiedTypeLiteral typeLiteral);
   R visitOptionTypeLiteral(OptionTypeLiteral typeLiteral);
 }
 
@@ -66,29 +65,19 @@ final class MapTypeLiteral implements TypeLiteral {
       visitor.visitMapTypeLiteral(this);
 }
 
-final class ParameterizedTypeLiteral implements TypeLiteral {
-  const ParameterizedTypeLiteral(
-    this.literal,
-    this.parameters,
+final class IdentifiedTypeLiteral implements TypeLiteral {
+  const IdentifiedTypeLiteral(
+    this.identifier,
+    this.arguments,
   );
-
-  final NamedTypeLiteral literal;
-
-  final List<TypeLiteral> parameters;
-
-  @override
-  R accept<R>(TypeLiteralVisitor<R> visitor) =>
-      visitor.visitParameterizedTypeLiteral(this);
-}
-
-final class NamedTypeLiteral implements TypeLiteral {
-  const NamedTypeLiteral(this.identifier);
 
   final Token identifier;
 
+  final List<TypeLiteral>? arguments;
+
   @override
   R accept<R>(TypeLiteralVisitor<R> visitor) =>
-      visitor.visitNamedTypeLiteral(this);
+      visitor.visitIdentifiedTypeLiteral(this);
 }
 
 final class OptionTypeLiteral implements TypeLiteral {

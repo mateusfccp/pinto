@@ -29,7 +29,7 @@ final class Parser {
 
   bool get _isNotAtEnd => !_isAtEnd;
 
-  Program parse() {
+  ProgramAst parse() {
     final imports = <ImportStatement>[];
     final body = <Statement>[];
 
@@ -64,7 +64,7 @@ final class Parser {
       }
     }
 
-    return Program(imports, body);
+    return ProgramAst(imports, body);
   }
 
   void _synchronize() {
@@ -156,10 +156,10 @@ final class Parser {
       after: TokenType.typeKeyword,
     );
 
-    final typeParameters = <NamedTypeLiteral>[];
+    final typeParameters = <IdentifiedTypeLiteral>[];
 
     if (_match(TokenType.leftParenthesis)) {
-      final firstTypeParameter = _namedTypeLiteral();
+      final firstTypeParameter = _typeParameterLiteral();
 
       typeParameters.add(firstTypeParameter);
 
@@ -170,7 +170,7 @@ final class Parser {
           description: 'type parameter',
         );
 
-        final typeParameter = _namedTypeLiteral();
+        final typeParameter = _typeParameterLiteral();
 
         typeParameters.add(typeParameter);
       }
@@ -276,9 +276,8 @@ final class Parser {
         return MapTypeLiteral(literal, valueLiteral);
       }
     } else {
-      final innerLiteral = _namedTypeLiteral();
+      final identifier = _consumeExpecting(TokenType.identifier);
       final parameters = <TypeLiteral>[];
-      final TypeLiteral literal;
 
       if (_match(TokenType.leftParenthesis)) {
         parameters.add(_typeLiteral());
@@ -291,11 +290,9 @@ final class Parser {
           type: TokenType.rightParenthesis,
           after: TokenType.identifier, // TODO(mateusfccp): Fix this
         );
-
-        literal = ParameterizedTypeLiteral(innerLiteral, parameters);
-      } else {
-        literal = innerLiteral;
       }
+
+      final literal = IdentifiedTypeLiteral(identifier, parameters);
 
       if (_match(TokenType.eroteme)) {
         return OptionTypeLiteral(literal);
@@ -305,8 +302,8 @@ final class Parser {
     }
   }
 
-  NamedTypeLiteral _namedTypeLiteral() {
+  IdentifiedTypeLiteral _typeParameterLiteral() {
     final identifier = _consumeExpecting(TokenType.identifier);
-    return NamedTypeLiteral(identifier);
+    return IdentifiedTypeLiteral(identifier, null);
   }
 }

@@ -12,29 +12,26 @@ sealed class PintoError {}
 
 /// An error that happened while the program was being scanend.
 sealed class ScanError implements PintoError {
-  ScanLocation get location;
+  int get offset;
 }
 
 final class UnexpectedCharacterError implements ScanError {
   const UnexpectedCharacterError({
-    required this.location,
+    required this.offset,
     required this.character,
   });
 
   @override
-  final ScanLocation location;
+  final int offset;
 
   final String character;
 }
 
-/// A location while the program is being scanned.
-@freezed
-sealed class ScanLocation with _$ScanLocation {
-  const factory ScanLocation({
-    required int offset,
-    required int line,
-    required int column,
-  }) = _ScanLocation;
+final class UnterminatedStringError implements ScanError {
+  const UnterminatedStringError({required this.offset});
+
+  @override
+  final int offset;
 }
 
 /// An error that happened while the program was being parsed.

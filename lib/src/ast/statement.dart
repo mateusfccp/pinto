@@ -1,3 +1,4 @@
+import 'expression.dart';
 import 'import.dart';
 import 'node.dart';
 import 'token.dart';
@@ -8,8 +9,23 @@ sealed class Statement {
 }
 
 abstract interface class StatementVisitor<R> {
+  R visitFunctionStatement(FunctionStatement statement);
   R visitImportStatement(ImportStatement statement);
   R visitTypeDefinitionStatement(TypeDefinitionStatement statement);
+}
+
+final class FunctionStatement implements Statement {
+  const FunctionStatement(
+    this.identifier,
+    this.result,
+  );
+
+  final Token identifier;
+
+  final Expression result;
+
+  @override
+  R accept<R>(StatementVisitor<R> visitor) => visitor.visitFunctionStatement(this);
 }
 
 final class ImportStatement implements Statement {
@@ -23,24 +39,22 @@ final class ImportStatement implements Statement {
   final Token identifier;
 
   @override
-  R accept<R>(StatementVisitor<R> visitor) =>
-      visitor.visitImportStatement(this);
+  R accept<R>(StatementVisitor<R> visitor) => visitor.visitImportStatement(this);
 }
 
 final class TypeDefinitionStatement implements Statement {
   const TypeDefinitionStatement(
     this.name,
-    this.typeParameters,
+    this.parameters,
     this.variants,
   );
 
   final Token name;
 
-  final List<NamedTypeLiteral>? typeParameters;
+  final List<IdentifiedTypeLiteral>? parameters;
 
   final List<TypeVariantNode> variants;
 
   @override
-  R accept<R>(StatementVisitor<R> visitor) =>
-      visitor.visitTypeDefinitionStatement(this);
+  R accept<R>(StatementVisitor<R> visitor) => visitor.visitTypeDefinitionStatement(this);
 }

@@ -9,6 +9,11 @@ base mixin DefaultTypeLiteralVisitor<T> implements TypeLiteralVisitor<T> {
   }
 
   @override
+  visitIdentifiedTypeLiteral(IdentifiedTypeLiteral typeLiteral) {
+    return visitTypeLiteral(typeLiteral);
+  }
+
+  @override
   visitListTypeLiteral(ListTypeLiteral typeLiteral) {
     return visitTypeLiteral(typeLiteral);
   }
@@ -19,17 +24,7 @@ base mixin DefaultTypeLiteralVisitor<T> implements TypeLiteralVisitor<T> {
   }
 
   @override
-  visitNamedTypeLiteral(NamedTypeLiteral typeLiteral) {
-    return visitTypeLiteral(typeLiteral);
-  }
-
-  @override
   visitOptionTypeLiteral(OptionTypeLiteral typeLiteral) {
-    return visitTypeLiteral(typeLiteral);
-  }
-
-  @override
-  visitParameterizedTypeLiteral(ParameterizedTypeLiteral typeLiteral) {
     return visitTypeLiteral(typeLiteral);
   }
 

@@ -26,7 +26,7 @@ final class Analyzer {
       includedPaths: [],
       resourceProvider: _resourceProvider,
     );
-    
+
     _sdk = FolderBasedDartSdk(
       _resourceProvider,
       _resourceProvider.getFolder(getSdkPath()),
@@ -93,7 +93,7 @@ final class Analyzer {
     await resolver.resolve();
 
     final diagnostics = [
-      for (final error in errorHandler.errors) _diagnosticFromError(error),
+      for (final error in errorHandler.errors) _diagnosticFromError(scanner, error),
     ];
 
     _analysisCache[path] = diagnostics;
@@ -102,31 +102,30 @@ final class Analyzer {
   }
 }
 
-Diagnostic _diagnosticFromError(PintoError error) {
-  final start = switch (error) {
-    ScanError(:final location) => Position(
-        character: location.column - 1,
-        line: location.line - 1,
-      ),
-    ParseError(:final token) || ResolveError(:final token) => Position(
-        character: token.column - token.lexeme.length,
-        line: token.line - 1,
-      ),
+Diagnostic _diagnosticFromError(Scanner scanner, PintoError error) {
+  final offset = switch (error) {
+    ScanError(:final offset) => offset,
+    ParseError(:final token) || ResolveError(:final token) => token.offset,
   };
 
-  final end = switch (error) {
-    ScanError(:final location) => Position(
-        character: location.column,
-        line: location.line - 1,
-      ),
-    ParseError(:final token) || ResolveError(:final token) => Position(
-        character: token.column,
-        line: token.line - 1,
-      ),
+  final (line, column) = scanner.positionForOffset(offset);
+
+  final length = switch (error) {
+    ScanError() => 1,
+    ParseError(:final token) || ResolveError(:final token) => token.lexeme.length,
   };
+
+  final start = Position(
+    line: line,
+    character: column,
+  );
+
+  final end = Position(
+    line: line,
+    character: column + length,
+  );
 
   final range = Range(start: start, end: end);
-
   final message = messageFromError(error);
 
   return Diagnostic(

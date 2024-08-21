@@ -1,11 +1,11 @@
 import 'statement.dart';
 
 abstract interface class ProgramVisitor<R> {
-  R visitProgram(Program program);
+  R visitProgram(ProgramAst program);
 }
 
-final class Program {
-  const Program(
+final class ProgramAst {
+  const ProgramAst(
     this.imports,
     this.body,
   );

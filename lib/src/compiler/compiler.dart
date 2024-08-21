@@ -4,19 +4,19 @@ import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart' hide ClassBuilder;
 import 'package:pinto/ast.dart';
 import 'package:pinto/semantic.dart';
+import 'package:pinto/src/semantic/element.dart';
+import 'package:pinto/src/semantic/import.dart';
+import 'package:pinto/src/semantic/program.dart';
+import 'package:pinto/src/semantic/type_definition.dart';
 
 import 'class_builder.dart';
 
-final class Compiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<void> {
-  Compiler({required this.resolver});
+final class Compiler implements ElementVisitor<void> {
+  Compiler({
+    required this.symbolsResolver,
+  });
 
-  final Resolver resolver;
-
-  ClassBuilder? _currentClass;
-  List<Type>? _currentDefinitionTypes;
-  final _context = DoubleLinkedQueue<Object?>();
-
-  Object? get _currentContext => _context.last;
+  final SymbolsResolver symbolsResolver;
 
   final _directives = ListBuilder<Directive>();
   final _body = ListBuilder<Spec>();
@@ -36,156 +36,101 @@ final class Compiler with DefaultTypeLiteralVisitor<void> implements AstVisitor<
   }
 
   @override
-  void visitImportStatement(ImportStatement statement) {
-    assert(_currentContext == null);
-    assert(_currentClass == null);
-
-    final url = switch (statement.type) {
-      ImportType.dart => 'dart:${statement.identifier.lexeme.substring(1)}',
-      ImportType.package => 'package:${statement.identifier.lexeme}.dart',
-    };
+  void visitImportElement(ImportElement importElement) async {
+    final url = symbolsResolver.getUriFromPackage(importElement.package);
 
     _directives.add(
-      Directive.import(url),
+      Directive.import(url!), // TODO(mateusfccp): Deal with it
     );
   }
 
   @override
-  void visitProgram(Program program) {
-    for (final import in program.imports) {
+  void visitProgramElement(ProgramElement programElement) {
+    for (final import in programElement.imports) {
       import.accept(this);
     }
 
-    for (final statement in program.body) {
-      statement.accept(this);
+    for (final typeDefinition in programElement.typeDefinitions) {
+      typeDefinition.accept(this);
     }
   }
 
   @override
-  void visitTypeDefinitionStatement(TypeDefinitionStatement statement) {
-    _context.addLast(statement);
-    _currentDefinitionTypes = [];
-
-    if (statement.variants case [final variant]) {
+  void visitTypeDefinitionElement(TypeDefinitionElement typeDefinitionElement) {
+    if (typeDefinitionElement.variants case [final variant]) {
       variant.accept(this);
     } else {
-      final topClass = ClassBuilder(name: statement.name.lexeme);
+      final topClass = ClassBuilder(name: typeDefinitionElement.name);
 
-      _pushClass(topClass);
       topClass.sealed = true;
 
-      final typeParameters = statement.typeParameters;
+      final typeParameters = typeDefinitionElement.parameters;
 
-      if (typeParameters != null) {
-        for (final parameter in typeParameters) {
-          final type = resolver.annotations[parameter]!;
-          _currentDefinitionTypes!.add(type);
-          parameter.accept(this);
-        }
+      for (final parameter in typeParameters) {
+        topClass.addParameter(parameter);
       }
 
-      _popClass();
+      _body.add(topClass.asCodeBuilderClass());
 
-      for (final variant in statement.variants) {
+      for (final variant in typeDefinitionElement.variants) {
         variant.accept(this);
       }
     }
-
-    _currentDefinitionTypes = null;
-    _context.removeLast();
   }
 
   @override
-  void visitTypeLiteral(TypeLiteral typeLiteral) {
-    assert(_currentClass != null);
-
-    final class$ = _currentClass!;
-    final type = resolver.annotations[typeLiteral]!;
-
-    if (_currentContext is TypeDefinitionStatement) {
-      class$.addParameter(type);
-    } else if (_currentContext is TypeVariantNode) {
-      for (final type in _typeParametersFromType(type)) {
-        class$.addParameter(type);
-      }
-    }
+  void visitParameterElement(ParameterElement parameterElement) {
+    // TODO(mateusfccp): should this be implemented?
   }
 
   @override
-  void visitTypeVariantParameterNode(TypeVariantParameterNode node) {
-    assert(_currentContext is TypeVariantNode);
-    assert(_currentClass != null);
-
-    node.type.accept(this);
-
-    final type = resolver.annotations[node.type]!;
-    _currentClass!.addField(type, node);
-  }
-
-  @override
-  void visitTypeVariantNode(TypeVariantNode node) {
-    assert(_currentContext is TypeDefinitionStatement);
-
-    final typeDefinitionStatement = _currentContext as TypeDefinitionStatement;
-
-    _context.addLast(node);
+  void visitTypeVariantElement(TypeVariantElement typeParameterElement) {
+    final typeDefinitionElement = typeParameterElement.enclosingElement;
 
     final variantClass = ClassBuilder(
-      name: node.name.lexeme,
+      name: typeParameterElement.name,
       withEquality: true,
     )..final$ = true;
 
-    _pushClass(variantClass);
+    for (final parameter in typeParameterElement.parameters) {
+      for (final type in _typeParametersFromType(parameter.type!)) {
+        variantClass.addParameter(type);
+      }
 
-    for (final parameter in node.parameters) {
-      parameter.accept(this);
+      variantClass.addField(parameter.type!, parameter);
     }
 
-    if (_currentDefinitionTypes case final definitionTypes?) {
-      // If there's a single definition, it's going to be streamlined
-      if (typeDefinitionStatement.variants.length > 1) {
-        final currentVariantTypes = [
-          for (final parameter in node.parameters) resolver.annotations[parameter.type]!,
-        ];
+    if (typeDefinitionElement.variants.length > 1) {
+      variantClass.defineSuperypeName(typeDefinitionElement.name);
 
-        final typeParameters = _typeParametersFromTypeList(currentVariantTypes);
+      final currentVariantTypes = [
+        for (final parameter in typeParameterElement.parameters) parameter.type!,
+      ];
 
-        for (final type in definitionTypes) {
-          if (typeParameters.contains(type)) {
-            variantClass.addParameterToSupertype(
-              typeDefinitionStatement.name.lexeme,
-              type,
-            );
-          } else {
-            variantClass.addParameterToSupertype(
-              typeDefinitionStatement.name.lexeme,
-              const BottomType(),
-            );
-          }
-        }
+      final typeParameters = _typeParametersFromTypeList(currentVariantTypes);
+
+      for (final type in typeDefinitionElement.parameters) {
+        final argument = typeParameters.contains(type) //
+            ? type
+            : const BottomType();
+
+        variantClass.addParameterToSupertype(argument);
       }
     }
 
-    _popClass();
-    _context.removeLast();
-  }
-
-  void _pushClass(ClassBuilder classBuilder) => _currentClass = classBuilder;
-
-  void _popClass() {
-    assert(_currentClass != null);
-
-    final class$ = _currentClass!.asCodeBuilderClass();
-    _body.add(class$);
-    _currentClass = null;
+    _body.add(variantClass.asCodeBuilderClass());
   }
 }
 
-List<TypeParameterType> _typeParametersFromType(Type type) {
-  return switch (type) { TopType() || MonomorphicType() || BottomType() => const [], PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments), TypeParameterType() => [type] };
+List<TypeParameterType> _typeParametersFromType(PintoType type) {
+  return switch (type) {
+    TopType() || BottomType() => const [],
+    PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments),
+    TypeParameterType() => [type],
+  };
 }
 
-List<TypeParameterType> _typeParametersFromTypeList(List<Type> list) {
+List<TypeParameterType> _typeParametersFromTypeList(List<PintoType> list) {
   final parameters = {
     for (final type in list) ..._typeParametersFromType(type),
   };

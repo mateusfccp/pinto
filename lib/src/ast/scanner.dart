@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:pinto/error.dart';
 
 import 'token.dart';
@@ -14,15 +15,16 @@ final class Scanner {
   final String _source;
   final ErrorHandler? _errorHandler;
   final _tokens = <Token>[];
+  final _lineBreaks = <int>[];
 
   var _start = 0;
   var _current = 0;
-  var _line = 1;
-  var _column = 0;
 
+  // TODO(mateusfccp): Check what should be a contextual keyword or not
   static const _keywords = {
+    'fn': TokenType.fnKeyword, // TODO(mateusfccp): Turn into macro
     'import': TokenType.importKeyword,
-    'type': TokenType.typeKeyword, // TODO(mateusfccp): We'll probably want to remove it from here and make it a contextual keyword
+    'type': TokenType.typeKeyword,
   };
 
   bool get _isAtEnd => _current >= _source.length;
@@ -38,11 +40,21 @@ final class Scanner {
       Token(
         type: TokenType.endOfFile,
         lexeme: '',
-        column: _column,
-        line: _line,
+        offset: _current,
       ),
     );
     return _tokens;
+  }
+
+  (int line, int column) positionForOffset(int offset) {
+
+    final bound = lowerBound(_lineBreaks, offset);
+    final line = bound + 1;
+
+    final start = bound == 0 ? 0 : _lineBreaks[bound - 1] + 1;
+    final column = offset - start;
+
+    return (line, column);
   }
 
   void _scanToken() {
@@ -62,6 +74,7 @@ final class Scanner {
       '+' => _addToken(TokenType.plusSign),
       '=' => _addToken(TokenType.equalitySign),
       ':' => _addToken(TokenType.colon),
+      '"' => _string(),
       '/' => _slash(),
       ' ' || '\r' || '\t' => null,
       '\n' => _lineBreak(),
@@ -81,10 +94,25 @@ final class Scanner {
     }
   }
 
-  void _lineBreak() {
-    _line++;
-    _column = 0;
+  void _string() {
+    while (_peek != '"' && _peek != '\n' && !_isAtEnd) {
+      _advance();
+    }
+
+    // Strings should not span to more than one line, and should be closed
+    if (_peek == '\n' || _isAtEnd) {
+      _errorHandler?.emit(
+        UnterminatedStringError(offset: _current),
+      );
+      _lineBreak();
+    } else {
+      // Advance to the closing quotes (")
+      _advance();
+      _addToken(TokenType.stringLiteral);
+    }
   }
+
+  void _lineBreak() => _lineBreaks.add(_current);
 
   void _character(String character) {
     if (_isIdentifierStart(character)) {
@@ -92,46 +120,38 @@ final class Scanner {
     } else {
       _errorHandler?.emit(
         UnexpectedCharacterError(
-          location: ScanLocation(
-            offset: _current,
-            line: _line,
-            column: _column,
-          ),
+          offset: _current,
           character: character,
         ),
       );
     }
   }
 
-  void _addToken(TokenType type, [Object? literal]) {
+  void _addToken(TokenType type) {
     final text = _source.substring(_start, _current);
     final token = Token(
       type: type,
       lexeme: text,
-      column: _column,
-      line: _line,
+      offset: _current,
     );
 
     _tokens.add(token);
   }
 
-  String _advance() {
-    _column++;
-    return _source[_current++];
-  }
+  String _advance() => _source[_current++];
 
   void _advanceUntilCommentEnd() {
     int commentLevel = 1;
 
     while (commentLevel > 0 && !_isAtEnd) {
-      if (_match('\n')) {
-        _line++;
-        _column = 0;
-        continue;
-      } else if (_match('/') && _peek == '*') {
+      if (_match('/') && _peek == '*') {
         commentLevel = commentLevel + 1;
       } else if (_match('*') && _peek == '/') {
         commentLevel = commentLevel - 1;
+      }
+
+      if (_peek == '\n') {
+        _lineBreak();
       }
 
       _advance();
@@ -142,7 +162,6 @@ final class Scanner {
     if (_isAtEnd || _source[_current] != expected) {
       return false;
     } else {
-      _column++;
       _current++;
       return true;
     }

@@ -13,6 +13,22 @@ void main(List<String> args) {
 
     _defineAst(
       outputDir,
+      'Expression',
+      {
+        'Let': [
+          ('Token', 'identifier'),
+          ('Expression', 'binding'),
+          ('Expression', 'result')
+        ],
+        'Literal': [
+          ('Token', 'literal'),
+        ],
+      },
+      ['token.dart', 'type_literal.dart'],
+    );
+
+    _defineAst(
+      outputDir,
       'Node',
       {
         'TypeVariant': [
@@ -31,13 +47,18 @@ void main(List<String> args) {
       outputDir,
       'Statement',
       {
+        'Function': [
+          ('Token', 'identifier'),
+          // ('?', 'parameter'),
+          ('Expression', 'result'),
+        ],
         'Import': [
           ('ImportType', 'type'),
           ('Token', 'identifier'),
         ],
         'TypeDefinition': [
           ('Token', 'name'),
-          ('List<NamedTypeLiteral>?', 'typeParameters'),
+          ('List<IdentifiedTypeLiteral>?', 'parameters'),
           ('List<TypeVariantNode>', 'variants'),
         ],
       },
@@ -56,11 +77,10 @@ void main(List<String> args) {
           ('TypeLiteral', 'keyLiteral'),
           ('TypeLiteral', 'valueLiteral'),
         ],
-        'Parameterized': [
-          ('NamedTypeLiteral', 'literal'),
-          ('List<TypeLiteral>', 'parameters'),
+        'Identified': [
+          ('Token', 'identifier'),
+          ('List<TypeLiteral>?', 'arguments'),
         ],
-        'Named': [('Token', 'identifier')],
         'Option': [('TypeLiteral', 'literal')],
       },
       ['token.dart'],

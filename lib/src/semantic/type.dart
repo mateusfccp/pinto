@@ -1,45 +1,15 @@
-sealed class Package {}
+import 'element.dart';
+import 'package.dart';
 
-final class DartSdkPackage implements Package {
-  const DartSdkPackage({required this.name});
-
-  final String name;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is DartSdkPackage && other.name == name;
-  }
-
-  @override
-  int get hashCode => name.hashCode;
-
-  @override
-  String toString() => 'DartSdkPackage(name: $name)';
+sealed class PintoType {
+  Element? get element;
 }
 
-final class ExternalPackage implements Package {
-  const ExternalPackage({required this.name});
-
-  final String name;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is ExternalPackage && other.name == name;
-  }
-
-  @override
-  int get hashCode => name.hashCode;
-
-  @override
-  String toString() => 'ExternalPackage(name: $name)';
-}
-
-sealed class Type {}
-
-final class TopType implements Type {
+final class TopType implements PintoType {
   const TopType();
+
+  @override
+  Element? get element => null;
 
   @override
   bool operator ==(Object other) => other is TopType;
@@ -51,34 +21,8 @@ final class TopType implements Type {
   String toString() => 'TopType';
 }
 
-final class MonomorphicType implements Type {
-  const MonomorphicType({
-    required this.name,
-    required this.source,
-  });
-
-  final String name;
-
-  final Package source;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is MonomorphicType && other.name == name && other.source == source;
-  }
-
-  @override
-  int get hashCode => Object.hash(
-        name,
-        source,
-      );
-
-  @override
-  String toString() => 'MonomorphicType(name: $name, source: $source)';
-}
-
-final class PolymorphicType implements Type {
-  const PolymorphicType({
+final class PolymorphicType implements PintoType {
+  PolymorphicType({
     required this.name,
     required this.source,
     required this.arguments,
@@ -88,7 +32,10 @@ final class PolymorphicType implements Type {
 
   final Package source;
 
-  final List<Type> arguments;
+  final List<PintoType> arguments;
+
+  @override
+  Element? element;
 
   @override
   bool operator ==(Object other) {
@@ -107,10 +54,13 @@ final class PolymorphicType implements Type {
   String toString() => 'PolymorphicType(name: $name, source: $source, arguments: $arguments)';
 }
 
-final class TypeParameterType implements Type {
-  const TypeParameterType({required this.name});
+final class TypeParameterType implements PintoType {
+  TypeParameterType({required this.name});
 
   final String name;
+
+  @override
+  Element? element;
 
   @override
   bool operator ==(Object other) {
@@ -125,8 +75,11 @@ final class TypeParameterType implements Type {
   String toString() => 'TypeParameterType(name: $name)';
 }
 
-final class BottomType implements Type {
+final class BottomType implements PintoType {
   const BottomType();
+
+  @override
+  Element? get element => null;
 
   @override
   bool operator ==(Object other) => other is BottomType;

@@ -2,6 +2,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/semantic.dart';
+import 'package:pinto/src/semantic/type_definition.dart';
 
 final class ClassBuilder {
   ClassBuilder({
@@ -18,26 +19,32 @@ final class ClassBuilder {
 
   bool sealed = false;
   bool final$ = false;
-  (String name, List<Type> parameters)? _supertype;
+  (String name, List<PintoType> parameters)? _supertype;
 
-  void addParameterToSupertype(String supertypeName, Type parameter) {
-    final parameters = switch (_supertype) {
-      final supertype? => {...supertype.$2, parameter},
-      null => [parameter],
-    };
-
-    _supertype = (supertypeName, parameters.toList());
+  void defineSuperypeName(String name) {
+    final parameters = _supertype?.$2 ?? [];
+    _supertype = (name, parameters);
   }
 
-  void addParameter(Type parameter) {
+  void addParameterToSupertype(PintoType parameter) {
+    assert(_supertype != null);
+    final supertype = _supertype!;
+
+    _supertype = (
+      _supertype!.$1,
+      {...supertype.$2, parameter}.toList(),
+    );
+  }
+
+  void addParameter(PintoType parameter) {
     final name = buildTypeName(parameter);
     _typeParameters.add(name);
   }
 
-  void addField(Type type, TypeVariantParameterNode field) {
+  void addField(PintoType type, ParameterElement field) {
     _constructorParameters.add(
       Parameter((builder) {
-        builder.name = field.name.lexeme;
+        builder.name = field.name;
         builder.named = true;
         builder.required = true;
         builder.toThis = true;
@@ -47,7 +54,7 @@ final class ClassBuilder {
     _fields.add(
       Field((builder) {
         builder.modifier = FieldModifier.final$;
-        builder.name = field.name.lexeme;
+        builder.name = field.name;
         builder.type = _buildTypeReference(type);
       }),
     );
@@ -222,15 +229,15 @@ final class ClassBuilder {
 }
 
 @pragma('vm:prefer-inline')
-String buildTypeName(Type type) {
+String buildTypeName(PintoType type) {
   return switch (type) {
     TopType() => 'Object?',
-    MonomorphicType(:final name) || PolymorphicType(:final name) || TypeParameterType(:final name) => name,
+    PolymorphicType(:final name) || TypeParameterType(:final name) => name,
     BottomType() => 'Never',
   };
 }
 
-TypeReference _buildTypeReference(Type type) {
+TypeReference _buildTypeReference(PintoType type) {
   if (type case PolymorphicType(name: '?')) {
     final innerType = _buildTypeReference(type.arguments[0]);
 

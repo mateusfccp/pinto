@@ -20,7 +20,6 @@
 		 | <list_type_literal>
                  | <set_type_literal>
 		 | <map_type_literal>
-		 | <parameterized_type_literal>
 		 | <named_type_literal>
 		 | <option_type_literal>
 
@@ -29,6 +28,8 @@
 <list_type_literal> ::= "[" <type_literal> "]"
 <set_type_literal> ::= "{" <type_literal> "}"
 <map_type_literal> ::= "{" <type_literal> ":" <type_literal> "}"
-<parameterized_type_literal> ::= <named_type_literal> ( "(" <type_literal> ( "," <type_literal> )* ")" )
-<named_type_literal> ::= <identifier>
+<identified_type_literal> ::= <identifier> ( "(" <type_literal> ( "," <type_literal> )* ")" )?
 <option_type_literal> ::= <type_literal> "?"
+
+<string_literal> ::= '"' + <string_character>* + '"'
+<string_character> ::= ~( '"' | '\n' | '\r')

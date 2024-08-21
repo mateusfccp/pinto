@@ -10,6 +10,7 @@ dependencies:
   analyzer: ^6.8.0
   built_collection: ^5.1.1
   code_builder: ^4.10.0
+  collection: ^1.19.0
   chalkdart: ^2.2.1
   dart_style: ^2.3.6
   exitcode: ^1.0.1

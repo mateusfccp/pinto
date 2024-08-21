@@ -1,3 +1,8 @@
+## 0.0.4
+
+- Type resolution order fixed
+- Initial syntatic tree implementation
+
 ## 0.0.3
 
 - Provide basic LSP implementation through `pinto_server`

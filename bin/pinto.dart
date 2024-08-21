@@ -8,6 +8,7 @@ import 'package:analyzer/src/util/sdk.dart';
 import 'package:chalkdart/chalkstrings.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:exitcode/exitcode.dart';
+import 'package:path/path.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/compiler.dart';
 import 'package:pinto/error.dart';
@@ -31,10 +32,10 @@ Future<void> runFile(String path) async {
   if (await file.exists()) {
     final fileString = file.readAsStringSync();
 
-    stdout.writeln('Included paths: ${file.absolute.path}');
+    final path = normalize(file.absolute.path);
 
     final analysisContextCollection = AnalysisContextCollection(
-      includedPaths: [file.absolute.path],
+      includedPaths: [path],
       resourceProvider: _resourceProvider,
     );
 
@@ -77,6 +78,8 @@ Future<PintoError?> run({
   String getLineWithErrorPointer(int line, int column, int length) {
     final buffer = StringBuffer();
 
+    print('Getting line with error for [$line, $column] with length $length');
+
     void addLine(int line) {
       buffer.writeln('${chalk.gray('$line: ')}${lines[line - 1]}');
     }
@@ -89,7 +92,7 @@ Future<PintoError?> run({
 
     buffer.write('   '); // Padding equivalent to the line indicators
 
-    for (int i = 0; i < column - length; i++) {
+    for (int i = 0; i < column - (length - 1); i++) {
       buffer.write(' ');
     }
 
@@ -108,22 +111,34 @@ Future<PintoError?> run({
     return buffer.toString();
   }
 
+  final scanner = Scanner(
+    source: source,
+    errorHandler: errorHandler,
+  );
+
   void handleError() {
     final error = errorHandler.lastError;
     if (error == null) return;
 
+    final offset = switch (error) {
+      ScanError(:final offset) => offset,
+      ParseError(:final token) || ResolveError(:final token) => token.offset,
+    };
+
+    final (line, column) = scanner.positionForOffset(offset);
+
     final errorHeader = switch (error) {
-      ParseError() when error.token.type == TokenType.endOfFile => '[${error.token.line}:${error.token.column}] Error at end:',
-      ParseError() => "[${error.token.line}:${error.token.column}]:",
-      ResolveError() => "[${error.token.line}:${error.token.column}] Error at '${error.token.lexeme}':",
-      ScanError() => '[${error.location.line}:${error.location.column}]:',
+      ParseError() when error.token.type == TokenType.endOfFile => '[$line:$column] Error at end:',
+      ParseError() => "[$line:$column]:",
+      ResolveError() => "[$line:$column] Error at '${error.token.lexeme}':",
+      ScanError() => '[$line:$column]:',
     };
 
     final errorMessage = messageFromError(error);
 
     final lineHint = switch (error) {
-      ScanError() => getLineWithErrorPointer(error.location.line, error.location.column, 1),
-      ParseError(:final token) || ResolveError(:final token) => getLineWithErrorPointer(token.line, token.column, token.lexeme.length),
+      ScanError() => getLineWithErrorPointer(line, column, 1),
+      ParseError(:final token) || ResolveError(:final token) => getLineWithErrorPointer(line, column, token.lexeme.length),
     };
 
     stderr.writeln(chalk.yellowBright('$errorHeader $errorMessage'));
@@ -131,11 +146,6 @@ Future<PintoError?> run({
   }
 
   errorHandler.addListener(handleError);
-
-  final scanner = Scanner(
-    source: source,
-    errorHandler: errorHandler,
-  );
 
   final tokens = scanner.scanTokens();
 
@@ -158,17 +168,18 @@ Future<PintoError?> run({
     errorHandler: errorHandler,
   );
 
-  await resolver.resolve();
+  final programElement = await resolver.resolve();
 
   if (errorHandler.hasError) {
     return errorHandler.lastError;
   }
 
   final buffer = StringBuffer();
-  final visitor = Compiler(resolver: resolver);
+  final visitor = Compiler(
+    symbolsResolver: symbolsResolver,
+  );
 
-  visitor.visitProgram(program);
-
+  visitor.visitProgramElement(programElement);
   visitor.writeToSink(buffer);
 
   final formatted = DartFormatter().format(buffer.toString());

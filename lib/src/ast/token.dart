@@ -1,14 +1,14 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:meta/meta.dart';
 
-/// A Lox program token.
+/// A program token.
 @immutable
 final class Token {
-  /// Creates a Lox program token.
+  /// Creates a program token.
   const Token({
     required this.type,
     required this.lexeme,
-    required this.line,
-    required this.column,
+    required this.offset,
   });
 
   /// The type of the token.
@@ -17,14 +17,11 @@ final class Token {
   /// The string representation of the token.
   final String lexeme;
 
-  /// The line in which the token was scanned.
-  final int line;
-
-  /// The column in which the token was scanned.
-  final int column;
+  /// The offset in which the token was scanned.
+  final int offset;
 
   @override
-  String toString() => 'Token(type: $type, lexeme: $lexeme)';
+  String toString() => 'Token(type: $type, lexeme: $lexeme, offset: $offset)';
 }
 
 /// The type of a token.
@@ -51,6 +48,9 @@ enum TokenType {
 
   /// The falsum token (`⊥`).
   falsum,
+
+  /// The `fn` keyword
+  fnKeyword,
 
   /// An identifier.
   ///
@@ -99,6 +99,16 @@ enum TokenType {
   /// The slash token (`/`).
   slash,
 
+  /// The string literal.
+  ///
+  /// The string literal follow the grammar:
+  ///
+  /// ```bnf
+  /// <string_literal> ::= '"' + <string_character>* + '"'
+  /// <string_character> ::= ~( '"' | '\n' | '\r')
+  ///
+  stringLiteral,
+
   /// The `type` keyword token.
   typeKeyword,
   
@@ -115,6 +125,7 @@ enum TokenType {
       equalitySign => '=',
       eroteme => '?',
       falsum => '⊥',
+      fnKeyword => 'fn',
       identifier => 'identifier',
       importIdentifier => 'import identifier',
       importKeyword => 'import',
@@ -126,6 +137,7 @@ enum TokenType {
       rightBracket => ']',
       rightParenthesis => ')',
       slash => '/',
+      stringLiteral => 'string literal',
       typeKeyword => 'type',
       verum => '⊤',
     };

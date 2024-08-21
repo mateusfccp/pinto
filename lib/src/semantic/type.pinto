@@ -1,0 +1,7 @@
+import pinto/src/semantic/package
+
+type Type = TopType
+          + MonomorphicType(String name, Package source)
+          + PolymorphicType(String name, Package source, [Type] arguments)
+          + TypeParameterType(String name)
+          + BottomType

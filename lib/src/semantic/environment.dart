@@ -19,7 +19,7 @@ final class Environment {
   /// scope of the program.
   final Environment? enclosing;
 
-  final _definedTypes = <String, Type>{};
+  final _definedTypes = <String, PintoType>{};
 
   /// Get a variable with the given [name] in the environment.
   ///
@@ -28,7 +28,7 @@ final class Environment {
   ///
   /// If this environment is a root environment and [name] is not found, `null`
   /// will be returned.
-  Type? getType(String name) {
+  PintoType? getType(String name) {
     if (_definedTypes[name] case final type?) {
       return type;
     } else if (enclosing case final enclosing?) {
@@ -39,7 +39,7 @@ final class Environment {
   }
 
   /// Defines a [name] in the environment with the passed [value].
-  void defineType(Type type) {
+  void defineType(PintoType type) {
     final name = buildTypeName(type);
 
     if (type is TopType) {
@@ -52,8 +52,8 @@ final class Environment {
 
     final existingType = getType(name);
 
-    if (type case MonomorphicType(:final source) || PolymorphicType(:final source)) {
-      if (existingType case MonomorphicType(source: final existingTypeSource) || PolymorphicType(source: final existingTypeSource)) {
+    if (type case PolymorphicType(:final source)) {
+      if (existingType case PolymorphicType(source: final existingTypeSource)) {
         if (source != existingTypeSource) {
           // Type is being shadowed
         }

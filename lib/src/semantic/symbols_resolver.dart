@@ -6,9 +6,8 @@ import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/context/packages.dart' hide Package;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/src/dart/sdk/sdk.dart';
-import 'package:pinto/ast.dart';
-import 'package:pinto/error.dart';
 
+import 'package.dart';
 import 'type.dart';
 
 final class SymbolsResolver {
@@ -28,8 +27,8 @@ final class SymbolsResolver {
   final AbstractDartSdk sdk;
   late Packages _packages;
 
-  Future<List<Type>> getSymbolForPackage({required Package package}) async {
-    final uri = _getUriFromPackage(package);
+  Future<List<PintoType>> getSymbolForPackage({required Package package}) async {
+    final uri = getUriFromPackage(package);
 
     if (uri == null) {
       throw _SymbolResolvingException(package);
@@ -41,40 +40,21 @@ final class SymbolsResolver {
       return [
         for (var element in library.element.exportNamespace.definedNames.values)
           if (element is InterfaceElement)
-            if (element.typeParameters case List(isEmpty: false) && final typeParameters)
-              PolymorphicType(
-                name: element.name,
-                source: package,
-                arguments: [
-                  for (final typeParameter in typeParameters) //
-                    TypeParameterType(name: typeParameter.name),
-                ],
-              )
-            else
-              MonomorphicType(
-                name: element.name,
-                source: package,
-              ),
+            PolymorphicType(
+              name: element.name,
+              source: package,
+              arguments: [
+                for (final typeParameter in element.typeParameters) //
+                  TypeParameterType(name: typeParameter.name),
+              ],
+            )
       ];
     } else {
       throw _SymbolResolvingException(package);
     }
   }
 
-  Future<List<Type>> getSymbolsForImportStatement({required ImportStatement statement}) async {
-    final package = switch (statement.type) {
-      ImportType.dart => DartSdkPackage(name: statement.identifier.lexeme.substring(1)),
-      ImportType.package => ExternalPackage(name: statement.identifier.lexeme),
-    };
-
-    try {
-      return await getSymbolForPackage(package: package);
-    } on _SymbolResolvingException {
-      throw ImportedPackageNotAvailableError(statement.identifier);
-    }
-  }
-
-  String? _getUriFromPackage(Package package) {
+  String? getUriFromPackage(Package package) {
     switch (package) {
       case DartSdkPackage(:final name):
         return sdk.mapDartUri('dart:$name')?.fullName;
@@ -93,6 +73,9 @@ final class SymbolsResolver {
         final folder = _packages[package]?.libFolder;
 
         return folder == null ? null : '$folder/$file';
+      case CurrentPackage():
+        // TODO(mateusfccp): Handle this properly
+        return null;
     }
   }
 }
