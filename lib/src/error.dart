@@ -2,32 +2,30 @@ import 'dart:collection';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'ast/statement.dart';
-import 'ast/token.dart';
+import 'ast/ast.dart';
+import 'lexer/token.dart';
+import 'syntactic_entity.dart';
 
 part 'error.freezed.dart';
 
-/// A Lox error.
+/// A Pinto error.
 sealed class PintoError {}
 
-/// An error that happened while the program was being scanend.
-sealed class ScanError implements PintoError {
+/// An error that happened while the program was being lexed.
+sealed class LexingError implements PintoError {
   int get offset;
 }
 
-final class UnexpectedCharacterError implements ScanError {
+final class UnexpectedCharacterError implements LexingError {
   const UnexpectedCharacterError({
     required this.offset,
-    required this.character,
   });
 
   @override
   final int offset;
-
-  final String character;
 }
 
-final class UnterminatedStringError implements ScanError {
+final class UnterminatedStringError implements LexingError {
   const UnterminatedStringError({required this.offset});
 
   @override
@@ -36,13 +34,13 @@ final class UnterminatedStringError implements ScanError {
 
 /// An error that happened while the program was being parsed.
 sealed class ParseError implements PintoError {
-  Token get token;
+  SyntacticEntity get syntacticEntity;
 }
 
 @freezed
 sealed class ExpectError with _$ExpectError implements ParseError {
   const factory ExpectError({
-    required Token token,
+    required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
   }) = _ExpectError;
 }
@@ -50,7 +48,7 @@ sealed class ExpectError with _$ExpectError implements ParseError {
 @freezed
 sealed class ExpectAfterError with _$ExpectAfterError implements ParseError {
   const factory ExpectAfterError({
-    required Token token,
+    required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
     required ExpectationType after,
   }) = _ExpectAfterError;
@@ -59,7 +57,7 @@ sealed class ExpectAfterError with _$ExpectAfterError implements ParseError {
 @freezed
 sealed class ExpectBeforeError with _$ExpectBeforeError implements ParseError {
   const factory ExpectBeforeError({
-    required Token token,
+    required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
     required ExpectationType before,
   }) = _ExpectBeforeError;
@@ -74,8 +72,8 @@ sealed class ExpectationType with _$ExpectationType {
     String? description,
   }) = OneOfExpectation;
 
-  const factory ExpectationType.statement({
-    required Statement statement,
+  const factory ExpectationType.declaration({
+    required Declaration declaration,
     String? description,
   }) = StatementExpectation;
 
@@ -98,39 +96,39 @@ sealed class ExpectationType with _$ExpectationType {
 
 /// An error that happened while the program was being resolved.
 sealed class ResolveError implements PintoError {
-  Token get token;
+  SyntacticEntity get syntacticEntity;
 }
 
 final class ImportedPackageNotAvailableError implements ResolveError {
-  const ImportedPackageNotAvailableError(this.token);
+  const ImportedPackageNotAvailableError(this.syntacticEntity);
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
 }
 
 final class SymbolNotInScopeError implements ResolveError {
-  const SymbolNotInScopeError(this.token);
+  const SymbolNotInScopeError(this.syntacticEntity);
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
 }
 
 final class TypeParameterAlreadyDefinedError implements ResolveError {
-  const TypeParameterAlreadyDefinedError(this.token);
+  const TypeParameterAlreadyDefinedError(this.syntacticEntity);
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
 }
 
 final class WrongNumberOfArgumentsError implements ResolveError {
   const WrongNumberOfArgumentsError({
-    required this.token,
+    required this.syntacticEntity,
     required this.argumentsCount,
     required this.expectedArgumentsCount,
   }) : assert(argumentsCount != expectedArgumentsCount);
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
 
   final int argumentsCount;
 
@@ -140,7 +138,7 @@ final class WrongNumberOfArgumentsError implements ResolveError {
 /// An pint° error handler.
 final class ErrorHandler {
   final _errors = <PintoError>[];
-  final _listeners = <void Function()>[];
+  final _listeners = <void Function(PintoError)>[];
 
   /// The errors that were emitted by the handler.
   UnmodifiableListView<PintoError> get errors => UnmodifiableListView(_errors);
@@ -155,9 +153,9 @@ final class ErrorHandler {
 
   /// Adds a [listener] to the handler.
   ///
-  /// A listener will be called whenever an erro is emitted. The emmited error
+  /// A listener will be called whenever an error is emitted. The emmited error
   /// is passed to the listener.
-  void addListener(void Function() listener) => _listeners.add(listener);
+  void addListener(void Function(PintoError) listener) => _listeners.add(listener);
 
   /// Removes [listener] from the handler.
   void removeListener(void Function() listener) => _listeners.remove(listener);
@@ -168,7 +166,7 @@ final class ErrorHandler {
   void emit(PintoError error) {
     _errors.add(error);
     for (final listener in _listeners) {
-      listener.call();
+      listener.call(error);
     }
   }
 }

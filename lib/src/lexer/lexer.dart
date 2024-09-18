@@ -3,10 +3,10 @@ import 'package:pinto/error.dart';
 
 import 'token.dart';
 
-/// A Lox scanner.
-final class Scanner {
-  /// Creates a Lox scanner for [source].
-  Scanner({
+/// A Pinto lexer.
+final class Lexer {
+  /// Creates a Pinto lexer for [source].
+  Lexer({
     required String source,
     ErrorHandler? errorHandler,
   })  : _errorHandler = errorHandler,
@@ -47,12 +47,13 @@ final class Scanner {
   }
 
   (int line, int column) positionForOffset(int offset) {
-
     final bound = lowerBound(_lineBreaks, offset);
     final line = bound + 1;
 
-    final start = bound == 0 ? 0 : _lineBreaks[bound - 1] + 1;
+    final start = bound == 0 ? 0 : _lineBreaks[bound - 1];
     final column = offset - start;
+
+    print('Offset: $offset, Line: $line');
 
     return (line, column);
   }
@@ -112,27 +113,25 @@ final class Scanner {
     }
   }
 
-  void _lineBreak() => _lineBreaks.add(_current);
+  void _lineBreak() => _lineBreaks.add(_current - 1);
 
   void _character(String character) {
     if (_isIdentifierStart(character)) {
       _identifier(false);
     } else {
       _errorHandler?.emit(
-        UnexpectedCharacterError(
-          offset: _current,
-          character: character,
-        ),
+        UnexpectedCharacterError(offset: _current - 1),
       );
     }
   }
 
   void _addToken(TokenType type) {
     final text = _source.substring(_start, _current);
+
     final token = Token(
       type: type,
       lexeme: text,
-      offset: _current,
+      offset: _start,
     );
 
     _tokens.add(token);
@@ -186,6 +185,8 @@ final class Scanner {
 
     while (_peek == '/') {
       isImportIdentifier = true;
+
+      _advance();
 
       while (_isIdentifierPart(_peek)) {
         _advance();

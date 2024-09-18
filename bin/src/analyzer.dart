@@ -8,6 +8,7 @@ import 'package:analyzer/src/util/sdk.dart';
 import 'package:lsp_server/lsp_server.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
+import 'package:pinto/lexer.dart';
 import 'package:pinto/localization.dart';
 import 'package:pinto/semantic.dart';
 import 'package:quiver/collection.dart';
@@ -61,15 +62,15 @@ final class Analyzer {
     );
   }
 
-  Future<List<Diagnostic>> analyze(String path, String text) async {
+  Future<List<Diagnostic>> analyze(String path, String source) async {
     final errorHandler = ErrorHandler();
 
-    final scanner = Scanner(
-      source: text,
+    final lexer = Lexer(
+      source: source,
       errorHandler: errorHandler,
     );
 
-    final tokens = scanner.scanTokens();
+    final tokens = lexer.scanTokens();
 
     final parser = Parser(
       tokens: tokens,
@@ -93,7 +94,7 @@ final class Analyzer {
     await resolver.resolve();
 
     final diagnostics = [
-      for (final error in errorHandler.errors) _diagnosticFromError(scanner, error),
+      for (final error in errorHandler.errors) _diagnosticFromError(lexer, error, source),
     ];
 
     _analysisCache[path] = diagnostics;
@@ -102,17 +103,17 @@ final class Analyzer {
   }
 }
 
-Diagnostic _diagnosticFromError(Scanner scanner, PintoError error) {
+Diagnostic _diagnosticFromError(Lexer lexer, PintoError error, String source) {
   final offset = switch (error) {
-    ScanError(:final offset) => offset,
-    ParseError(:final token) || ResolveError(:final token) => token.offset,
+    LexingError(:final offset) => offset,
+    ParseError(:final syntacticEntity) || ResolveError(:final syntacticEntity) => syntacticEntity.offset,
   };
 
-  final (line, column) = scanner.positionForOffset(offset);
+  final (line, column) = lexer.positionForOffset(offset);
 
   final length = switch (error) {
-    ScanError() => 1,
-    ParseError(:final token) || ResolveError(:final token) => token.lexeme.length,
+    LexingError() => 1,
+    ParseError(:final syntacticEntity) || ResolveError(:final syntacticEntity) => syntacticEntity.length,
   };
 
   final start = Position(
@@ -126,7 +127,7 @@ Diagnostic _diagnosticFromError(Scanner scanner, PintoError error) {
   );
 
   final range = Range(start: start, end: end);
-  final message = messageFromError(error);
+  final message = messageFromError(error, source);
 
   return Diagnostic(
     message: message,

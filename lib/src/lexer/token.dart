@@ -1,9 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:pinto/syntactic_entity.dart';
 
 /// A program token.
 @immutable
-final class Token {
+final class Token implements SyntacticEntity {
   /// Creates a program token.
   const Token({
     required this.type,
@@ -18,7 +19,14 @@ final class Token {
   final String lexeme;
 
   /// The offset in which the token was scanned.
+  @override
   final int offset;
+
+  @override
+  int get length => lexeme.length;
+
+  @override
+  int get end => offset + length;
 
   @override
   String toString() => 'Token(type: $type, lexeme: $lexeme, offset: $offset)';
@@ -111,7 +119,7 @@ enum TokenType {
 
   /// The `type` keyword token.
   typeKeyword,
-  
+
   /// The verum token (`⊤`).
   verum;
 

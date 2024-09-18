@@ -1,15 +1,13 @@
+import 'package:pinto/lexer.dart';
 import 'package:pinto/error.dart';
+import 'package:pinto/syntactic_entity.dart';
 
+import 'ast.dart';
 import 'import.dart';
-import 'node.dart';
-import 'program.dart';
-import 'statement.dart';
-import 'token.dart';
-import 'type_literal.dart';
 
-/// A Lox parser.
+/// A Pinto parser.
 final class Parser {
-  /// Creates a Lox parser.
+  /// Creates a Pinto parser.
   Parser({
     required List<Token> tokens,
     ErrorHandler? errorHandler,
@@ -29,42 +27,42 @@ final class Parser {
 
   bool get _isNotAtEnd => !_isAtEnd;
 
-  ProgramAst parse() {
-    final imports = <ImportStatement>[];
-    final body = <Statement>[];
+  List<Declaration> parse() {
+    final body = <Declaration>[];
 
     while (_isNotAtEnd) {
-      try {
-        if (body.isEmpty) {
-          if (_match(TokenType.importKeyword)) {
-            imports.add(_import());
-            continue;
-          }
+      final declaration = _declaration();
+
+      if (declaration != null) {
+        if (body.isNotEmpty && declaration is ImportDeclaration && body[body.length - 1] is! ImportDeclaration) {
+          final error = ExpectAfterError(
+            syntacticEntity: declaration,
+            expectation: ExpectationType.token(token: TokenType.typeKeyword),
+            after: ExpectationType.declaration(declaration: declaration),
+          );
+
+          _errorHandler?.emit(error);
+          throw error;
         }
 
-        _consume(
-          TokenType.typeKeyword,
-          ExpectAfterError(
-            token: _peek,
-            expectation: ExpectationType.oneOf(
-              expectations: [
-                if (body.isEmpty) ExpectationType.token(token: TokenType.importKeyword),
-                ExpectationType.token(token: TokenType.typeKeyword),
-              ],
-            ),
-            after: body.isEmpty //
-                ? ExpectationType.token(token: TokenType.identifier)
-                : ExpectationType.statement(statement: body[body.length - 1]),
-          ),
-        );
-
-        body.add(_typeDefinition());
-      } on ParseError {
-        _synchronize();
+        body.add(declaration);
       }
     }
 
-    return ProgramAst(imports, body);
+    return body;
+  }
+
+  Declaration? _declaration() {
+    try {
+      if (_match(TokenType.importKeyword)) {
+        return _import();
+      } else {
+        return _typeDefinition();
+      }
+    } on ParseError {
+      _synchronize();
+      return null;
+    }
   }
 
   void _synchronize() {
@@ -112,7 +110,7 @@ final class Parser {
     return _consume(
       type,
       ExpectError(
-        token: _peek,
+        syntacticEntity: _peek,
         expectation: TokenExpectation(token: type),
       ),
     );
@@ -126,7 +124,7 @@ final class Parser {
     return _consume(
       type,
       ExpectAfterError(
-        token: _peek,
+        syntacticEntity: _peek,
         expectation: TokenExpectation(token: type),
         after: TokenExpectation(
           token: after,
@@ -136,8 +134,17 @@ final class Parser {
     );
   }
 
-  ImportStatement _import() {
-    final identifier = _consumeExpecting(TokenType.importIdentifier);
+  ImportDeclaration _import() {
+    final keyword = _previous;
+
+    final Token identifier;
+
+    // TODO(mateusfccp): Improve this to allow multiple expectations
+    if (_check(TokenType.identifier)) {
+      identifier = _consumeExpecting(TokenType.identifier);
+    } else {
+      identifier = _consumeExpecting(TokenType.importIdentifier);
+    }
 
     final ImportType type;
 
@@ -147,18 +154,25 @@ final class Parser {
       type = ImportType.package;
     }
 
-    return ImportStatement(type, identifier);
+    return ImportDeclaration(keyword, type, identifier);
   }
 
-  TypeDefinitionStatement _typeDefinition() {
+  TypeDefinition _typeDefinition() {
+    final keyword = _consumeExpecting(TokenType.typeKeyword);
+
     final name = _consumeAfter(
       type: TokenType.identifier,
       after: TokenType.typeKeyword,
     );
 
-    final typeParameters = <IdentifiedTypeLiteral>[];
+    final typeParameters = <IdentifiedTypeIdentifier>[];
+
+    final Token? leftParenthesis;
+    final Token? rightParenthesis;
 
     if (_match(TokenType.leftParenthesis)) {
+      leftParenthesis = _previous;
+
       final firstTypeParameter = _typeParameterLiteral();
 
       typeParameters.add(firstTypeParameter);
@@ -175,14 +189,17 @@ final class Parser {
         typeParameters.add(typeParameter);
       }
 
-      _consumeAfter(
+      rightParenthesis = _consumeAfter(
         type: TokenType.rightParenthesis,
         after: TokenType.identifier,
         description: 'type parameter',
       );
+    } else {
+      leftParenthesis = null;
+      rightParenthesis = null;
     }
 
-    _consumeAfter(
+    final equals = _consumeAfter(
       type: TokenType.equalitySign,
       after: TokenType.identifier,
       description: 'type name',
@@ -196,10 +213,14 @@ final class Parser {
       variants.add(_typeVariant(false));
     }
 
-    return TypeDefinitionStatement(
+    return TypeDefinition(
+      keyword,
       name,
-      typeParameters,
-      variants,
+      leftParenthesis,
+      SyntacticEntityList(typeParameters),
+      rightParenthesis,
+      equals,
+      SyntacticEntityList(variants),
     );
   }
 
@@ -230,80 +251,122 @@ final class Parser {
 
     return TypeVariantNode(
       name,
-      parameters,
+      SyntacticEntityList(parameters),
     );
   }
 
   TypeVariantParameterNode _typeVariationParameter() {
-    final type = _typeLiteral();
+    final type = _typeIdentifier();
 
     final name = _consumeAfter(
       type: TokenType.identifier,
-      after: TokenType.leftParenthesis, // TODO(mateusfccp): Fix it
+      after: TokenType.leftParenthesis, // TODO(mateusfccp): Fix this
       description: 'parameter type',
     );
 
     return TypeVariantParameterNode(type, name);
   }
 
-  TypeLiteral _typeLiteral() {
+  TypeIdentifier _typeIdentifier() {
     if (_match(TokenType.verum)) {
-      return TopTypeLiteral();
+      return TopTypeIdentifier(_previous);
     } else if (_match(TokenType.falsum)) {
-      return BottomTypeLiteral();
+      return BottomTypeIdentifier(_previous);
     } else if (_match(TokenType.leftBracket)) {
-      final literal = _typeLiteral();
+      final leftBracket = _previous;
+      final literal = _typeIdentifier();
 
-      _consumeAfter(
+      final rightBracket = _consumeAfter(
         type: TokenType.rightBracket,
         after: TokenType.identifier, // TODO(mateusfccp): Fix this
       );
 
-      return ListTypeLiteral(literal);
+      return ListTypeIdentifier(
+        leftBracket,
+        literal,
+        rightBracket,
+      );
     } else if (_match(TokenType.leftBrace)) {
-      final literal = _typeLiteral();
+      final leftBrace = _previous;
+      final literal = _typeIdentifier();
 
-      final valueLiteral = _match(TokenType.colon) ? _typeLiteral() : null;
+      final Token? colon;
+      final TypeIdentifier? valueLiteral;
 
-      _consumeAfter(
+      if (_match(TokenType.colon)) {
+        colon = _previous;
+        valueLiteral = _typeIdentifier();
+      } else {
+        colon = null;
+        valueLiteral = null;
+      }
+
+      final rightBrace = _consumeAfter(
         type: TokenType.rightBrace,
         after: TokenType.identifier, // TODO(mateusfccp): Fix this
       );
 
-      if (valueLiteral == null) {
-        return SetTypeLiteral(literal);
+      if (colon == null || valueLiteral == null) {
+        return SetTypeIdentifier(
+          leftBrace,
+          literal,
+          rightBrace,
+        );
       } else {
-        return MapTypeLiteral(literal, valueLiteral);
+        return MapTypeIdentifier(
+          leftBrace,
+          literal,
+          colon,
+          valueLiteral,
+          rightBrace,
+        );
       }
     } else {
       final identifier = _consumeExpecting(TokenType.identifier);
-      final parameters = <TypeLiteral>[];
+      final parameters = <TypeIdentifier>[];
+
+      final Token? leftParenthesis;
+      final Token? rightParenthesis;
 
       if (_match(TokenType.leftParenthesis)) {
-        parameters.add(_typeLiteral());
+        leftParenthesis = _previous;
+        parameters.add(_typeIdentifier());
 
         while (_match(TokenType.comma)) {
-          parameters.add(_typeLiteral());
+          parameters.add(_typeIdentifier());
         }
 
-        _consumeAfter(
+        rightParenthesis = _consumeAfter(
           type: TokenType.rightParenthesis,
           after: TokenType.identifier, // TODO(mateusfccp): Fix this
         );
+      } else {
+        leftParenthesis = null;
+        rightParenthesis = null;
       }
 
-      final literal = IdentifiedTypeLiteral(identifier, parameters);
+      final literal = IdentifiedTypeIdentifier(
+        identifier,
+        leftParenthesis,
+        SyntacticEntityList(parameters),
+        rightParenthesis,
+      );
 
       if (_match(TokenType.eroteme)) {
-        return OptionTypeLiteral(literal);
+        return OptionTypeIdentifier(literal, _previous);
       } else {
         return literal;
       }
     }
   }
 
-  IdentifiedTypeLiteral _typeParameterLiteral() {
+  IdentifiedTypeIdentifier _typeParameterLiteral() {
     final identifier = _consumeExpecting(TokenType.identifier);
-    return IdentifiedTypeLiteral(identifier, null);
+    return IdentifiedTypeIdentifier(
+      identifier,
+      null,
+      null,
+      null,
+    );
   }
 }

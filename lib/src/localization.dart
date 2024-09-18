@@ -1,21 +1,33 @@
 import 'package:intl/intl.dart';
 import 'package:pinto/error.dart';
 
-String messageFromError(PintoError error) {
+String messageFromError(PintoError error, String source) {
+  final offset = switch (error) {
+    LexingError() => error.offset,
+    ParseError(:final syntacticEntity) || ResolveError(syntacticEntity: final syntacticEntity) => syntacticEntity.offset,
+  };
+
+  final end = switch (error) {
+    LexingError() => offset + 1,
+    ParseError(:final syntacticEntity) || ResolveError(syntacticEntity: final syntacticEntity) => syntacticEntity.end,
+  };
+
+  final fragment = source.substring(offset, end);
+
   return switch (error) {
     // Parse errors
-    ExpectError error => expectError('${error.expectation}', error.token.lexeme),
-    ExpectAfterError error => expectAfterError('${error.expectation}', '${error.after}', error.token.lexeme),
-    ExpectBeforeError error => expectBeforeError('${error.expectation}', '${error.before}', error.token.lexeme),
+    ExpectError error => expectError('${error.expectation}', fragment),
+    ExpectAfterError error => expectAfterError('${error.expectation}', '${error.after}', fragment),
+    ExpectBeforeError error => expectBeforeError('${error.expectation}', '${error.before}', fragment),
 
     // Resolve errors
-    ImportedPackageNotAvailableError error => importedPackageNotAvailableError(error.token.lexeme),
-    SymbolNotInScopeError error => symbolNotInScopeError(error.token.lexeme),
-    TypeParameterAlreadyDefinedError error => typeParameterAlreadyDefinedError(error.token.lexeme),
-    WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, error.token.lexeme),
+    ImportedPackageNotAvailableError()  => importedPackageNotAvailableError(fragment),
+    SymbolNotInScopeError()  => symbolNotInScopeError(fragment),
+    TypeParameterAlreadyDefinedError()  => typeParameterAlreadyDefinedError(fragment),
+    WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
 
     // Scan errors
-    UnexpectedCharacterError error => unexpectedCharacterError(error.character),
+    UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
   };
 }
@@ -106,14 +118,14 @@ String wrongNumberOfArgumentsError(int argumentsCount, int expectedArgumentsCoun
   );
 }
 
-// Scan error
+// Lexing errors
 
 String unexpectedCharacterError(String character) {
   return Intl.message(
     "Unexpected character '$character'.",
     name: 'unexpectedCharacterErrorMessage',
     args: [character],
-    desc: "The error message from when the scanner finds a character that it's not supposed to scan.",
+    desc: "The error message from when the lexer finds a character that it's not supposed to scan.",
   );
 }
 
@@ -122,6 +134,6 @@ String unterminatedStringError() {
     "Unexpected string termination.",
     name: 'unterminatedStringErrorMessage',
     args: [],
-    desc: "The error message from when the scanner can't find the end of a string literal.",
+    desc: "The error message from when the lexer can't find the end of a string literal.",
   );
 }

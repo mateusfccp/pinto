@@ -1,4 +1,4 @@
-import pinto/src/semantic/package
+import pinto/semantic
 
 type Type = TopType
           + MonomorphicType(String name, Package source)

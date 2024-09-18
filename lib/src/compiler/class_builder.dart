@@ -1,8 +1,6 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:pinto/ast.dart';
 import 'package:pinto/semantic.dart';
-import 'package:pinto/src/semantic/type_definition.dart';
 
 final class ClassBuilder {
   ClassBuilder({

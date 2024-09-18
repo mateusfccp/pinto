@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ExpectError {
-  Token get token => throw _privateConstructorUsedError;
+  SyntacticEntity get syntacticEntity => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
 
   /// Create a copy of ExpectError
@@ -32,7 +32,7 @@ abstract class $ExpectErrorCopyWith<$Res> {
           ExpectError value, $Res Function(ExpectError) then) =
       _$ExpectErrorCopyWithImpl<$Res, ExpectError>;
   @useResult
-  $Res call({Token token, ExpectationType expectation});
+  $Res call({SyntacticEntity syntacticEntity, ExpectationType expectation});
 
   $ExpectationTypeCopyWith<$Res> get expectation;
 }
@@ -52,14 +52,14 @@ class _$ExpectErrorCopyWithImpl<$Res, $Val extends ExpectError>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
+    Object? syntacticEntity = null,
     Object? expectation = null,
   }) {
     return _then(_value.copyWith(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as Token,
+      syntacticEntity: null == syntacticEntity
+          ? _value.syntacticEntity
+          : syntacticEntity // ignore: cast_nullable_to_non_nullable
+              as SyntacticEntity,
       expectation: null == expectation
           ? _value.expectation
           : expectation // ignore: cast_nullable_to_non_nullable
@@ -86,7 +86,7 @@ abstract class _$$ExpectErrorImplCopyWith<$Res>
       __$$ExpectErrorImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Token token, ExpectationType expectation});
+  $Res call({SyntacticEntity syntacticEntity, ExpectationType expectation});
 
   @override
   $ExpectationTypeCopyWith<$Res> get expectation;
@@ -105,14 +105,14 @@ class __$$ExpectErrorImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
+    Object? syntacticEntity = null,
     Object? expectation = null,
   }) {
     return _then(_$ExpectErrorImpl(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as Token,
+      syntacticEntity: null == syntacticEntity
+          ? _value.syntacticEntity
+          : syntacticEntity // ignore: cast_nullable_to_non_nullable
+              as SyntacticEntity,
       expectation: null == expectation
           ? _value.expectation
           : expectation // ignore: cast_nullable_to_non_nullable
@@ -124,16 +124,17 @@ class __$$ExpectErrorImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$ExpectErrorImpl implements _ExpectError {
-  const _$ExpectErrorImpl({required this.token, required this.expectation});
+  const _$ExpectErrorImpl(
+      {required this.syntacticEntity, required this.expectation});
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
   @override
   final ExpectationType expectation;
 
   @override
   String toString() {
-    return 'ExpectError(token: $token, expectation: $expectation)';
+    return 'ExpectError(syntacticEntity: $syntacticEntity, expectation: $expectation)';
   }
 
   @override
@@ -141,13 +142,14 @@ class _$ExpectErrorImpl implements _ExpectError {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ExpectErrorImpl &&
-            (identical(other.token, token) || other.token == token) &&
+            (identical(other.syntacticEntity, syntacticEntity) ||
+                other.syntacticEntity == syntacticEntity) &&
             (identical(other.expectation, expectation) ||
                 other.expectation == expectation));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, token, expectation);
+  int get hashCode => Object.hash(runtimeType, syntacticEntity, expectation);
 
   /// Create a copy of ExpectError
   /// with the given fields replaced by the non-null parameter values.
@@ -160,11 +162,11 @@ class _$ExpectErrorImpl implements _ExpectError {
 
 abstract class _ExpectError implements ExpectError {
   const factory _ExpectError(
-      {required final Token token,
+      {required final SyntacticEntity syntacticEntity,
       required final ExpectationType expectation}) = _$ExpectErrorImpl;
 
   @override
-  Token get token;
+  SyntacticEntity get syntacticEntity;
   @override
   ExpectationType get expectation;
 
@@ -178,7 +180,7 @@ abstract class _ExpectError implements ExpectError {
 
 /// @nodoc
 mixin _$ExpectAfterError {
-  Token get token => throw _privateConstructorUsedError;
+  SyntacticEntity get syntacticEntity => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
   ExpectationType get after => throw _privateConstructorUsedError;
 
@@ -195,7 +197,10 @@ abstract class $ExpectAfterErrorCopyWith<$Res> {
           ExpectAfterError value, $Res Function(ExpectAfterError) then) =
       _$ExpectAfterErrorCopyWithImpl<$Res, ExpectAfterError>;
   @useResult
-  $Res call({Token token, ExpectationType expectation, ExpectationType after});
+  $Res call(
+      {SyntacticEntity syntacticEntity,
+      ExpectationType expectation,
+      ExpectationType after});
 
   $ExpectationTypeCopyWith<$Res> get expectation;
   $ExpectationTypeCopyWith<$Res> get after;
@@ -216,15 +221,15 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
+    Object? syntacticEntity = null,
     Object? expectation = null,
     Object? after = null,
   }) {
     return _then(_value.copyWith(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as Token,
+      syntacticEntity: null == syntacticEntity
+          ? _value.syntacticEntity
+          : syntacticEntity // ignore: cast_nullable_to_non_nullable
+              as SyntacticEntity,
       expectation: null == expectation
           ? _value.expectation
           : expectation // ignore: cast_nullable_to_non_nullable
@@ -265,7 +270,10 @@ abstract class _$$ExpectAfterErrorImplCopyWith<$Res>
       __$$ExpectAfterErrorImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Token token, ExpectationType expectation, ExpectationType after});
+  $Res call(
+      {SyntacticEntity syntacticEntity,
+      ExpectationType expectation,
+      ExpectationType after});
 
   @override
   $ExpectationTypeCopyWith<$Res> get expectation;
@@ -286,15 +294,15 @@ class __$$ExpectAfterErrorImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
+    Object? syntacticEntity = null,
     Object? expectation = null,
     Object? after = null,
   }) {
     return _then(_$ExpectAfterErrorImpl(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as Token,
+      syntacticEntity: null == syntacticEntity
+          ? _value.syntacticEntity
+          : syntacticEntity // ignore: cast_nullable_to_non_nullable
+              as SyntacticEntity,
       expectation: null == expectation
           ? _value.expectation
           : expectation // ignore: cast_nullable_to_non_nullable
@@ -311,10 +319,12 @@ class __$$ExpectAfterErrorImplCopyWithImpl<$Res>
 
 class _$ExpectAfterErrorImpl implements _ExpectAfterError {
   const _$ExpectAfterErrorImpl(
-      {required this.token, required this.expectation, required this.after});
+      {required this.syntacticEntity,
+      required this.expectation,
+      required this.after});
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
   @override
   final ExpectationType expectation;
   @override
@@ -322,7 +332,7 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
 
   @override
   String toString() {
-    return 'ExpectAfterError(token: $token, expectation: $expectation, after: $after)';
+    return 'ExpectAfterError(syntacticEntity: $syntacticEntity, expectation: $expectation, after: $after)';
   }
 
   @override
@@ -330,14 +340,16 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ExpectAfterErrorImpl &&
-            (identical(other.token, token) || other.token == token) &&
+            (identical(other.syntacticEntity, syntacticEntity) ||
+                other.syntacticEntity == syntacticEntity) &&
             (identical(other.expectation, expectation) ||
                 other.expectation == expectation) &&
             (identical(other.after, after) || other.after == after));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, token, expectation, after);
+  int get hashCode =>
+      Object.hash(runtimeType, syntacticEntity, expectation, after);
 
   /// Create a copy of ExpectAfterError
   /// with the given fields replaced by the non-null parameter values.
@@ -351,12 +363,12 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
 
 abstract class _ExpectAfterError implements ExpectAfterError {
   const factory _ExpectAfterError(
-      {required final Token token,
+      {required final SyntacticEntity syntacticEntity,
       required final ExpectationType expectation,
       required final ExpectationType after}) = _$ExpectAfterErrorImpl;
 
   @override
-  Token get token;
+  SyntacticEntity get syntacticEntity;
   @override
   ExpectationType get expectation;
   @override
@@ -372,7 +384,7 @@ abstract class _ExpectAfterError implements ExpectAfterError {
 
 /// @nodoc
 mixin _$ExpectBeforeError {
-  Token get token => throw _privateConstructorUsedError;
+  SyntacticEntity get syntacticEntity => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
   ExpectationType get before => throw _privateConstructorUsedError;
 
@@ -389,7 +401,10 @@ abstract class $ExpectBeforeErrorCopyWith<$Res> {
           ExpectBeforeError value, $Res Function(ExpectBeforeError) then) =
       _$ExpectBeforeErrorCopyWithImpl<$Res, ExpectBeforeError>;
   @useResult
-  $Res call({Token token, ExpectationType expectation, ExpectationType before});
+  $Res call(
+      {SyntacticEntity syntacticEntity,
+      ExpectationType expectation,
+      ExpectationType before});
 
   $ExpectationTypeCopyWith<$Res> get expectation;
   $ExpectationTypeCopyWith<$Res> get before;
@@ -410,15 +425,15 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
+    Object? syntacticEntity = null,
     Object? expectation = null,
     Object? before = null,
   }) {
     return _then(_value.copyWith(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as Token,
+      syntacticEntity: null == syntacticEntity
+          ? _value.syntacticEntity
+          : syntacticEntity // ignore: cast_nullable_to_non_nullable
+              as SyntacticEntity,
       expectation: null == expectation
           ? _value.expectation
           : expectation // ignore: cast_nullable_to_non_nullable
@@ -459,7 +474,10 @@ abstract class _$$ExpectBeforeErrorImplCopyWith<$Res>
       __$$ExpectBeforeErrorImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Token token, ExpectationType expectation, ExpectationType before});
+  $Res call(
+      {SyntacticEntity syntacticEntity,
+      ExpectationType expectation,
+      ExpectationType before});
 
   @override
   $ExpectationTypeCopyWith<$Res> get expectation;
@@ -480,15 +498,15 @@ class __$$ExpectBeforeErrorImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
+    Object? syntacticEntity = null,
     Object? expectation = null,
     Object? before = null,
   }) {
     return _then(_$ExpectBeforeErrorImpl(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as Token,
+      syntacticEntity: null == syntacticEntity
+          ? _value.syntacticEntity
+          : syntacticEntity // ignore: cast_nullable_to_non_nullable
+              as SyntacticEntity,
       expectation: null == expectation
           ? _value.expectation
           : expectation // ignore: cast_nullable_to_non_nullable
@@ -505,10 +523,12 @@ class __$$ExpectBeforeErrorImplCopyWithImpl<$Res>
 
 class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
   const _$ExpectBeforeErrorImpl(
-      {required this.token, required this.expectation, required this.before});
+      {required this.syntacticEntity,
+      required this.expectation,
+      required this.before});
 
   @override
-  final Token token;
+  final SyntacticEntity syntacticEntity;
   @override
   final ExpectationType expectation;
   @override
@@ -516,7 +536,7 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
 
   @override
   String toString() {
-    return 'ExpectBeforeError(token: $token, expectation: $expectation, before: $before)';
+    return 'ExpectBeforeError(syntacticEntity: $syntacticEntity, expectation: $expectation, before: $before)';
   }
 
   @override
@@ -524,14 +544,16 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ExpectBeforeErrorImpl &&
-            (identical(other.token, token) || other.token == token) &&
+            (identical(other.syntacticEntity, syntacticEntity) ||
+                other.syntacticEntity == syntacticEntity) &&
             (identical(other.expectation, expectation) ||
                 other.expectation == expectation) &&
             (identical(other.before, before) || other.before == before));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, token, expectation, before);
+  int get hashCode =>
+      Object.hash(runtimeType, syntacticEntity, expectation, before);
 
   /// Create a copy of ExpectBeforeError
   /// with the given fields replaced by the non-null parameter values.
@@ -545,12 +567,12 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
 
 abstract class _ExpectBeforeError implements ExpectBeforeError {
   const factory _ExpectBeforeError(
-      {required final Token token,
+      {required final SyntacticEntity syntacticEntity,
       required final ExpectationType expectation,
       required final ExpectationType before}) = _$ExpectBeforeErrorImpl;
 
   @override
-  Token get token;
+  SyntacticEntity get syntacticEntity;
   @override
   ExpectationType get expectation;
   @override
@@ -572,8 +594,8 @@ mixin _$ExpectationType {
     required TResult Function(
             List<ExpectationType> expectations, String? description)
         oneOf,
-    required TResult Function(Statement statement, String? description)
-        statement,
+    required TResult Function(Declaration declaration, String? description)
+        declaration,
     required TResult Function(TokenType token, String? description) token,
   }) =>
       throw _privateConstructorUsedError;
@@ -581,7 +603,8 @@ mixin _$ExpectationType {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult? Function(Statement statement, String? description)? statement,
+    TResult? Function(Declaration declaration, String? description)?
+        declaration,
     TResult? Function(TokenType token, String? description)? token,
   }) =>
       throw _privateConstructorUsedError;
@@ -589,7 +612,7 @@ mixin _$ExpectationType {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult Function(Statement statement, String? description)? statement,
+    TResult Function(Declaration declaration, String? description)? declaration,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) =>
@@ -597,21 +620,21 @@ mixin _$ExpectationType {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) statement,
+    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? statement,
+    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? statement,
+    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) =>
@@ -748,8 +771,8 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
     required TResult Function(
             List<ExpectationType> expectations, String? description)
         oneOf,
-    required TResult Function(Statement statement, String? description)
-        statement,
+    required TResult Function(Declaration declaration, String? description)
+        declaration,
     required TResult Function(TokenType token, String? description) token,
   }) {
     return oneOf(expectations, description);
@@ -760,7 +783,8 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult? Function(Statement statement, String? description)? statement,
+    TResult? Function(Declaration declaration, String? description)?
+        declaration,
     TResult? Function(TokenType token, String? description)? token,
   }) {
     return oneOf?.call(expectations, description);
@@ -771,7 +795,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult Function(Statement statement, String? description)? statement,
+    TResult Function(Declaration declaration, String? description)? declaration,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) {
@@ -785,7 +809,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) statement,
+    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) {
     return oneOf(this);
@@ -795,7 +819,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? statement,
+    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) {
     return oneOf?.call(this);
@@ -805,7 +829,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? statement,
+    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) {
@@ -842,7 +866,7 @@ abstract class _$$StatementExpectationImplCopyWith<$Res>
       __$$StatementExpectationImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Statement statement, String? description});
+  $Res call({Declaration declaration, String? description});
 }
 
 /// @nodoc
@@ -858,14 +882,14 @@ class __$$StatementExpectationImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? statement = null,
+    Object? declaration = null,
     Object? description = freezed,
   }) {
     return _then(_$StatementExpectationImpl(
-      statement: null == statement
-          ? _value.statement
-          : statement // ignore: cast_nullable_to_non_nullable
-              as Statement,
+      declaration: null == declaration
+          ? _value.declaration
+          : declaration // ignore: cast_nullable_to_non_nullable
+              as Declaration,
       description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
@@ -877,11 +901,12 @@ class __$$StatementExpectationImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$StatementExpectationImpl extends StatementExpectation {
-  const _$StatementExpectationImpl({required this.statement, this.description})
+  const _$StatementExpectationImpl(
+      {required this.declaration, this.description})
       : super._();
 
   @override
-  final Statement statement;
+  final Declaration declaration;
   @override
   final String? description;
 
@@ -890,14 +915,14 @@ class _$StatementExpectationImpl extends StatementExpectation {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$StatementExpectationImpl &&
-            (identical(other.statement, statement) ||
-                other.statement == statement) &&
+            (identical(other.declaration, declaration) ||
+                other.declaration == declaration) &&
             (identical(other.description, description) ||
                 other.description == description));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, statement, description);
+  int get hashCode => Object.hash(runtimeType, declaration, description);
 
   /// Create a copy of ExpectationType
   /// with the given fields replaced by the non-null parameter values.
@@ -915,11 +940,11 @@ class _$StatementExpectationImpl extends StatementExpectation {
     required TResult Function(
             List<ExpectationType> expectations, String? description)
         oneOf,
-    required TResult Function(Statement statement, String? description)
-        statement,
+    required TResult Function(Declaration declaration, String? description)
+        declaration,
     required TResult Function(TokenType token, String? description) token,
   }) {
-    return statement(this.statement, description);
+    return declaration(this.declaration, description);
   }
 
   @override
@@ -927,10 +952,11 @@ class _$StatementExpectationImpl extends StatementExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult? Function(Statement statement, String? description)? statement,
+    TResult? Function(Declaration declaration, String? description)?
+        declaration,
     TResult? Function(TokenType token, String? description)? token,
   }) {
-    return statement?.call(this.statement, description);
+    return declaration?.call(this.declaration, description);
   }
 
   @override
@@ -938,12 +964,12 @@ class _$StatementExpectationImpl extends StatementExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult Function(Statement statement, String? description)? statement,
+    TResult Function(Declaration declaration, String? description)? declaration,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) {
-    if (statement != null) {
-      return statement(this.statement, description);
+    if (declaration != null) {
+      return declaration(this.declaration, description);
     }
     return orElse();
   }
@@ -952,32 +978,32 @@ class _$StatementExpectationImpl extends StatementExpectation {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) statement,
+    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) {
-    return statement(this);
+    return declaration(this);
   }
 
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? statement,
+    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) {
-    return statement?.call(this);
+    return declaration?.call(this);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? statement,
+    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) {
-    if (statement != null) {
-      return statement(this);
+    if (declaration != null) {
+      return declaration(this);
     }
     return orElse();
   }
@@ -985,11 +1011,11 @@ class _$StatementExpectationImpl extends StatementExpectation {
 
 abstract class StatementExpectation extends ExpectationType {
   const factory StatementExpectation(
-      {required final Statement statement,
+      {required final Declaration declaration,
       final String? description}) = _$StatementExpectationImpl;
   const StatementExpectation._() : super._();
 
-  Statement get statement;
+  Declaration get declaration;
   @override
   String? get description;
 
@@ -1080,8 +1106,8 @@ class _$TokenExpectationImpl extends TokenExpectation {
     required TResult Function(
             List<ExpectationType> expectations, String? description)
         oneOf,
-    required TResult Function(Statement statement, String? description)
-        statement,
+    required TResult Function(Declaration declaration, String? description)
+        declaration,
     required TResult Function(TokenType token, String? description) token,
   }) {
     return token(this.token, description);
@@ -1092,7 +1118,8 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult? Function(Statement statement, String? description)? statement,
+    TResult? Function(Declaration declaration, String? description)?
+        declaration,
     TResult? Function(TokenType token, String? description)? token,
   }) {
     return token?.call(this.token, description);
@@ -1103,7 +1130,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(List<ExpectationType> expectations, String? description)?
         oneOf,
-    TResult Function(Statement statement, String? description)? statement,
+    TResult Function(Declaration declaration, String? description)? declaration,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) {
@@ -1117,7 +1144,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) statement,
+    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) {
     return token(this);
@@ -1127,7 +1154,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? statement,
+    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) {
     return token?.call(this);
@@ -1137,7 +1164,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? statement,
+    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) {

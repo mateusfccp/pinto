@@ -9,6 +9,7 @@ import 'package:chalkdart/chalkstrings.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:exitcode/exitcode.dart';
 import 'package:path/path.dart';
+import 'package:pinto/lexer.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/compiler.dart';
 import 'package:pinto/error.dart';
@@ -69,85 +70,20 @@ Future<PintoError?> run({
 }) async {
   final errorHandler = ErrorHandler();
 
-  final lineSplitter = LineSplitter(); // TODO(mateusfccp): Convert the handler into an interface and put this logic inside
-  final lines = lineSplitter.convert(source);
-  if (source.endsWith('\n')) {
-    lines.add('');
-  }
-
-  String getLineWithErrorPointer(int line, int column, int length) {
-    final buffer = StringBuffer();
-
-    print('Getting line with error for [$line, $column] with length $length');
-
-    void addLine(int line) {
-      buffer.writeln('${chalk.gray('$line: ')}${lines[line - 1]}');
-    }
-
-    if (line - 1 >= 1) {
-      addLine(line - 1);
-    }
-
-    addLine(line);
-
-    buffer.write('   '); // Padding equivalent to the line indicators
-
-    for (int i = 0; i < column - (length - 1); i++) {
-      buffer.write(' ');
-    }
-
-    final character = length == 1 ? '↑' : '^';
-
-    for (int i = 0; i < length; i++) {
-      buffer.write(chalk.redBright(character));
-    }
-
-    buffer.writeln();
-
-    if (lines.length > line) {
-      addLine(line + 1);
-    }
-
-    return buffer.toString();
-  }
-
-  final scanner = Scanner(
+  final lexer = Lexer(
     source: source,
     errorHandler: errorHandler,
   );
 
-  void handleError() {
-    final error = errorHandler.lastError;
-    if (error == null) return;
+  final errorFormatter = ErrorFormatter(
+    lexer: lexer,
+    source: source,
+    sink: stderr,
+  );
 
-    final offset = switch (error) {
-      ScanError(:final offset) => offset,
-      ParseError(:final token) || ResolveError(:final token) => token.offset,
-    };
+  errorHandler.addListener(errorFormatter.handleError);
 
-    final (line, column) = scanner.positionForOffset(offset);
-
-    final errorHeader = switch (error) {
-      ParseError() when error.token.type == TokenType.endOfFile => '[$line:$column] Error at end:',
-      ParseError() => "[$line:$column]:",
-      ResolveError() => "[$line:$column] Error at '${error.token.lexeme}':",
-      ScanError() => '[$line:$column]:',
-    };
-
-    final errorMessage = messageFromError(error);
-
-    final lineHint = switch (error) {
-      ScanError() => getLineWithErrorPointer(line, column, 1),
-      ParseError(:final token) || ResolveError(:final token) => getLineWithErrorPointer(line, column, token.lexeme.length),
-    };
-
-    stderr.writeln(chalk.yellowBright('$errorHeader $errorMessage'));
-    stderr.writeln(lineHint);
-  }
-
-  errorHandler.addListener(handleError);
-
-  final tokens = scanner.scanTokens();
+  final tokens = lexer.scanTokens();
 
   final parser = Parser(
     tokens: tokens,
@@ -187,4 +123,85 @@ Future<PintoError?> run({
   stdout.write(formatted);
 
   return errorHandler.lastError;
+}
+
+final class ErrorFormatter {
+  ErrorFormatter({
+    required this.lexer,
+    required this.source,
+    required this.sink,
+  }) {
+    final lineSplitter = LineSplitter();
+
+    lines.addAll(
+      lineSplitter.convert(source),
+    );
+
+    if (source.endsWith('\n')) {
+      lines.add('');
+    }
+  }
+
+  final Lexer lexer;
+  final StringSink sink;
+  final lines = <String>[];
+  final String source;
+
+  void handleError(PintoError error) {
+    final offset = switch (error) {
+      LexingError() => error.offset,
+      ParseError(syntacticEntity: final token) || ResolveError(syntacticEntity: final token) => token.offset,
+    };
+
+    final (line, column) = lexer.positionForOffset(offset);
+
+    final errorHeader = switch (error) {
+      ParseError(syntacticEntity: Token(type: TokenType.endOfFile)) => '[$line:$column] Error at end:',
+      ParseError() => "[$line:$column]:",
+      ResolveError(syntacticEntity: final Token token) => "[$line:$column] Error at '${token.lexeme}':",
+      ResolveError() => "[$line:$column] Error at UNHANDLED:",
+      LexingError() => '[$line:$column]:',
+    };
+
+    final errorMessage = messageFromError(error, source);
+
+    sink.writeln(chalk.yellowBright('$errorHeader $errorMessage'));
+
+    final length = switch (error) {
+      LexingError() => 1,
+      ParseError(:final syntacticEntity) || ResolveError(:final syntacticEntity) => syntacticEntity.length,
+    };
+
+    writeLineWithErrorPointer(line, column, length);
+  }
+
+  void writeLineWithErrorPointer(int line, int column, int length) {
+    if (line - 1 >= 1) {
+      addLine(line - 1);
+    }
+
+    addLine(line);
+
+    sink.write('   '); // Padding equivalent to the line indicators
+
+    for (int i = 0; i < column - (length - 1); i++) {
+      sink.write(' ');
+    }
+
+    final character = length == 1 ? '↑' : '^';
+
+    for (int i = 0; i < length; i++) {
+      sink.write(chalk.redBright(character));
+    }
+
+    sink.writeln();
+
+    if (lines.length > line) {
+      addLine(line + 1);
+    }
+  }
+
+  void addLine(int line) {
+    sink.writeln('${chalk.gray('$line: ')}${lines[line - 1]}');
+  }
 }

@@ -1,13 +1,6 @@
-import 'dart:collection';
-
 import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart' hide ClassBuilder;
-import 'package:pinto/ast.dart';
 import 'package:pinto/semantic.dart';
-import 'package:pinto/src/semantic/element.dart';
-import 'package:pinto/src/semantic/import.dart';
-import 'package:pinto/src/semantic/program.dart';
-import 'package:pinto/src/semantic/type_definition.dart';
 
 import 'class_builder.dart';
 
@@ -37,10 +30,25 @@ final class Compiler implements ElementVisitor<void> {
 
   @override
   void visitImportElement(ImportElement importElement) async {
-    final url = symbolsResolver.getUriFromPackage(importElement.package);
+    final String url;
+
+    switch (importElement.package) {
+      case DartSdkPackage(:final name):
+        url = 'dart:$name';
+      case ExternalPackage(:final name):
+        final parts = name.split('/');
+
+        if (parts case [final root]) {
+          url = 'package:$root/$root.dart';
+        } else {
+          url = 'package:$name.dart';
+        }
+      case CurrentPackage():
+        throw 'Nope'; // TODO(mateusfccp): CurrentPackage shouldn't exist
+    }
 
     _directives.add(
-      Directive.import(url!), // TODO(mateusfccp): Deal with it
+      Directive.import(url),
     );
   }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 
@@ -10,14 +12,14 @@ import 'symbols_resolver.dart';
 import 'type.dart';
 import 'type_definition.dart';
 
-final class Resolver implements AstVisitor<Future<Element>> {
+final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   Resolver({
     required this.program,
     required this.symbolsResolver,
     ErrorHandler? errorHandler,
   }) : _errorHandler = errorHandler;
 
-  final ProgramAst program;
+  final List<Declaration> program;
   final SymbolsResolver symbolsResolver;
   final ErrorHandler? _errorHandler;
 
@@ -25,18 +27,64 @@ final class Resolver implements AstVisitor<Future<Element>> {
 
   final _unresolvedParameters = <ParameterElement, TypeVariantParameterNode>{};
 
-  Future<ProgramElement> resolve() async => await program.accept(this) as ProgramElement;
+  Future<ProgramElement> resolve() async {
+    const core = DartSdkPackage(name: 'core');
+    final programElement = ProgramElement();
+
+    await _resolvePackage(core);
+
+    final imports = <Future<void>>[];
+
+    // At this point, imports should be guaranteed to come before anything else.
+    // This is guaranteed in the parser (maybe not the best place?).
+    
+    for (final declaration in program) {
+      try {
+        if (declaration is ImportDeclaration) {
+          imports.add(
+            () async {
+              final import = await declaration.accept(this) as ImportElement;
+              import.enclosingElement = programElement;
+              programElement.imports.add(import);
+            }(),
+          );
+        } else {
+          await imports.wait;
+
+          final typeDefinition = await declaration.accept(this) as TypeDefinitionElement;
+          typeDefinition.enclosingElement = programElement;
+          programElement.typeDefinitions.add(typeDefinition);
+        }
+      } on ResolveError catch (error) {
+        _errorHandler?.emit(error);
+      }
+    }
+
+    for (final MapEntry(key: parameterElement, value: node) in _unresolvedParameters.entries) {
+      try {
+        parameterElement.type = _resolveType(node.type);
+      } on _SymbolNotResolved {
+        // TODO(mateusfccp): do better
+        final type = node.type as IdentifiedTypeIdentifier;
+        _errorHandler?.emit(
+          SymbolNotInScopeError(type.identifier),
+        );
+      }
+    }
+
+    return programElement;
+  }
 
   @override
-  Future<Element> visitFunctionStatement(FunctionStatement statement) {
+  Future<Element> visitFunctionDeclaration(FunctionDeclaration node) {
     throw UnimplementedError();
   }
 
   @override
-  Future<Element> visitImportStatement(ImportStatement statement) async {
-    final package = switch (statement.type) {
-      ImportType.dart => DartSdkPackage(name: statement.identifier.lexeme.substring(1)),
-      ImportType.package => ExternalPackage(name: statement.identifier.lexeme),
+  Future<Element> visitImportDeclaration(ImportDeclaration node) async {
+    final package = switch (node.type) {
+      ImportType.dart => DartSdkPackage(name: node.identifier.lexeme.substring(1)),
+      ImportType.package => ExternalPackage(name: node.identifier.lexeme),
     };
 
     try {
@@ -53,58 +101,16 @@ final class Resolver implements AstVisitor<Future<Element>> {
   }
 
   @override
-  Future<Element> visitProgram(ProgramAst ast) async {
-    const core = DartSdkPackage(name: 'core');
-
-    final program = ProgramElement();
-
-    await Future.wait([
-      _resolvePackage(core),
-      // todo(mateusfccp): Check if order matters
-      for (final importStatement in ast.imports)
-        () async {
-          final import = await importStatement.accept(this) as ImportElement;
-          import.enclosingElement = program;
-          program.imports.add(import);
-        }(),
-    ]);
-
-    for (final statement in ast.body) {
-      try {
-        final typeDefinition = await statement.accept(this) as TypeDefinitionElement;
-        typeDefinition.enclosingElement = program;
-        program.typeDefinitions.add(typeDefinition);
-      } on ResolveError catch (error) {
-        _errorHandler?.emit(error);
-      }
-    }
-
-    for (final MapEntry(key: parameterElement, value: node) in _unresolvedParameters.entries) {
-      try {
-        parameterElement.type = _resolveType(node.type);
-      } on _SymbolNotResolved {
-        // TODO(mateusfccp): do better
-        final type = node.type as IdentifiedTypeLiteral;
-        _errorHandler?.emit(
-          SymbolNotInScopeError(type.identifier),
-        );
-      }
-    }
-
-    return program;
-  }
-
-  @override
-  Future<Element> visitTypeDefinitionStatement(TypeDefinitionStatement statement) async {
+  Future<Element> visitTypeDefinition(TypeDefinition node) async {
     const source = CurrentPackage();
 
-    final definition = TypeDefinitionElement(name: statement.name.lexeme);
+    final definition = TypeDefinitionElement(name: node.name.lexeme);
 
     final definitionType = PolymorphicType(
-      name: statement.name.lexeme,
+      name: node.name.lexeme,
       source: source,
       arguments: [
-        if (statement.parameters case final parameters?)
+        if (node.parameters case final parameters?)
           for (final parameter in parameters) TypeParameterType(name: parameter.identifier.lexeme),
       ],
     )..element = definition;
@@ -113,7 +119,7 @@ final class Resolver implements AstVisitor<Future<Element>> {
     _environment.defineType(definitionType);
     _environment = _environment.fork();
 
-    if (statement.parameters case final parameters?) {
+    if (node.parameters case final parameters?) {
       for (final parameter in parameters) {
         final definedType = _environment.getType(parameter.identifier.lexeme);
 
@@ -129,7 +135,7 @@ final class Resolver implements AstVisitor<Future<Element>> {
       }
     }
 
-    for (final statementVariant in statement.variants) {
+    for (final statementVariant in node.variants) {
       final variant = await statementVariant.accept(this) as TypeVariantElement;
       variant.enclosingElement = definition;
       definition.variants.add(variant);
@@ -171,54 +177,54 @@ final class Resolver implements AstVisitor<Future<Element>> {
     }
   }
 
-  PintoType _resolveType(TypeLiteral literal) {
-    switch (literal) {
-      case TopTypeLiteral():
+  PintoType _resolveType(TypeIdentifier typeIdentifier) {
+    switch (typeIdentifier) {
+      case TopTypeIdentifier():
         return const TopType();
-      case BottomTypeLiteral():
+      case BottomTypeIdentifier():
         return const BottomType();
-      case ListTypeLiteral():
+      case ListTypeIdentifier():
         return PolymorphicType(
           name: 'List',
           source: DartSdkPackage(name: 'core'),
-          arguments: [_resolveType(literal.literal)],
+          arguments: [_resolveType(typeIdentifier.identifier)],
         );
-      case SetTypeLiteral():
+      case SetTypeIdentifier():
         return PolymorphicType(
           name: 'Set',
           source: DartSdkPackage(name: 'core'),
-          arguments: [_resolveType(literal.literal)],
+          arguments: [_resolveType(typeIdentifier.identifier)],
         );
-      case MapTypeLiteral():
+      case MapTypeIdentifier():
         return PolymorphicType(
           name: 'Map',
           source: DartSdkPackage(name: 'core'),
           arguments: [
-            _resolveType(literal.keyLiteral),
-            _resolveType(literal.valueLiteral),
+            _resolveType(typeIdentifier.key),
+            _resolveType(typeIdentifier.value),
           ],
         );
-      case IdentifiedTypeLiteral literal:
-        final baseType = _environment.getType(literal.identifier.lexeme);
+      case IdentifiedTypeIdentifier():
+        final baseType = _environment.getType(typeIdentifier.identifier.lexeme);
 
         if (baseType == null) {
           throw _SymbolNotResolved();
         } else if (baseType is PolymorphicType) {
           final passedArguments = [
-            if (literal.arguments case final arguments?)
+            if (typeIdentifier.arguments case final arguments?)
               for (final argument in arguments) _resolveType(argument),
           ];
 
           if (passedArguments.length != baseType.arguments.length) {
             throw WrongNumberOfArgumentsError(
-              token: literal.identifier,
+              syntacticEntity: typeIdentifier.identifier,
               argumentsCount: passedArguments.length,
               expectedArgumentsCount: baseType.arguments.length,
             );
           }
 
           return PolymorphicType(
-            name: literal.identifier.lexeme,
+            name: typeIdentifier.identifier.lexeme,
             source: baseType.source,
             arguments: passedArguments,
           );
@@ -229,8 +235,8 @@ final class Resolver implements AstVisitor<Future<Element>> {
           throw "Symbol $baseType is non-polymorphic, which shouldn't happen.";
         }
 
-      case OptionTypeLiteral literal:
-        final innerType = _resolveType(literal.literal);
+      case OptionTypeIdentifier():
+        final innerType = _resolveType(typeIdentifier.identifier);
 
         return PolymorphicType(
           name: 'Option',
