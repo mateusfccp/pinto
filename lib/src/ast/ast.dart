@@ -1,6 +1,7 @@
 import 'package:pinto/ast.dart';
 import 'package:pinto/lexer.dart';
-import 'package:pinto/syntactic_entity.dart';
+import 'package:pinto/src/syntactic_entity.dart';
+
 
 sealed class AstNode implements SyntacticEntity {
   const AstNode();

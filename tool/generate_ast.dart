@@ -185,7 +185,7 @@ Future<void> main(List<String> args) async {
                 name: 'FunctionDeclaration',
                 properties: [
                   Property('Token', 'identifier'),
-                  // ('?', 'parameter(s)'),
+                  Property('SyntacticEntityList<Token>', 'parameters'),
                   Property('Expression', 'definition'),
                 ],
               ),
@@ -198,7 +198,7 @@ Future<void> main(List<String> args) async {
 
     astGenerator.defineType('ImportType', 'package:pinto/ast.dart');
     astGenerator.defineType('SyntacticEntity', 'package:pinto/lexer.dart');
-    astGenerator.defineType('Token', 'package:pinto/src/syntactic_entity.dart');
+    astGenerator.defineType('Token', 'package:pinto/syntactic_entity.dart');
 
     astGenerator.write();
 
@@ -255,6 +255,18 @@ final class _NodeDescription {
   final String name;
   final List<Property> properties;
   final List<Method> methods;
+
+  Expression getOffsetBody() {
+    var current = 0;
+    Expression body = refer(properties[current].name);
+
+    while (current <= properties.length && properties[current].optional) {
+      current = current + 1;
+      body = body.nullSafeProperty('offset').ifNullThen(refer(properties[current].name));
+    }
+
+    return body.property('offset');
+  }
 
   Expression getEndBody() {
     var current = properties.length - 1;
@@ -394,8 +406,6 @@ final class _TreeGenerator {
       }
 
       if (node.value.properties.isNotEmpty) {
-        final firstProperty = node.value.properties[0];
-
         builder.methods.add(
           Method((builder) {
             builder.annotations.add(refer('override'));
@@ -403,7 +413,7 @@ final class _TreeGenerator {
             builder.returns = refer('int');
             builder.name = 'offset';
             builder.lambda = true;
-            builder.body = refer(firstProperty.name).property('offset').code;
+            builder.body = node.value.getOffsetBody().code;
           }),
         );
 
@@ -545,14 +555,14 @@ final class _TreeGenerator {
     _types['SyntacticEntityList<$name>'] = TypeReference((builder) {
       builder.symbol = 'SyntacticEntityList';
       builder.types.add(_types[name]!);
-      builder.url = 'package:pinto/src/syntactic_entity.dart';
+      builder.url = 'package:pinto/syntactic_entity.dart';
     });
 
     _types['SyntacticEntityList<$name>?'] = TypeReference((builder) {
       builder.symbol = 'SyntacticEntityList';
       builder.types.add(_types[name]!);
       builder.isNullable = true;
-      builder.url = 'package:pinto/src/syntactic_entity.dart';
+      builder.url = 'package:pinto/syntactic_entity.dart';
     });
 
     _nodesTypes.addAll([name, '$name?', 'List<$name>', 'List<$name>?']);
