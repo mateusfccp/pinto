@@ -2,6 +2,7 @@
 
 [![GitHub License](https://img.shields.io/github/license/mateusfccp/pinto)](./LICENSE)
 [![Pub Version](https://img.shields.io/pub/v/pinto)](https://pub.dev/packages/pinto)
+[![Discord Shield](https://img.shields.io/discord/1286023882515677236)](https://discord.gg/wJ3gGYnv)
 
 The pint° (/pĩntʊ/) programming language.
 
