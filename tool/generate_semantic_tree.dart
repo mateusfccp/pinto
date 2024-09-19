@@ -113,11 +113,6 @@ Future<void> main(List<String> args) async {
     astGenerator.imports.add('type.dart');
 
     astGenerator.write(outputFile);
-
-    // await Process.run(
-    //   'dart',
-    //   ['fix', '--apply', '--code=unnecessary_import,unused_import'],
-    // );
   }
 }
 

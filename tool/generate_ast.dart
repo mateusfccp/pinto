@@ -256,11 +256,6 @@ Future<void> main(List<String> args) async {
     astGenerator.addMethodBuilder(syntacticEntityImplementation);
 
     astGenerator.write(outputFile);
-
-    await Process.run(
-      'dart',
-      ['fix', '--apply', '--code=unnecessary_import,unused_import'],
-    );
   }
 }
 
