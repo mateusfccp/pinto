@@ -6,7 +6,7 @@
 The pint° (/pĩntʊ/) programming language.
 
 > [!WARNING]
-> The pinto° programming language is still in very early development stage, and
+> The pint° programming language is still in very early development stage, and
 is not recommended for use in production software. Use at your own risk.
 
 The pint° programming language is a language that compiles to Dart.
