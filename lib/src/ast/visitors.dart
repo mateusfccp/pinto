@@ -1,5 +1,3 @@
-import 'package:pinto/ast.dart';
-
 import 'ast.dart';
 
 abstract interface class AstNodeVisitor<R> {
@@ -13,13 +11,14 @@ abstract interface class AstNodeVisitor<R> {
   R? visitTypeVariantParameterNode(TypeVariantParameterNode node);
   R? visitTypeVariantNode(TypeVariantNode node);
   R? visitLetExpression(LetExpression node);
-  R? visitStringLiteral(StringLiteral node);
+  R? visitUnitLiteral(UnitLiteral node);
+  R? visitBooleanLiteral(BooleanLiteral node);
   R? visitImportDeclaration(ImportDeclaration node);
   R? visitTypeDefinition(TypeDefinition node);
-  R? visitFunctionDeclaration(FunctionDeclaration node);
+  R? visitLetDeclaration(LetDeclaration node);
 }
 
-abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
+abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
   @override
   R? visitTopTypeIdentifier(TopTypeIdentifier node) => null;
 
@@ -51,7 +50,10 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitLetExpression(LetExpression node) => null;
 
   @override
-  R? visitStringLiteral(StringLiteral node) => null;
+  R? visitUnitLiteral(UnitLiteral node) => null;
+
+  @override
+  R? visitBooleanLiteral(BooleanLiteral node) => null;
 
   @override
   R? visitImportDeclaration(ImportDeclaration node) => null;
@@ -60,10 +62,10 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitTypeDefinition(TypeDefinition node) => null;
 
   @override
-  R? visitFunctionDeclaration(FunctionDeclaration node) => null;
+  R? visitLetDeclaration(LetDeclaration node) => null;
 }
 
-abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
+abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor {
   R? visitAstNode(AstNode node) {
     node.visitChildren(this);
     return null;
@@ -116,7 +118,10 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitLiteral(Literal node) => visitExpression(node);
 
   @override
-  R? visitStringLiteral(StringLiteral node) => visitLiteral(node);
+  R? visitUnitLiteral(UnitLiteral node) => visitLiteral(node);
+
+  @override
+  R? visitBooleanLiteral(BooleanLiteral node) => visitLiteral(node);
 
   R? visitDeclaration(Declaration node) => visitAstNode(node);
 
@@ -127,6 +132,5 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitTypeDefinition(TypeDefinition node) => visitDeclaration(node);
 
   @override
-  R? visitFunctionDeclaration(FunctionDeclaration node) =>
-      visitDeclaration(node);
+  R? visitLetDeclaration(LetDeclaration node) => visitDeclaration(node);
 }

@@ -65,7 +65,7 @@ final class Lexer {
       '⊥' => _addToken(TokenType.falsum),
       '@' => _identifier(true),
       '?' => _addToken(TokenType.eroteme),
-      '(' => _addToken(TokenType.leftParenthesis),
+      '(' => _leftParenthesis(),
       ')' => _addToken(TokenType.rightParenthesis),
       '[' => _addToken(TokenType.leftBracket),
       ']' => _addToken(TokenType.rightBracket),
@@ -81,6 +81,14 @@ final class Lexer {
       '\n' => _lineBreak(),
       final character => _character(character),
     };
+  }
+
+  void _leftParenthesis() {
+    if (_match(')')) {
+      _addToken(TokenType.unitLiteral);
+    } else {
+      _addToken(TokenType.leftParenthesis);
+    }
   }
 
   void _slash() {

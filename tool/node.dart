@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+typedef NodeExecutor<T> = void Function(Node<T> node);
+
 final class Node<T> {
   Node({
     required this.value,
@@ -24,9 +26,7 @@ final class Node<T> {
 
   bool get leaf => children.isEmpty;
 
-  void descent<U>(
-    void Function(Node<T> node) executor,
-  ) {
+  void descent(NodeExecutor<T> executor) {
     executor(this);
 
     for (final child in children.values) {
@@ -34,9 +34,7 @@ final class Node<T> {
     }
   }
 
-  void bredthFirstDescent<U>(
-    void Function(Node<T> node) executor,
-  ) {
+  void bredthFirstDescent(NodeExecutor<T> executor) {
     final queue = Queue<Node<T>>();
     var current = this;
 

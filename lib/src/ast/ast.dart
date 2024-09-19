@@ -1,6 +1,6 @@
 import 'package:pinto/ast.dart';
 import 'package:pinto/lexer.dart';
-import 'package:pinto/src/syntactic_entity.dart';
+import 'package:pinto/syntactic_entity.dart';
 
 
 sealed class AstNode implements SyntacticEntity {
@@ -184,7 +184,11 @@ final class IdentifiedTypeIdentifier extends TypeIdentifier {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    AstNodeList(arguments).visitChildren(visitor);
+    if (arguments case final argumentsNodes?) {
+      for (final node in argumentsNodes) {
+        node.visitChildren(visitor);
+      }
+    }
   }
 }
 
@@ -268,7 +272,9 @@ final class TypeVariantNode extends Node {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    AstNodeList(parameters)?.visitChildren(visitor);
+    for (final node in parameters) {
+      node.visitChildren(visitor);
+    }
   }
 }
 
@@ -318,8 +324,8 @@ sealed class Literal extends Expression {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
 }
 
-final class StringLiteral extends Literal {
-  const StringLiteral(this.literal);
+final class UnitLiteral extends Literal {
+  const UnitLiteral(this.literal);
 
   final Token literal;
 
@@ -330,7 +336,25 @@ final class StringLiteral extends Literal {
   int get end => literal.end;
 
   @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStringLiteral(this);
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitUnitLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+}
+
+final class BooleanLiteral extends Literal {
+  const BooleanLiteral(this.literal);
+
+  final Token literal;
+
+  @override
+  int get offset => literal.offset;
+
+  @override
+  int get end => literal.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitBooleanLiteral(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
@@ -406,33 +430,47 @@ final class TypeDefinition extends Declaration {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    AstNodeList(parameters).visitChildren(visitor);
-    AstNodeList(variants)?.visitChildren(visitor);
+    if (parameters case final parametersNodes?) {
+      for (final node in parametersNodes) {
+        node.visitChildren(visitor);
+      }
+    }
+    for (final node in variants) {
+      node.visitChildren(visitor);
+    }
   }
 }
 
-final class FunctionDeclaration extends Declaration {
-  const FunctionDeclaration(
+final class LetDeclaration extends Declaration {
+  const LetDeclaration(
+    this.keyword,
     this.identifier,
-    this.definition,
+    this.parameter,
+    this.equals,
+    this.body,
   );
+
+  final Token keyword;
 
   final Token identifier;
 
-  final Expression definition;
+  final Token? parameter;
+
+  final Token equals;
+
+  final Expression body;
 
   @override
-  int get offset => identifier.offset;
+  int get offset => keyword.offset;
 
   @override
-  int get end => definition.end;
+  int get end => body.end;
 
   @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitFunctionDeclaration(this);
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitLetDeclaration(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    definition.accept(visitor);
+    body.accept(visitor);
   }
 }

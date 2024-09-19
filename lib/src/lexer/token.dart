@@ -120,6 +120,12 @@ enum TokenType {
   /// The `type` keyword token.
   typeKeyword,
 
+  /// The unit literal.
+  ///
+  /// It's represented by the lexeme `()`.
+  // TODO(mateusfccp): Maybe this will be unified with the record/struct literal
+  unitLiteral,
+
   /// The verum token (`⊤`).
   verum;
 
@@ -147,6 +153,7 @@ enum TokenType {
       slash => '/',
       stringLiteral => 'string literal',
       typeKeyword => 'type',
+      unitLiteral => '()',
       verum => '⊤',
     };
   }

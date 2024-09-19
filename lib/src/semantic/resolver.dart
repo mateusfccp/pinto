@@ -5,12 +5,9 @@ import 'package:pinto/error.dart';
 
 import 'element.dart';
 import 'environment.dart';
-import 'import.dart';
 import 'package.dart';
-import 'program.dart';
 import 'symbols_resolver.dart';
 import 'type.dart';
-import 'type_definition.dart';
 
 final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   Resolver({
@@ -73,11 +70,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     }
 
     return programElement;
-  }
-
-  @override
-  Future<Element> visitFunctionDeclaration(FunctionDeclaration node) {
-    throw UnimplementedError();
   }
 
   @override
@@ -163,15 +155,9 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   Future<Element> visitTypeVariantParameterNode(TypeVariantParameterNode node) async {
     try {
       final type = _resolveType(node.type);
-      return ParameterElement(
-        type: type,
-        name: node.name.lexeme,
-      );
+      return ParameterElement(name: node.name.lexeme)..type = type;
     } on _SymbolNotResolved {
-      final parameter = ParameterElement(
-        type: null,
-        name: node.name.lexeme,
-      );
+      final parameter = ParameterElement(name: node.name.lexeme);
       _unresolvedParameters[parameter] = node;
       return parameter;
     }
