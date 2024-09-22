@@ -1,6 +1,4 @@
-import 'package:pinto/compiler.dart';
-
-import 'type.dart';
+import 'element.dart';
 
 /// An environment that carries the context's identifiers.
 ///
@@ -19,7 +17,7 @@ final class Environment {
   /// scope of the program.
   final Environment? enclosing;
 
-  final _definedTypes = <String, PintoType>{};
+  final _definedSymbols = <String, TypedElement>{};
 
   /// Get a variable with the given [name] in the environment.
   ///
@@ -28,39 +26,20 @@ final class Environment {
   ///
   /// If this environment is a root environment and [name] is not found, `null`
   /// will be returned.
-  PintoType? getType(String name) {
-    if (_definedTypes[name] case final type?) {
+  TypedElement? getDefinition(String name) {
+    if (_definedSymbols[name] case final type?) {
       return type;
     } else if (enclosing case final enclosing?) {
-      return enclosing.getType(name);
+      return enclosing.getDefinition(name);
     } else {
       return null;
     }
   }
 
   /// Defines a [name] in the environment with the passed [value].
-  void defineType(PintoType type) {
-    final name = buildTypeName(type);
-
-    if (type is TopType) {
-      throw "Can't redefine the top type.";
-    }
-
-    if (type is BottomType) {
-      throw "Can't redefine the bottom type.";
-    }
-
-    final existingType = getType(name);
-
-    if (type case PolymorphicType(:final source)) {
-      if (existingType case PolymorphicType(source: final existingTypeSource)) {
-        if (source != existingTypeSource) {
-          // Type is being shadowed
-        }
-      }
-    }
-
-    _definedTypes[name] = type;
+  void defineSymbol(String name, TypedElement type) {
+    // TODO(mateusfccp): Consider when we want to allow shadowing or not
+    _definedSymbols[name] = type;
   }
 
   Environment fork() => Environment(enclosing: this);

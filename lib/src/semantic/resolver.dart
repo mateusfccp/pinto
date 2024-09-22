@@ -28,13 +28,13 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     const core = DartSdkPackage(name: 'core');
     final programElement = ProgramElement();
 
-    await _resolvePackage(core);
+    final syntheticTypeDefinitions = await _resolvePackage(core);
 
-    final imports = <Future<void>>[];
+    final imports = <Future<ImportElement>>[];
 
     // At this point, imports should be guaranteed to come before anything else.
     // This is guaranteed in the parser (maybe not the best place?).
-    
+
     for (final declaration in program) {
       try {
         if (declaration is ImportDeclaration) {
@@ -43,26 +43,46 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
               final import = await declaration.accept(this) as ImportElement;
               import.enclosingElement = programElement;
               programElement.imports.add(import);
+              return import;
             }(),
           );
+        } else if (declaration is LetDeclaration) {
+          await imports.wait;
+
+          final letVariableDeclaration = await declaration.accept(this) as LetVariableDeclaration;
+          letVariableDeclaration.enclosingElement = programElement;
+          programElement.declarations.add(letVariableDeclaration);
         } else {
           await imports.wait;
 
           final typeDefinition = await declaration.accept(this) as TypeDefinitionElement;
           typeDefinition.enclosingElement = programElement;
-          programElement.typeDefinitions.add(typeDefinition);
+          programElement.declarations.add(typeDefinition);
         }
       } on ResolveError catch (error) {
         _errorHandler?.emit(error);
       }
     }
 
+    for (final import in await imports.wait) {
+      try {
+        syntheticTypeDefinitions.addAll(await _resolvePackage(import.package));
+      } on ResolveError catch (error) {
+        _errorHandler?.emit(error);
+      }
+    }
+
+    for (final definition in syntheticTypeDefinitions) {
+      programElement.declarations.add(definition);
+      definition.enclosingElement = programElement;
+    }
+
     for (final MapEntry(key: parameterElement, value: node) in _unresolvedParameters.entries) {
       try {
-        parameterElement.type = _resolveType(node.type);
+        parameterElement.type = _resolveTypeIdentifier(node.typeIdentifier);
       } on _SymbolNotResolved {
         // TODO(mateusfccp): do better
-        final type = node.type as IdentifiedTypeIdentifier;
+        final type = node.typeIdentifier as IdentifiedTypeIdentifier;
         _errorHandler?.emit(
           SymbolNotInScopeError(type.identifier),
         );
@@ -73,23 +93,50 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   }
 
   @override
+  Future<Element>? visitIdentifierExpression(IdentifierExpression node) {
+    if (_environment.getDefinition(node.identifier.lexeme) == null) {
+      throw SymbolNotInScopeError(node.identifier);
+    }
+
+    // TODO (mateusfccp): Deal with recursive definitions?
+
+    return null;
+  }
+
+  @override
   Future<Element> visitImportDeclaration(ImportDeclaration node) async {
     final package = switch (node.type) {
       ImportType.dart => DartSdkPackage(name: node.identifier.lexeme.substring(1)),
       ImportType.package => ExternalPackage(name: node.identifier.lexeme),
     };
 
-    try {
-      final symbols = await symbolsResolver.getSymbolForPackage(package: package);
+    return ImportElement(package: package);
+  }
 
-      for (final symbol in symbols) {
-        _environment.defineType(symbol);
-      }
-    } on ResolveError catch (error) {
-      _errorHandler?.emit(error);
+  @override
+  Future<Element> visitLetDeclaration(LetDeclaration node) async {
+    // TODO(mateusfccp): Deal with let function declaration
+
+    final type = _resolveStaticTypeForExpression(node.body);
+
+    if (type == null) {
+      throw SymbolNotInScopeError(node.body);
     }
 
-    return ImportElement(package: package);
+    final declaration = LetVariableDeclaration(
+      name: node.identifier.lexeme,
+      type: type,
+      body: node.body,
+    );
+
+    _environment.defineSymbol(node.identifier.lexeme, declaration);
+    _environment = _environment.fork();
+
+    node.body.accept(this);
+
+    _environment = _environment.enclosing!;
+
+    return declaration;
   }
 
   @override
@@ -105,24 +152,38 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
         if (node.parameters case final parameters?)
           for (final parameter in parameters) TypeParameterType(name: parameter.identifier.lexeme),
       ],
-    )..element = definition;
+      element: definition,
+    );
 
-    final environment = _environment;
-    _environment.defineType(definitionType);
+    definition.definedType = definitionType;
+
+    _environment.defineSymbol(
+      node.name.lexeme,
+      definition,
+    );
     _environment = _environment.fork();
 
     if (node.parameters case final parameters?) {
       for (final parameter in parameters) {
-        final definedType = _environment.getType(parameter.identifier.lexeme);
+        final definedType = _environment.getDefinition(parameter.identifier.lexeme);
 
         if (definedType is TypeParameterType) {
           _errorHandler?.emit(
             TypeParameterAlreadyDefinedError(parameter.identifier),
           );
         } else if (definedType == null) {
+          final element = TypeParameterElement(name: parameter.identifier.lexeme);
           final type = TypeParameterType(name: parameter.identifier.lexeme);
-          _environment.defineType(type);
-          definition.parameters.add(type);
+
+          type.element = element;
+          element.definedType = type;
+
+          _environment.defineSymbol(
+            parameter.identifier.lexeme,
+            element,
+          );
+
+          definition.parameters.add(element);
         }
       }
     }
@@ -133,7 +194,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       definition.variants.add(variant);
     }
 
-    _environment = environment;
+    _environment = _environment.enclosing!;
 
     return definition;
   }
@@ -154,7 +215,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   @override
   Future<Element> visitTypeVariantParameterNode(TypeVariantParameterNode node) async {
     try {
-      final type = _resolveType(node.type);
+      final type = _resolveTypeIdentifier(node.typeIdentifier);
       return ParameterElement(name: node.name.lexeme)..type = type;
     } on _SymbolNotResolved {
       final parameter = ParameterElement(name: node.name.lexeme);
@@ -163,7 +224,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     }
   }
 
-  PintoType _resolveType(TypeIdentifier typeIdentifier) {
+  Type _resolveTypeIdentifier(TypeIdentifier typeIdentifier) {
     switch (typeIdentifier) {
       case TopTypeIdentifier():
         return const TopType();
@@ -173,32 +234,40 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
         return PolymorphicType(
           name: 'List',
           source: DartSdkPackage(name: 'core'),
-          arguments: [_resolveType(typeIdentifier.identifier)],
+          arguments: [_resolveTypeIdentifier(typeIdentifier.identifier)],
         );
       case SetTypeIdentifier():
         return PolymorphicType(
           name: 'Set',
           source: DartSdkPackage(name: 'core'),
-          arguments: [_resolveType(typeIdentifier.identifier)],
+          arguments: [_resolveTypeIdentifier(typeIdentifier.identifier)],
         );
       case MapTypeIdentifier():
         return PolymorphicType(
           name: 'Map',
           source: DartSdkPackage(name: 'core'),
           arguments: [
-            _resolveType(typeIdentifier.key),
-            _resolveType(typeIdentifier.value),
+            _resolveTypeIdentifier(typeIdentifier.key),
+            _resolveTypeIdentifier(typeIdentifier.value),
           ],
         );
       case IdentifiedTypeIdentifier():
-        final baseType = _environment.getType(typeIdentifier.identifier.lexeme);
+        final definition = _environment.getDefinition(typeIdentifier.identifier.lexeme);
+        final Type baseType;
 
-        if (baseType == null) {
+        if (definition == null) {
           throw _SymbolNotResolved();
-        } else if (baseType is PolymorphicType) {
+        } else if (definition case TypeDefiningDeclaration(:final definedType)) {
+          baseType = definedType;
+        } else {
+          // TODO(mateusfccp): Make a proper ResolveError and throw it
+          throw StateError('${typeIdentifier.identifier.lexeme} has type ${definition.runtimeType}.');
+        }
+
+        if (baseType is PolymorphicType) {
           final passedArguments = [
             if (typeIdentifier.arguments case final arguments?)
-              for (final argument in arguments) _resolveType(argument),
+              for (final argument in arguments) _resolveTypeIdentifier(argument),
           ];
 
           if (passedArguments.length != baseType.arguments.length) {
@@ -217,12 +286,11 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
         } else if (baseType is TypeParameterType) {
           return baseType;
         } else {
-          // State error
-          throw "Symbol $baseType is non-polymorphic, which shouldn't happen.";
+          throw StateError("Symbol $baseType is non-polymorphic, which shouldn't happen.");
         }
 
       case OptionTypeIdentifier():
-        final innerType = _resolveType(typeIdentifier.identifier);
+        final innerType = _resolveTypeIdentifier(typeIdentifier.identifier);
 
         return PolymorphicType(
           name: 'Option',
@@ -232,12 +300,41 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     }
   }
 
-  Future<void> _resolvePackage(Package package) async {
-    final symbols = await symbolsResolver.getSymbolForPackage(package: package);
+  Future<List<ImportedSymbolSyntheticElement>> _resolvePackage(Package package) async {
+    final symbols = await symbolsResolver.getSymbolsForPackage(package: package);
+
+    final elements = <ImportedSymbolSyntheticElement>[];
 
     for (final symbol in symbols) {
-      _environment.defineType(symbol);
+      if (symbol is PolymorphicType) {
+        final element = ImportedSymbolSyntheticElement(
+          name: symbol.name,
+          type: TypeType(), // TODO(mateusfccp): Change this when we import other symbols
+        );
+
+        element.definedType = symbol;
+        symbol.element = element;
+
+        _environment.defineSymbol(
+          symbol.name,
+          element,
+        );
+
+        elements.add(element);
+      }
     }
+
+    return elements;
+  }
+
+  Type? _resolveStaticTypeForExpression(Expression expression) {
+    return switch (expression) {
+      BooleanLiteral() => BooleanType(),
+      IdentifierExpression(:final identifier) => _environment.getDefinition(identifier.lexeme)?.type,
+      LetExpression() => throw UnimplementedError(), // TODO(mateusfccp): We will probably need the semantic element for dealing with let environments
+      StringLiteral() => StringType(),
+      UnitLiteral() => UnitType(),
+    };
   }
 }
 

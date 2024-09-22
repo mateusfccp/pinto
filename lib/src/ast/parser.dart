@@ -56,8 +56,12 @@ final class Parser {
     try {
       if (_match(TokenType.importKeyword)) {
         return _import();
-      } else {
+      } else if (_match(TokenType.letKeyword)) {
+        return _letDeclaration();
+      } else if (_match(TokenType.typeKeyword)) {
         return _typeDefinition();
+      } else {
+        return null;
       }
     } on ParseError {
       _synchronize();
@@ -77,8 +81,8 @@ final class Parser {
     }
   }
 
-  bool _match(TokenType type1, [TokenType? type2, TokenType? type3, TokenType? type4]) {
-    final types = [type1, type2, type3, type4].nonNulls;
+  bool _match(TokenType type1, [TokenType? type2, TokenType? type3, TokenType? type4, TokenType? type5, TokenType? type6, TokenType? type7, TokenType? type8]) {
+    final types = [type1, type2, type3, type4, type5, type6, type7, type8].nonNulls;
 
     for (final type in types) {
       if (_check(type)) {
@@ -157,8 +161,76 @@ final class Parser {
     return ImportDeclaration(keyword, type, identifier);
   }
 
+  Expression _expression() {
+    // TODO(mateusfccp): Implement let expression parsing
+
+    final matchExpression = _match(
+      TokenType.falseKeyword,
+      // TokenType.letKeyword,
+      TokenType.stringLiteral,
+      TokenType.trueKeyword,
+      TokenType.unitLiteral,
+      TokenType.identifier,
+    );
+
+    if (matchExpression) {
+      switch (_previous.type) {
+        case TokenType.falseKeyword:
+        case TokenType.trueKeyword:
+          return BooleanLiteral(_previous);
+        case TokenType.stringLiteral:
+          return StringLiteral(_previous);
+        case TokenType.unitLiteral:
+          return UnitLiteral(_previous);
+        case TokenType.identifier:
+          return IdentifierExpression(_previous);
+        default:
+          throw 'unreachable'; // This should not be reachable because of `_match` above
+      }
+    } else {
+      throw ExpectError(
+        syntacticEntity: _previous,
+        expectation: ExpectationType.expression(),
+      );
+    }
+  }
+
+  LetDeclaration _letDeclaration() {
+    final keyword = _previous;
+    final identifier = _consumeExpecting(TokenType.identifier);
+
+    final Token? parameter;
+    if (_match(TokenType.identifier)) {
+      parameter = _previous;
+    } else {
+      parameter = null;
+    }
+
+    final equals = _consume(
+      TokenType.equalitySign,
+      ExpectAfterError(
+        syntacticEntity: _peek,
+        expectation: ExpectationType.token(token: TokenType.equalitySign),
+        after: ExpectationType.token(
+          token: TokenType.identifier,
+          description: parameter == null ? 'declaration name' : 'parameter name',
+        ),
+      ),
+    );
+
+    final body = _expression();
+
+    return LetDeclaration(
+      keyword,
+      identifier,
+      parameter,
+      equals,
+      body,
+    );
+  }
+
   TypeDefinition _typeDefinition() {
-    final keyword = _consumeExpecting(TokenType.typeKeyword);
+    final keyword = _previous;
 
     final name = _consumeAfter(
       type: TokenType.identifier,

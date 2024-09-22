@@ -2,7 +2,6 @@ import 'package:pinto/ast.dart';
 import 'package:pinto/lexer.dart';
 import 'package:pinto/syntactic_entity.dart';
 
-
 sealed class AstNode implements SyntacticEntity {
   const AstNode();
 
@@ -227,16 +226,16 @@ sealed class Node extends AstNode {
 
 final class TypeVariantParameterNode extends Node {
   const TypeVariantParameterNode(
-    this.type,
+    this.typeIdentifier,
     this.name,
   );
 
-  final TypeIdentifier type;
+  final TypeIdentifier typeIdentifier;
 
   final Token name;
 
   @override
-  int get offset => type.offset;
+  int get offset => typeIdentifier.offset;
 
   @override
   int get end => name.end;
@@ -247,7 +246,7 @@ final class TypeVariantParameterNode extends Node {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    type.accept(visitor);
+    typeIdentifier.accept(visitor);
   }
 }
 
@@ -280,6 +279,25 @@ final class TypeVariantNode extends Node {
 
 sealed class Expression extends AstNode {
   const Expression();
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+}
+
+final class IdentifierExpression extends Expression {
+  const IdentifierExpression(this.identifier);
+
+  final Token identifier;
+
+  @override
+  int get offset => identifier.offset;
+
+  @override
+  int get end => identifier.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitIdentifierExpression(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
@@ -320,6 +338,7 @@ final class LetExpression extends Expression {
 sealed class Literal extends Expression {
   const Literal();
 
+  Token get literal;
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
 }
@@ -327,6 +346,7 @@ sealed class Literal extends Expression {
 final class UnitLiteral extends Literal {
   const UnitLiteral(this.literal);
 
+  @override
   final Token literal;
 
   @override
@@ -345,6 +365,7 @@ final class UnitLiteral extends Literal {
 final class BooleanLiteral extends Literal {
   const BooleanLiteral(this.literal);
 
+  @override
   final Token literal;
 
   @override
@@ -355,6 +376,25 @@ final class BooleanLiteral extends Literal {
 
   @override
   R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitBooleanLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+}
+
+final class StringLiteral extends Literal {
+  const StringLiteral(this.literal);
+
+  @override
+  final Token literal;
+
+  @override
+  int get offset => literal.offset;
+
+  @override
+  int get end => literal.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStringLiteral(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}

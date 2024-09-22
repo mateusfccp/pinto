@@ -67,15 +67,11 @@ sealed class ExpectBeforeError with _$ExpectBeforeError implements ParseError {
 sealed class ExpectationType with _$ExpectationType {
   const ExpectationType._();
 
-  const factory ExpectationType.oneOf({
-    required List<ExpectationType> expectations,
-    String? description,
-  }) = OneOfExpectation;
+  const factory ExpectationType.declaration({Declaration? declaration}) = DeclarationExpectation;
 
-  const factory ExpectationType.declaration({
-    required Declaration declaration,
-    String? description,
-  }) = StatementExpectation;
+  const factory ExpectationType.expression({Expression? expression}) = ExpressionExpectation;
+
+  const factory ExpectationType.oneOf({required List<ExpectationType> expectations}) = OneOfExpectation;
 
   const factory ExpectationType.token({
     required TokenType token,
@@ -84,13 +80,15 @@ sealed class ExpectationType with _$ExpectationType {
 
   @override
   String toString() {
-    return description ??
-        switch (this) {
-          // ExpressionExpectation() => 'expression',
-          OneOfExpectation(:final expectations) => "${expectations.length > 1 ? 'one of ' : ''}${expectations.join(', ')}",
-          StatementExpectation() => 'a statement',
-          TokenExpectation(:final token) => "'$token'",
-        };
+    return switch (this) {
+      DeclarationExpectation(declaration: ImportDeclaration()) => 'an import',
+      DeclarationExpectation(declaration: LetDeclaration()) => 'a let declaration',
+      DeclarationExpectation(declaration: TypeDefinition()) => 'a type definition',
+      DeclarationExpectation() => 'a declaration',
+      ExpressionExpectation() => 'an expression',
+      OneOfExpectation(:final expectations) => "${expectations.length > 1 ? 'one of ' : ''}${expectations.join(', ')}",
+      TokenExpectation(:final description, :final token) => description ?? "'$token'",
+    };
   }
 }
 

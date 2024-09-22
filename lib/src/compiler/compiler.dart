@@ -1,16 +1,11 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:code_builder/code_builder.dart' hide ClassBuilder;
+import 'package:pinto/ast.dart';
 import 'package:pinto/semantic.dart';
 
 import 'class_builder.dart';
 
 final class Compiler implements ElementVisitor<void> {
-  Compiler({
-    required this.symbolsResolver,
-  });
-
-  final SymbolsResolver symbolsResolver;
-
   final _directives = ListBuilder<Directive>();
   final _body = ListBuilder<Spec>();
 
@@ -27,6 +22,9 @@ final class Compiler implements ElementVisitor<void> {
 
     sink.write(library.accept(emmiter));
   }
+
+  @override
+  void visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) {}
 
   @override
   void visitImportElement(ImportElement importElement) async {
@@ -53,13 +51,40 @@ final class Compiler implements ElementVisitor<void> {
   }
 
   @override
+  void visitLetVariableDeclaration(LetVariableDeclaration node) {
+    if (node.type is! UnitType) {
+      final code = switch (node.body) {
+        IdentifierExpression(:final identifier) => Code(identifier.lexeme),
+        Literal(:final literal) => Code(literal.lexeme),
+        LetExpression() => null,
+      };
+
+      // TODO(mateusfccp): Also make it const if its an identifier for a constant expression.
+      // TODO(mateusfccp): Once we have string literals with interpolation, we should only consider them const if all the internal expressions are const
+      final constant = node.body is Literal;
+
+      _body.add(
+        Field((builder) {
+          if (constant) {
+            builder.modifier = FieldModifier.constant;
+          } else {
+            builder.modifier = FieldModifier.final$;
+          }
+          builder.name = node.name;
+          builder.assignment = code;
+        }),
+      );
+    }
+  }
+
+  @override
   void visitProgramElement(ProgramElement programElement) {
     for (final import in programElement.imports) {
       import.accept(this);
     }
 
-    for (final typeDefinition in programElement.typeDefinitions) {
-      typeDefinition.accept(this);
+    for (final declaration in programElement.declarations) {
+      declaration.accept(this);
     }
   }
 
@@ -75,7 +100,7 @@ final class Compiler implements ElementVisitor<void> {
       final typeParameters = typeDefinitionElement.parameters;
 
       for (final parameter in typeParameters) {
-        topClass.addParameter(parameter);
+        topClass.addParameter(parameter.type!);
       }
 
       _body.add(topClass.asCodeBuilderClass());
@@ -87,9 +112,10 @@ final class Compiler implements ElementVisitor<void> {
   }
 
   @override
-  void visitParameterElement(ParameterElement parameterElement) {
-    // TODO(mateusfccp): should this be implemented?
-  }
+  void visitParameterElement(ParameterElement parameterElement) {}
+
+  @override
+  void visitTypeParameterElement(TypeParameterElement node) {}
 
   @override
   void visitTypeVariantElement(TypeVariantElement typeParameterElement) {
@@ -117,9 +143,9 @@ final class Compiler implements ElementVisitor<void> {
 
       final typeParameters = _typeParametersFromTypeList(currentVariantTypes);
 
-      for (final type in typeDefinitionElement.parameters) {
-        final argument = typeParameters.contains(type) //
-            ? type
+      for (final typeParameter in typeDefinitionElement.parameters) {
+        final argument = typeParameters.contains(typeParameter.type) //
+            ? typeParameter.type!
             : const BottomType();
 
         variantClass.addParameterToSupertype(argument);
@@ -130,15 +156,15 @@ final class Compiler implements ElementVisitor<void> {
   }
 }
 
-List<TypeParameterType> _typeParametersFromType(PintoType type) {
+List<TypeParameterType> _typeParametersFromType(Type type) {
   return switch (type) {
-    TopType() || BottomType() => const [],
     PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments),
     TypeParameterType() => [type],
+    TopType() || BottomType() || UnitType() || BooleanType() || TypeType() || StringType() => const [],
   };
 }
 
-List<TypeParameterType> _typeParametersFromTypeList(List<PintoType> list) {
+List<TypeParameterType> _typeParametersFromTypeList(List<Type> list) {
   final parameters = {
     for (final type in list) ..._typeParametersFromType(type),
   };

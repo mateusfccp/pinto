@@ -31,6 +31,15 @@ base class Property {
   bool get optional => type.endsWith('?');
 }
 
+final class StringProperty extends Property {
+  StringProperty(String name)
+      : super(
+          'String',
+          name,
+          visitable: false,
+        );
+}
+
 final class EmptyList extends Property {
   EmptyList(
     super.type,
@@ -43,17 +52,32 @@ final class EmptyList extends Property {
         );
 }
 
+final class Token extends Property {
+  Token(String name, {super.late, bool optional = false, super.override = false})
+      : super(
+          'Token${optional ? '?' : ''}',
+          name,
+          visitable: false,
+        );
+}
+
 extension type TreeNode._(Node<_NodeDescription> _node) implements Node<_NodeDescription> {
   TreeNode({
     required String name,
     List<Property> properties = const [],
     List<Method> methods = const [],
     List<TreeNode> children = const [],
+    List<String> implements = const [],
+    bool visitable = true,
+    bool interface = false,
   }) : _node = Node(
           value: _NodeDescription(
             name: name,
             properties: properties,
             methods: methods,
+            implements: implements,
+            visitable: visitable,
+            interface: interface,
           ),
           children: children,
         );
@@ -61,6 +85,9 @@ extension type TreeNode._(Node<_NodeDescription> _node) implements Node<_NodeDes
   String get name => _node.value.name;
   List<Property> get properties => _node.value.properties;
   List<Method> get methods => _node.value.methods;
+  List<String> get implements => _node.value.implements;
+  bool get visitable => _node.value.visitable;
+  bool get interface => _node.value.interface;
 
   TreeNode get root => _node.root as TreeNode;
   TreeNode? get parent => _node.parent as TreeNode?;
@@ -86,13 +113,19 @@ extension type TreeNode._(Node<_NodeDescription> _node) implements Node<_NodeDes
 final class _NodeDescription {
   const _NodeDescription({
     required this.name,
-    this.properties = const [],
-    this.methods = const [],
+    required this.properties,
+    required this.methods,
+    required this.implements,
+    required this.visitable,
+    required this.interface,
   });
 
   final String name;
   final List<Property> properties;
   final List<Method> methods;
+  final List<String> implements;
+  final bool visitable;
+  final bool interface;
 
   Expression getOffsetBody() {
     var current = 0;
@@ -204,7 +237,10 @@ final class TreeGenerator {
     required TreeNode node,
   }) {
     return Class((builder) {
-      if (node.leaf) {
+      if (node.interface) {
+        builder.abstract = true;
+        builder.modifier = ClassModifier.interface;
+      } else if (node.leaf) {
         builder.modifier = ClassModifier.final$;
       } else {
         builder.sealed = true;
@@ -216,38 +252,51 @@ final class TreeGenerator {
         builder.extend = refer(superclassName);
       }
 
+      for (final implements in node.value.implements) {
+        builder.implements.add(refer(implements));
+      }
+
       for (final nodeBuilder in _nodeBuilders) {
         nodeBuilder(builder, node);
       }
 
-      builder.constructors.add(
-        Constructor((builder) {
-          builder.constant = node.canHaveConstConstructor();
+      if (!node.interface) {
+        builder.constructors.add(
+          Constructor((builder) {
+            builder.constant = node.canHaveConstConstructor();
 
-          for (final property in node.properties) {
-            if (property.final$ && property.initializer == null) {
-              switch (constructorRule) {
-                case TreeGeneratorConstructorRule.positional:
-                  builder.requiredParameters.add(
-                    Parameter((builder) {
-                      builder.toThis = true;
-                      builder.name = property.name;
-                    }),
-                  );
-                case TreeGeneratorConstructorRule.named:
-                  builder.optionalParameters.add(
-                    Parameter((builder) {
-                      builder.required = true;
-                      builder.named = true;
-                      builder.toThis = true;
-                      builder.name = property.name;
-                    }),
-                  );
+            for (final property in node.properties) {
+              if (property.initializer == null && !property.late) {
+                switch (constructorRule) {
+                  case TreeGeneratorConstructorRule.positional when property.final$:
+                    builder.requiredParameters.add(
+                      Parameter((builder) {
+                        builder.toThis = true;
+                        builder.name = property.name;
+                      }),
+                    );
+                  case TreeGeneratorConstructorRule.positional:
+                    builder.optionalParameters.add(
+                      Parameter((builder) {
+                        builder.toThis = true;
+                        builder.name = property.name;
+                      }),
+                    );
+                  case TreeGeneratorConstructorRule.named:
+                    builder.optionalParameters.add(
+                      Parameter((builder) {
+                        builder.required = property.final$;
+                        builder.named = true;
+                        builder.toThis = true;
+                        builder.name = property.name;
+                      }),
+                    );
+                }
               }
             }
-          }
-        }),
-      );
+          }),
+        );
+      }
 
       for (final property in node.properties) {
         builder.fields.add(
@@ -279,13 +328,13 @@ final class TreeGenerator {
         builder.methods.add(method);
       }
 
-      if (node.leaf) {
+      if (node.leaf && node.visitable) {
         builder.methods.add(
           _acceptMethod(node: node),
         );
       }
 
-      if (!builder.methods.build().any((Method method) => method.name == 'visitChildren')) {
+      if (node.visitable && !builder.methods.build().any((Method method) => method.name == 'visitChildren')) {
         builder.methods.add(
           _visitChildrenMethod(node: node),
         );
@@ -362,7 +411,7 @@ final class TreeGenerator {
       builder.types.add(refer('R'));
 
       node.descent((child) {
-        if (child.leaf) {
+        if (child.leaf && child.visitable) {
           final method = Method((builder) {
             builder.returns = refer('R?');
             builder.name = 'visit${child.name}';
@@ -389,7 +438,7 @@ final class TreeGenerator {
       builder.implements.add(refer('${node.name}Visitor'));
 
       node.descent((child) {
-        if (child.leaf) {
+        if (child.leaf && child.visitable) {
           final method = Method((builder) {
             builder.annotations.add(refer('override'));
             builder.returns = refer('R?');
@@ -420,32 +469,34 @@ final class TreeGenerator {
       builder.implements.add(refer('${node.name}Visitor'));
 
       node.descent((child) {
-        final method = Method((builder) {
-          if (child.leaf) {
-            builder.annotations.add(refer('override'));
-          }
+        if (child.visitable) {
+          final method = Method((builder) {
+            if (child.leaf) {
+              builder.annotations.add(refer('override'));
+            }
 
-          builder.returns = refer('R?');
-          builder.name = 'visit${child.name}';
-          builder.requiredParameters.add(
-            Parameter((builder) {
-              builder.type = refer(child.name);
-              builder.name = 'node';
-            }),
-          );
+            builder.returns = refer('R?');
+            builder.name = 'visit${child.name}';
+            builder.requiredParameters.add(
+              Parameter((builder) {
+                builder.type = refer(child.name);
+                builder.name = 'node';
+              }),
+            );
 
-          if (child.parent case final parent?) {
-            builder.lambda = true;
-            builder.body = refer('visit${parent.name}').call([refer('node')]).code;
-          } else {
-            builder.body = Block.of([
-              refer('node').property('visitChildren').call([refer('this')]).statement,
-              refer('null').returned.statement,
-            ]);
-          }
-        });
+            if (child.parent case final parent?) {
+              builder.lambda = true;
+              builder.body = refer('visit${parent.name}').call([refer('node')]).code;
+            } else {
+              builder.body = Block.of([
+                refer('node').property('visitChildren').call([refer('this')]).statement,
+                refer('null').returned.statement,
+              ]);
+            }
+          });
 
-        builder.methods.add(method);
+          builder.methods.add(method);
+        }
       });
     });
   }

@@ -588,62 +588,55 @@ abstract class _ExpectBeforeError implements ExpectBeforeError {
 
 /// @nodoc
 mixin _$ExpectationType {
-  String? get description => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            List<ExpectationType> expectations, String? description)
-        oneOf,
-    required TResult Function(Declaration declaration, String? description)
-        declaration,
+    required TResult Function(Declaration? declaration) declaration,
+    required TResult Function(Expression? expression) expression,
+    required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult? Function(Declaration declaration, String? description)?
-        declaration,
+    TResult? Function(Declaration? declaration)? declaration,
+    TResult? Function(Expression? expression)? expression,
+    TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult Function(Declaration declaration, String? description)? declaration,
+    TResult Function(Declaration? declaration)? declaration,
+    TResult Function(Expression? expression)? expression,
+    TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
+    required TResult Function(DeclarationExpectation value) declaration,
+    required TResult Function(ExpressionExpectation value) expression,
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(DeclarationExpectation value)? declaration,
+    TResult? Function(ExpressionExpectation value)? expression,
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
+    TResult Function(DeclarationExpectation value)? declaration,
+    TResult Function(ExpressionExpectation value)? expression,
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) =>
-      throw _privateConstructorUsedError;
-
-  /// Create a copy of ExpectationType
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ExpectationTypeCopyWith<ExpectationType> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -652,8 +645,6 @@ abstract class $ExpectationTypeCopyWith<$Res> {
   factory $ExpectationTypeCopyWith(
           ExpectationType value, $Res Function(ExpectationType) then) =
       _$ExpectationTypeCopyWithImpl<$Res, ExpectationType>;
-  @useResult
-  $Res call({String? description});
 }
 
 /// @nodoc
@@ -668,29 +659,320 @@ class _$ExpectationTypeCopyWithImpl<$Res, $Val extends ExpectationType>
 
   /// Create a copy of ExpectationType
   /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+abstract class _$$DeclarationExpectationImplCopyWith<$Res> {
+  factory _$$DeclarationExpectationImplCopyWith(
+          _$DeclarationExpectationImpl value,
+          $Res Function(_$DeclarationExpectationImpl) then) =
+      __$$DeclarationExpectationImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Declaration? declaration});
+}
+
+/// @nodoc
+class __$$DeclarationExpectationImplCopyWithImpl<$Res>
+    extends _$ExpectationTypeCopyWithImpl<$Res, _$DeclarationExpectationImpl>
+    implements _$$DeclarationExpectationImplCopyWith<$Res> {
+  __$$DeclarationExpectationImplCopyWithImpl(
+      _$DeclarationExpectationImpl _value,
+      $Res Function(_$DeclarationExpectationImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? description = freezed,
+    Object? declaration = freezed,
   }) {
-    return _then(_value.copyWith(
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(_$DeclarationExpectationImpl(
+      declaration: freezed == declaration
+          ? _value.declaration
+          : declaration // ignore: cast_nullable_to_non_nullable
+              as Declaration?,
+    ));
   }
 }
 
 /// @nodoc
-abstract class _$$OneOfExpectationImplCopyWith<$Res>
-    implements $ExpectationTypeCopyWith<$Res> {
+
+class _$DeclarationExpectationImpl extends DeclarationExpectation {
+  const _$DeclarationExpectationImpl({this.declaration}) : super._();
+
+  @override
+  final Declaration? declaration;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DeclarationExpectationImpl &&
+            (identical(other.declaration, declaration) ||
+                other.declaration == declaration));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, declaration);
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DeclarationExpectationImplCopyWith<_$DeclarationExpectationImpl>
+      get copyWith => __$$DeclarationExpectationImplCopyWithImpl<
+          _$DeclarationExpectationImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Declaration? declaration) declaration,
+    required TResult Function(Expression? expression) expression,
+    required TResult Function(List<ExpectationType> expectations) oneOf,
+    required TResult Function(TokenType token, String? description) token,
+  }) {
+    return declaration(this.declaration);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Declaration? declaration)? declaration,
+    TResult? Function(Expression? expression)? expression,
+    TResult? Function(List<ExpectationType> expectations)? oneOf,
+    TResult? Function(TokenType token, String? description)? token,
+  }) {
+    return declaration?.call(this.declaration);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Declaration? declaration)? declaration,
+    TResult Function(Expression? expression)? expression,
+    TResult Function(List<ExpectationType> expectations)? oneOf,
+    TResult Function(TokenType token, String? description)? token,
+    required TResult orElse(),
+  }) {
+    if (declaration != null) {
+      return declaration(this.declaration);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(DeclarationExpectation value) declaration,
+    required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(OneOfExpectation value) oneOf,
+    required TResult Function(TokenExpectation value) token,
+  }) {
+    return declaration(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(DeclarationExpectation value)? declaration,
+    TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(OneOfExpectation value)? oneOf,
+    TResult? Function(TokenExpectation value)? token,
+  }) {
+    return declaration?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(DeclarationExpectation value)? declaration,
+    TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(OneOfExpectation value)? oneOf,
+    TResult Function(TokenExpectation value)? token,
+    required TResult orElse(),
+  }) {
+    if (declaration != null) {
+      return declaration(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class DeclarationExpectation extends ExpectationType {
+  const factory DeclarationExpectation({final Declaration? declaration}) =
+      _$DeclarationExpectationImpl;
+  const DeclarationExpectation._() : super._();
+
+  Declaration? get declaration;
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$DeclarationExpectationImplCopyWith<_$DeclarationExpectationImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ExpressionExpectationImplCopyWith<$Res> {
+  factory _$$ExpressionExpectationImplCopyWith(
+          _$ExpressionExpectationImpl value,
+          $Res Function(_$ExpressionExpectationImpl) then) =
+      __$$ExpressionExpectationImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Expression? expression});
+}
+
+/// @nodoc
+class __$$ExpressionExpectationImplCopyWithImpl<$Res>
+    extends _$ExpectationTypeCopyWithImpl<$Res, _$ExpressionExpectationImpl>
+    implements _$$ExpressionExpectationImplCopyWith<$Res> {
+  __$$ExpressionExpectationImplCopyWithImpl(_$ExpressionExpectationImpl _value,
+      $Res Function(_$ExpressionExpectationImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? expression = freezed,
+  }) {
+    return _then(_$ExpressionExpectationImpl(
+      expression: freezed == expression
+          ? _value.expression
+          : expression // ignore: cast_nullable_to_non_nullable
+              as Expression?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ExpressionExpectationImpl extends ExpressionExpectation {
+  const _$ExpressionExpectationImpl({this.expression}) : super._();
+
+  @override
+  final Expression? expression;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ExpressionExpectationImpl &&
+            (identical(other.expression, expression) ||
+                other.expression == expression));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, expression);
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ExpressionExpectationImplCopyWith<_$ExpressionExpectationImpl>
+      get copyWith => __$$ExpressionExpectationImplCopyWithImpl<
+          _$ExpressionExpectationImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Declaration? declaration) declaration,
+    required TResult Function(Expression? expression) expression,
+    required TResult Function(List<ExpectationType> expectations) oneOf,
+    required TResult Function(TokenType token, String? description) token,
+  }) {
+    return expression(this.expression);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Declaration? declaration)? declaration,
+    TResult? Function(Expression? expression)? expression,
+    TResult? Function(List<ExpectationType> expectations)? oneOf,
+    TResult? Function(TokenType token, String? description)? token,
+  }) {
+    return expression?.call(this.expression);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Declaration? declaration)? declaration,
+    TResult Function(Expression? expression)? expression,
+    TResult Function(List<ExpectationType> expectations)? oneOf,
+    TResult Function(TokenType token, String? description)? token,
+    required TResult orElse(),
+  }) {
+    if (expression != null) {
+      return expression(this.expression);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(DeclarationExpectation value) declaration,
+    required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(OneOfExpectation value) oneOf,
+    required TResult Function(TokenExpectation value) token,
+  }) {
+    return expression(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(DeclarationExpectation value)? declaration,
+    TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(OneOfExpectation value)? oneOf,
+    TResult? Function(TokenExpectation value)? token,
+  }) {
+    return expression?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(DeclarationExpectation value)? declaration,
+    TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(OneOfExpectation value)? oneOf,
+    TResult Function(TokenExpectation value)? token,
+    required TResult orElse(),
+  }) {
+    if (expression != null) {
+      return expression(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ExpressionExpectation extends ExpectationType {
+  const factory ExpressionExpectation({final Expression? expression}) =
+      _$ExpressionExpectationImpl;
+  const ExpressionExpectation._() : super._();
+
+  Expression? get expression;
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ExpressionExpectationImplCopyWith<_$ExpressionExpectationImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$OneOfExpectationImplCopyWith<$Res> {
   factory _$$OneOfExpectationImplCopyWith(_$OneOfExpectationImpl value,
           $Res Function(_$OneOfExpectationImpl) then) =
       __$$OneOfExpectationImplCopyWithImpl<$Res>;
-  @override
   @useResult
-  $Res call({List<ExpectationType> expectations, String? description});
+  $Res call({List<ExpectationType> expectations});
 }
 
 /// @nodoc
@@ -707,17 +989,12 @@ class __$$OneOfExpectationImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? expectations = null,
-    Object? description = freezed,
   }) {
     return _then(_$OneOfExpectationImpl(
       expectations: null == expectations
           ? _value._expectations
           : expectations // ignore: cast_nullable_to_non_nullable
               as List<ExpectationType>,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
     ));
   }
 }
@@ -726,7 +1003,7 @@ class __$$OneOfExpectationImplCopyWithImpl<$Res>
 
 class _$OneOfExpectationImpl extends OneOfExpectation {
   const _$OneOfExpectationImpl(
-      {required final List<ExpectationType> expectations, this.description})
+      {required final List<ExpectationType> expectations})
       : _expectations = expectations,
         super._();
 
@@ -739,22 +1016,17 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   }
 
   @override
-  final String? description;
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OneOfExpectationImpl &&
             const DeepCollectionEquality()
-                .equals(other._expectations, _expectations) &&
-            (identical(other.description, description) ||
-                other.description == description));
+                .equals(other._expectations, _expectations));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType,
-      const DeepCollectionEquality().hash(_expectations), description);
+  int get hashCode => Object.hash(
+      runtimeType, const DeepCollectionEquality().hash(_expectations));
 
   /// Create a copy of ExpectationType
   /// with the given fields replaced by the non-null parameter values.
@@ -768,39 +1040,36 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            List<ExpectationType> expectations, String? description)
-        oneOf,
-    required TResult Function(Declaration declaration, String? description)
-        declaration,
+    required TResult Function(Declaration? declaration) declaration,
+    required TResult Function(Expression? expression) expression,
+    required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) {
-    return oneOf(expectations, description);
+    return oneOf(expectations);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult? Function(Declaration declaration, String? description)?
-        declaration,
+    TResult? Function(Declaration? declaration)? declaration,
+    TResult? Function(Expression? expression)? expression,
+    TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) {
-    return oneOf?.call(expectations, description);
+    return oneOf?.call(expectations);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult Function(Declaration declaration, String? description)? declaration,
+    TResult Function(Declaration? declaration)? declaration,
+    TResult Function(Expression? expression)? expression,
+    TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) {
     if (oneOf != null) {
-      return oneOf(expectations, description);
+      return oneOf(expectations);
     }
     return orElse();
   }
@@ -808,8 +1077,9 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
+    required TResult Function(DeclarationExpectation value) declaration,
+    required TResult Function(ExpressionExpectation value) expression,
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) {
     return oneOf(this);
@@ -818,8 +1088,9 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(DeclarationExpectation value)? declaration,
+    TResult? Function(ExpressionExpectation value)? expression,
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) {
     return oneOf?.call(this);
@@ -828,8 +1099,9 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
+    TResult Function(DeclarationExpectation value)? declaration,
+    TResult Function(ExpressionExpectation value)? expression,
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) {
@@ -842,198 +1114,24 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
 
 abstract class OneOfExpectation extends ExpectationType {
   const factory OneOfExpectation(
-      {required final List<ExpectationType> expectations,
-      final String? description}) = _$OneOfExpectationImpl;
+          {required final List<ExpectationType> expectations}) =
+      _$OneOfExpectationImpl;
   const OneOfExpectation._() : super._();
 
   List<ExpectationType> get expectations;
-  @override
-  String? get description;
 
   /// Create a copy of ExpectationType
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OneOfExpectationImplCopyWith<_$OneOfExpectationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$StatementExpectationImplCopyWith<$Res>
-    implements $ExpectationTypeCopyWith<$Res> {
-  factory _$$StatementExpectationImplCopyWith(_$StatementExpectationImpl value,
-          $Res Function(_$StatementExpectationImpl) then) =
-      __$$StatementExpectationImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({Declaration declaration, String? description});
-}
-
-/// @nodoc
-class __$$StatementExpectationImplCopyWithImpl<$Res>
-    extends _$ExpectationTypeCopyWithImpl<$Res, _$StatementExpectationImpl>
-    implements _$$StatementExpectationImplCopyWith<$Res> {
-  __$$StatementExpectationImplCopyWithImpl(_$StatementExpectationImpl _value,
-      $Res Function(_$StatementExpectationImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ExpectationType
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? declaration = null,
-    Object? description = freezed,
-  }) {
-    return _then(_$StatementExpectationImpl(
-      declaration: null == declaration
-          ? _value.declaration
-          : declaration // ignore: cast_nullable_to_non_nullable
-              as Declaration,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$StatementExpectationImpl extends StatementExpectation {
-  const _$StatementExpectationImpl(
-      {required this.declaration, this.description})
-      : super._();
-
-  @override
-  final Declaration declaration;
-  @override
-  final String? description;
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$StatementExpectationImpl &&
-            (identical(other.declaration, declaration) ||
-                other.declaration == declaration) &&
-            (identical(other.description, description) ||
-                other.description == description));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, declaration, description);
-
-  /// Create a copy of ExpectationType
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$StatementExpectationImplCopyWith<_$StatementExpectationImpl>
-      get copyWith =>
-          __$$StatementExpectationImplCopyWithImpl<_$StatementExpectationImpl>(
-              this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            List<ExpectationType> expectations, String? description)
-        oneOf,
-    required TResult Function(Declaration declaration, String? description)
-        declaration,
-    required TResult Function(TokenType token, String? description) token,
-  }) {
-    return declaration(this.declaration, description);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult? Function(Declaration declaration, String? description)?
-        declaration,
-    TResult? Function(TokenType token, String? description)? token,
-  }) {
-    return declaration?.call(this.declaration, description);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult Function(Declaration declaration, String? description)? declaration,
-    TResult Function(TokenType token, String? description)? token,
-    required TResult orElse(),
-  }) {
-    if (declaration != null) {
-      return declaration(this.declaration, description);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) declaration,
-    required TResult Function(TokenExpectation value) token,
-  }) {
-    return declaration(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? declaration,
-    TResult? Function(TokenExpectation value)? token,
-  }) {
-    return declaration?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? declaration,
-    TResult Function(TokenExpectation value)? token,
-    required TResult orElse(),
-  }) {
-    if (declaration != null) {
-      return declaration(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class StatementExpectation extends ExpectationType {
-  const factory StatementExpectation(
-      {required final Declaration declaration,
-      final String? description}) = _$StatementExpectationImpl;
-  const StatementExpectation._() : super._();
-
-  Declaration get declaration;
-  @override
-  String? get description;
-
-  /// Create a copy of ExpectationType
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$StatementExpectationImplCopyWith<_$StatementExpectationImpl>
-      get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$TokenExpectationImplCopyWith<$Res>
-    implements $ExpectationTypeCopyWith<$Res> {
+abstract class _$$TokenExpectationImplCopyWith<$Res> {
   factory _$$TokenExpectationImplCopyWith(_$TokenExpectationImpl value,
           $Res Function(_$TokenExpectationImpl) then) =
       __$$TokenExpectationImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({TokenType token, String? description});
 }
@@ -1103,11 +1201,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            List<ExpectationType> expectations, String? description)
-        oneOf,
-    required TResult Function(Declaration declaration, String? description)
-        declaration,
+    required TResult Function(Declaration? declaration) declaration,
+    required TResult Function(Expression? expression) expression,
+    required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) {
     return token(this.token, description);
@@ -1116,10 +1212,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult? Function(Declaration declaration, String? description)?
-        declaration,
+    TResult? Function(Declaration? declaration)? declaration,
+    TResult? Function(Expression? expression)? expression,
+    TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) {
     return token?.call(this.token, description);
@@ -1128,9 +1223,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<ExpectationType> expectations, String? description)?
-        oneOf,
-    TResult Function(Declaration declaration, String? description)? declaration,
+    TResult Function(Declaration? declaration)? declaration,
+    TResult Function(Expression? expression)? expression,
+    TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
   }) {
@@ -1143,8 +1238,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
+    required TResult Function(DeclarationExpectation value) declaration,
+    required TResult Function(ExpressionExpectation value) expression,
     required TResult Function(OneOfExpectation value) oneOf,
-    required TResult Function(StatementExpectation value) declaration,
     required TResult Function(TokenExpectation value) token,
   }) {
     return token(this);
@@ -1153,8 +1249,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(DeclarationExpectation value)? declaration,
+    TResult? Function(ExpressionExpectation value)? expression,
     TResult? Function(OneOfExpectation value)? oneOf,
-    TResult? Function(StatementExpectation value)? declaration,
     TResult? Function(TokenExpectation value)? token,
   }) {
     return token?.call(this);
@@ -1163,8 +1260,9 @@ class _$TokenExpectationImpl extends TokenExpectation {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
+    TResult Function(DeclarationExpectation value)? declaration,
+    TResult Function(ExpressionExpectation value)? expression,
     TResult Function(OneOfExpectation value)? oneOf,
-    TResult Function(StatementExpectation value)? declaration,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
   }) {
@@ -1182,12 +1280,10 @@ abstract class TokenExpectation extends ExpectationType {
   const TokenExpectation._() : super._();
 
   TokenType get token;
-  @override
   String? get description;
 
   /// Create a copy of ExpectationType
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$TokenExpectationImplCopyWith<_$TokenExpectationImpl> get copyWith =>
       throw _privateConstructorUsedError;

@@ -17,14 +17,14 @@ final class ClassBuilder {
 
   bool sealed = false;
   bool final$ = false;
-  (String name, List<PintoType> parameters)? _supertype;
+  (String name, List<Type> parameters)? _supertype;
 
   void defineSuperypeName(String name) {
     final parameters = _supertype?.$2 ?? [];
     _supertype = (name, parameters);
   }
 
-  void addParameterToSupertype(PintoType parameter) {
+  void addParameterToSupertype(Type parameter) {
     assert(_supertype != null);
     final supertype = _supertype!;
 
@@ -34,12 +34,12 @@ final class ClassBuilder {
     );
   }
 
-  void addParameter(PintoType parameter) {
+  void addParameter(Type parameter) {
     final name = buildTypeName(parameter);
     _typeParameters.add(name);
   }
 
-  void addField(PintoType type, ParameterElement field) {
+  void addField(Type type, ParameterElement field) {
     _constructorParameters.add(
       Parameter((builder) {
         builder.name = field.name;
@@ -227,15 +227,19 @@ final class ClassBuilder {
 }
 
 @pragma('vm:prefer-inline')
-String buildTypeName(PintoType type) {
+String buildTypeName(Type type) {
   return switch (type) {
-    TopType() => 'Object?',
-    PolymorphicType(:final name) || TypeParameterType(:final name) => name,
+    BooleanType() => 'bool',
     BottomType() => 'Never',
+    PolymorphicType(:final name) || TypeParameterType(:final name) => name,
+    StringType() => 'String',
+    TopType() => 'Object?',
+    TypeType() => 'Type',
+    UnitType() => 'Null',
   };
 }
 
-TypeReference _buildTypeReference(PintoType type) {
+TypeReference _buildTypeReference(Type type) {
   if (type case PolymorphicType(name: '?')) {
     final innerType = _buildTypeReference(type.arguments[0]);
 

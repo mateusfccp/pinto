@@ -1,3 +1,5 @@
+import 'package:pinto/ast.dart';
+
 import 'package.dart';
 import 'type.dart';
 import 'visitors.dart';
@@ -10,12 +12,20 @@ sealed class Element {
   void visitChildren<R>(ElementVisitor<R> visitor);
 }
 
-final class ParameterElement extends Element {
-  ParameterElement({required this.name});
+abstract interface class TypedElement extends Element {
+  Type? get type;
+}
+
+final class ParameterElement extends Element implements TypedElement {
+  ParameterElement({
+    required this.name,
+    this.type,
+  });
 
   final String name;
 
-  PintoType? type;
+  @override
+  Type? type;
 
   @override
   late Element enclosingElement;
@@ -44,8 +54,7 @@ final class TypeVariantElement extends Element {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {
-    final parametersNodes = parameters;
-    for (final node in parametersNodes) {
+    for (final node in parameters) {
       node.visitChildren(visitor);
     }
   }
@@ -73,14 +82,95 @@ final class ImportElement extends DeclarationElement {
   void visitChildren<R>(ElementVisitor<R> visitor) {}
 }
 
-final class TypeDefinitionElement extends DeclarationElement {
+final class LetVariableDeclaration extends DeclarationElement
+    implements TypedElement {
+  LetVariableDeclaration({
+    required this.name,
+    this.type,
+    required this.body,
+  });
+
+  final String name;
+
+  @override
+  Type? type;
+
+  final Expression body;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitLetVariableDeclaration(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+sealed class TypeDefiningDeclaration extends DeclarationElement {
+  TypeDefiningDeclaration();
+
+  Type get definedType;
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+final class ImportedSymbolSyntheticElement extends TypeDefiningDeclaration
+    implements TypedElement {
+  ImportedSymbolSyntheticElement({
+    required this.name,
+    this.type,
+  });
+
+  final String name;
+
+  @override
+  Type? type;
+
+  @override
+  late Type definedType;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitImportedSymbolSyntheticElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+final class TypeParameterElement extends TypeDefiningDeclaration
+    implements TypedElement {
+  TypeParameterElement({required this.name});
+
+  final String name;
+
+  @override
+  Type? type = TypeType();
+
+  @override
+  late Type definedType;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitTypeParameterElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+final class TypeDefinitionElement extends TypeDefiningDeclaration
+    implements TypedElement {
   TypeDefinitionElement({required this.name});
 
   final String name;
 
-  final List<TypeParameterType> parameters = [];
+  final List<TypeParameterElement> parameters = [];
 
   final List<TypeVariantElement> variants = [];
+
+  @override
+  Type? type = TypeType();
+
+  @override
+  late Type definedType;
 
   @override
   R? accept<R>(ElementVisitor<R> visitor) =>
@@ -88,8 +178,10 @@ final class TypeDefinitionElement extends DeclarationElement {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {
-    final variantsNodes = variants;
-    for (final node in variantsNodes) {
+    for (final node in parameters) {
+      node.visitChildren(visitor);
+    }
+    for (final node in variants) {
       node.visitChildren(visitor);
     }
   }
@@ -100,7 +192,7 @@ final class ProgramElement extends Element {
 
   final List<ImportElement> imports = [];
 
-  final List<TypeDefinitionElement> typeDefinitions = [];
+  final List<DeclarationElement> declarations = [];
 
   @override
   late final Null enclosingElement = null;
@@ -110,12 +202,10 @@ final class ProgramElement extends Element {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {
-    final importsNodes = imports;
-    for (final node in importsNodes) {
+    for (final node in imports) {
       node.visitChildren(visitor);
     }
-    final typeDefinitionsNodes = typeDefinitions;
-    for (final node in typeDefinitionsNodes) {
+    for (final node in declarations) {
       node.visitChildren(visitor);
     }
   }

@@ -1,0 +1,26 @@
+let myTrue = true
+
+let myFalse = false
+
+let unit = ()
+
+let something = unit
+
+let myBool = myFalse
+
+let myString = "lorem ipsum"
+
+type Option(T) = Some(T value) + None
+
+type Other(T) = Other(
+  ⊤ top,
+  Option(T) optionT,
+  T tItself,
+  int integer,
+  String string,
+  [T] listOfT,
+  {T} setOfT,
+  {T: T} mapOfTT,
+  T? tEroteme,
+  ⊥ bottom
+)

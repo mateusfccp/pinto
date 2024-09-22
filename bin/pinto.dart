@@ -111,9 +111,7 @@ Future<PintoError?> run({
   }
 
   final buffer = StringBuffer();
-  final visitor = Compiler(
-    symbolsResolver: symbolsResolver,
-  );
+  final visitor = Compiler();
 
   visitor.visitProgramElement(programElement);
   visitor.writeToSink(buffer);
@@ -184,7 +182,7 @@ final class ErrorFormatter {
 
     sink.write('   '); // Padding equivalent to the line indicators
 
-    for (int i = 0; i < column - (length - 1); i++) {
+    for (int i = 0; i < column - 1; i++) {
       sink.write(' ');
     }
 

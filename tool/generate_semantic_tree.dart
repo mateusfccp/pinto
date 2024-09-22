@@ -55,17 +55,30 @@ Future<void> main(List<String> args) async {
         ],
         children: [
           TreeNode(
+            name: 'TypedElement',
+            interface: true,
+            visitable: false,
+            methods: [
+              Method((builder) {
+                builder.returns = refer('Type?');
+                builder.type = MethodType.getter;
+                builder.name = 'type';
+              }),
+            ],
+          ),
+          TreeNode(
             name: 'ParameterElement',
+            implements: ['TypedElement'],
             properties: [
-              Property('String', 'name', visitable: false),
-              Property('PintoType?', 'type', final$: false, visitable: false),
+              StringProperty('name'),
+              TypeProperty(),
               EnclosingElement('Element'),
             ],
           ),
           TreeNode(
             name: 'TypeVariantElement',
             properties: [
-              Property('String', 'name', visitable: false),
+              StringProperty('name'),
               EmptyList('List<ParameterElement>', 'parameters'),
               EnclosingElement('TypeDefinitionElement'),
             ],
@@ -83,15 +96,53 @@ Future<void> main(List<String> args) async {
                 ],
               ),
               TreeNode(
-                name: 'TypeDefinitionElement',
+                name: 'LetVariableDeclaration',
+                implements: ['TypedElement'],
                 properties: [
-                  Property('String', 'name', visitable: false),
-                  EmptyList(
-                    'List<TypeParameterType>',
-                    'parameters',
-                    visitable: false,
+                  StringProperty('name'),
+                  TypeProperty(),
+                  Property('Expression', 'body', visitable: false), // TODO(mateusfccp): We'll probably want this to be a semantic element later
+                ],
+              ),
+              TreeNode(
+                name: 'TypeDefiningDeclaration',
+                methods: [
+                  Method((builder) {
+                    builder.returns = refer('Type');
+                    builder.type = MethodType.getter;
+                    builder.name = 'definedType';
+                  })
+                ],
+                children: [
+                  TreeNode(
+                    name: 'ImportedSymbolSyntheticElement',
+                    implements: ['TypedElement'],
+                    properties: [
+                      StringProperty('name'),
+                      TypeProperty(),
+                      Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
+                    ],
                   ),
-                  EmptyList('List<TypeVariantElement>', 'variants'),
+                  TreeNode(
+                    name: 'TypeParameterElement',
+                    implements: ['TypedElement'],
+                    properties: [
+                      StringProperty('name'),
+                      TypeProperty(initializer: refer('TypeType').call([])),
+                      Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'TypeDefinitionElement',
+                    implements: ['TypedElement'],
+                    properties: [
+                      StringProperty('name'),
+                      EmptyList('List<TypeParameterElement>', 'parameters'),
+                      EmptyList('List<TypeVariantElement>', 'variants'),
+                      TypeProperty(initializer: refer('TypeType').call([])),
+                      Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -100,7 +151,7 @@ Future<void> main(List<String> args) async {
             name: 'ProgramElement',
             properties: [
               EmptyList('List<ImportElement>', 'imports'),
-              EmptyList('List<TypeDefinitionElement>', 'typeDefinitions'),
+              EmptyList('List<DeclarationElement>', 'declarations'),
               EnclosingElement('Null', initializer: literalNull, final$: true),
             ],
           ),
@@ -109,11 +160,24 @@ Future<void> main(List<String> args) async {
       constructorRule: TreeGeneratorConstructorRule.named,
     );
 
+    astGenerator.imports.add('package:pinto/ast.dart');
     astGenerator.imports.add('package.dart');
     astGenerator.imports.add('type.dart');
 
     astGenerator.write(outputFile);
   }
+}
+
+final class TypeProperty extends Property {
+  TypeProperty({String name = 'type', Expression? initializer})
+      : super(
+          'Type?',
+          name,
+          visitable: false,
+          final$: false,
+          override: true,
+          initializer: initializer,
+        );
 }
 
 final class EnclosingElement extends Property {

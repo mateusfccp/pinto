@@ -27,7 +27,7 @@ final class SymbolsResolver {
   final AbstractDartSdk sdk;
   late Packages _packages;
 
-  Future<List<PintoType>> getSymbolForPackage({required Package package}) async {
+  Future<List<Type>> getSymbolsForPackage({required Package package}) async {
     final uri = getUriFromPackage(package);
 
     if (uri == null) {

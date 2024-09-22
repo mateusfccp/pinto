@@ -22,9 +22,44 @@ final class Lexer {
 
   // TODO(mateusfccp): Check what should be a contextual keyword or not
   static const _keywords = {
-    'fn': TokenType.fnKeyword, // TODO(mateusfccp): Turn into macro
     'import': TokenType.importKeyword,
+    'false': TokenType.falseKeyword,
+    'let': TokenType.letKeyword, // TODO: Make it a contextual keyword for iteroperability reasons
+    'true': TokenType.trueKeyword,
     'type': TokenType.typeKeyword,
+
+    // Reserved for interoperability with Dart
+    'assert': TokenType.reserved,
+    'break': TokenType.reserved,
+    'case': TokenType.reserved,
+    'catch': TokenType.reserved,
+    'class': TokenType.reserved,
+    'const': TokenType.reserved,
+    'continue': TokenType.reserved,
+    'default': TokenType.reserved,
+    'do': TokenType.reserved,
+    'else': TokenType.reserved,
+    'enum': TokenType.reserved,
+    'extends': TokenType.reserved,
+    'final': TokenType.reserved,
+    'finally': TokenType.reserved,
+    'for': TokenType.reserved,
+    'if': TokenType.reserved,
+    'in': TokenType.reserved,
+    'is': TokenType.reserved,
+    'new': TokenType.reserved,
+    'null': TokenType.reserved,
+    'rethrow': TokenType.reserved,
+    'return': TokenType.reserved,
+    'super': TokenType.reserved,
+    'switch': TokenType.reserved,
+    'this': TokenType.reserved,
+    'throw': TokenType.reserved,
+    'try': TokenType.reserved,
+    'var': TokenType.reserved,
+    'void': TokenType.reserved,
+    'with': TokenType.reserved,
+    'while': TokenType.reserved,
   };
 
   bool get _isAtEnd => _current >= _source.length;

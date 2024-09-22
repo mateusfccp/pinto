@@ -1,15 +1,15 @@
 import 'element.dart';
 import 'package.dart';
 
-sealed class PintoType {
+sealed class Type {
   Element? get element;
 }
 
-final class TopType implements PintoType {
+final class TopType implements Type {
   const TopType();
 
   @override
-  Element? get element => null;
+  Null get element => null;
 
   @override
   bool operator ==(Object other) => other is TopType;
@@ -21,18 +21,35 @@ final class TopType implements PintoType {
   String toString() => 'TopType';
 }
 
-final class PolymorphicType implements PintoType {
+final class BooleanType implements Type {
+  const BooleanType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is BooleanType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'bool';
+}
+
+final class PolymorphicType implements Type {
   PolymorphicType({
     required this.name,
     required this.source,
     required this.arguments,
+    this.element,
   });
 
   final String name;
 
   final Package source;
 
-  final List<PintoType> arguments;
+  final List<Type> arguments;
 
   @override
   Element? element;
@@ -51,10 +68,42 @@ final class PolymorphicType implements PintoType {
       );
 
   @override
-  String toString() => 'PolymorphicType(name: $name, source: $source, arguments: $arguments)';
+  String toString() {
+    final buffer = StringBuffer(name);
+
+    if (arguments.isNotEmpty) {
+      buffer.write('(');
+      for (final argument in arguments) {
+        buffer.write(argument.toString());
+
+        if (argument != arguments[arguments.length - 1]) {
+          buffer.write(', ');
+        }
+      }
+      buffer.write(')');
+    }
+
+    return buffer.toString();
+  }
 }
 
-final class TypeParameterType implements PintoType {
+final class StringType implements Type {
+  const StringType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is StringType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'String';
+}
+
+final class TypeParameterType implements Type {
   TypeParameterType({required this.name});
 
   final String name;
@@ -72,14 +121,47 @@ final class TypeParameterType implements PintoType {
   int get hashCode => name.hashCode;
 
   @override
-  String toString() => 'TypeParameterType(name: $name)';
+  String toString() => name;
 }
 
-final class BottomType implements PintoType {
+final class TypeType implements Type {
+  const TypeType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is TypeType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'Type';
+}
+
+// TODO(mateusfccp): Generalize to records-like
+final class UnitType implements Type {
+  const UnitType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is UnitType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '()';
+}
+
+final class BottomType implements Type {
   const BottomType();
 
   @override
-  Element? get element => null;
+  Null get element => null;
 
   @override
   bool operator ==(Object other) => other is BottomType;
@@ -88,5 +170,5 @@ final class BottomType implements PintoType {
   int get hashCode => runtimeType.hashCode;
 
   @override
-  String toString() => 'BottomType';
+  String toString() => '⊥';
 }

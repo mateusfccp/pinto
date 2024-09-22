@@ -54,11 +54,11 @@ enum TokenType {
   /// The eroteme is also known as the quesiton mark.
   eroteme,
 
+  /// The false keyword.
+  falseKeyword,
+
   /// The falsum token (`⊥`).
   falsum,
-
-  /// The `fn` keyword
-  fnKeyword,
 
   /// An identifier.
   ///
@@ -92,8 +92,14 @@ enum TokenType {
   /// The left parenthesis token (`(`).
   leftParenthesis,
 
+  /// The let keyword.
+  letKeyword,
+
   /// The plus sign token (`+`).
   plusSign,
+
+  /// A reserved token.
+  reserved,
 
   /// The right brace token (`}`).
   rightBrace,
@@ -109,13 +115,11 @@ enum TokenType {
 
   /// The string literal.
   ///
-  /// The string literal follow the grammar:
-  ///
-  /// ```bnf
-  /// <string_literal> ::= '"' + <string_character>* + '"'
-  /// <string_character> ::= ~( '"' | '\n' | '\r')
-  ///
+  /// String literals are still subspecified. Currently, they will just be "something"
   stringLiteral,
+
+  /// The `true` keyword token.
+  trueKeyword,
 
   /// The `type` keyword token.
   typeKeyword,
@@ -138,20 +142,23 @@ enum TokenType {
       endOfFile => 'EOF',
       equalitySign => '=',
       eroteme => '?',
+      falseKeyword => 'false',
       falsum => '⊥',
-      fnKeyword => 'fn',
       identifier => 'identifier',
       importIdentifier => 'import identifier',
       importKeyword => 'import',
       leftBrace => '{',
       leftBracket => '[',
       leftParenthesis => '(',
+      letKeyword => 'let',
       plusSign => '+',
+      reserved => 'reserved token',
       rightBrace => '}',
       rightBracket => ']',
       rightParenthesis => ')',
       slash => '/',
       stringLiteral => 'string literal',
+      trueKeyword => 'true',
       typeKeyword => 'type',
       unitLiteral => '()',
       verum => '⊤',

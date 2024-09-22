@@ -118,7 +118,7 @@ Future<void> main(List<String> args) async {
               TreeNode(
                 name: 'TypeVariantParameterNode',
                 properties: [
-                  Property('TypeIdentifier', 'type'),
+                  Property('TypeIdentifier', 'typeIdentifier'),
                   Token('name'),
                 ],
               ),
@@ -135,6 +135,12 @@ Future<void> main(List<String> args) async {
             name: 'Expression',
             children: [
               TreeNode(
+                name: 'IdentifierExpression',
+                properties: [
+                  Token('identifier'),
+                ],
+              ),
+              TreeNode(
                 name: 'LetExpression',
                 properties: [
                   Token('identifier'),
@@ -145,17 +151,24 @@ Future<void> main(List<String> args) async {
               ),
               TreeNode(
                 name: 'Literal',
+                methods: [
+                  Method((builder) {
+                    builder.returns = refer('Token');
+                    builder.type = MethodType.getter;
+                    builder.name = 'literal';
+                  }),
+                ],
                 children: [
                   TreeNode(
                     name: 'UnitLiteral',
                     properties: [
-                      Token('literal'),
+                      Token('literal', override: true),
                     ],
                   ),
                   TreeNode(
                     name: 'BooleanLiteral',
                     properties: [
-                      Token('literal'),
+                      Token('literal', override: true),
                     ],
                   ),
                   // TreeNode(
@@ -170,12 +183,12 @@ Future<void> main(List<String> args) async {
                   //     Token('literal'),
                   //   ],
                   // ),
-                  // TreeNode(
-                  //   name: 'StringLiteral',
-                  //   properties: [
-                  //     Token('literal'),
-                  //   ],
-                  // ),
+                  TreeNode(
+                    name: 'StringLiteral',
+                    properties: [
+                      Token('literal', override: true),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -257,13 +270,4 @@ Future<void> main(List<String> args) async {
 
     astGenerator.write(outputFile);
   }
-}
-
-final class Token extends Property {
-  Token(String name, {super.late, bool optional = false})
-      : super(
-          'Token${optional ? '?' : ''}',
-          name,
-          visitable: false,
-        );
 }
