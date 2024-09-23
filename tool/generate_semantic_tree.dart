@@ -76,6 +76,38 @@ Future<void> main(List<String> args) async {
             ],
           ),
           TreeNode(
+            name: 'ExpressionElement',
+            implements: ['TypedElement'],
+            methods: [
+              Method((builder) {
+                builder.returns = refer('bool');
+                builder.type = MethodType.getter;
+                builder.name = 'constant';
+              }),
+            ],
+            properties: [
+              EnclosingElement('Element'),
+            ],
+            children: [
+              TreeNode(
+                name: 'IdentifierElement',
+                properties: [
+                  StringProperty('name'),
+                  TypeProperty(),
+                  Property('bool', 'constant', override: true, visitable: false),
+                ],
+              ),
+              TreeNode(
+                name: 'LiteralElement',
+                properties: [
+                  TypeProperty(),
+                  Property('bool', 'constant', override: true, visitable: false),
+                  Property('Object?', 'constantValue', visitable: false),
+                ],
+              ),
+            ],
+          ),
+          TreeNode(
             name: 'TypeVariantElement',
             properties: [
               StringProperty('name'),
@@ -101,7 +133,7 @@ Future<void> main(List<String> args) async {
                 properties: [
                   StringProperty('name'),
                   TypeProperty(),
-                  Property('Expression', 'body', visitable: false), // TODO(mateusfccp): We'll probably want this to be a semantic element later
+                  Property('ExpressionElement', 'body'),
                 ],
               ),
               TreeNode(
@@ -160,7 +192,6 @@ Future<void> main(List<String> args) async {
       constructorRule: TreeGeneratorConstructorRule.named,
     );
 
-    astGenerator.imports.add('package:pinto/ast.dart');
     astGenerator.imports.add('package.dart');
     astGenerator.imports.add('type.dart');
 

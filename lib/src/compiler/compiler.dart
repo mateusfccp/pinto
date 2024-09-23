@@ -1,13 +1,12 @@
-import 'package:built_collection/built_collection.dart';
-import 'package:code_builder/code_builder.dart' hide ClassBuilder;
-import 'package:pinto/ast.dart';
+import 'package:code_builder/code_builder.dart' hide ClassBuilder, Expression;
 import 'package:pinto/semantic.dart';
 
 import 'class_builder.dart';
 
-final class Compiler implements ElementVisitor<void> {
-  final _directives = ListBuilder<Directive>();
-  final _body = ListBuilder<Spec>();
+final class Compiler implements ElementVisitor<List<Spec>> {
+  Compiler(this.programElement);
+
+  final ProgramElement programElement;
 
   void writeToSink(StringSink sink) {
     final emmiter = DartEmitter(
@@ -15,19 +14,21 @@ final class Compiler implements ElementVisitor<void> {
       useNullSafetySyntax: true,
     );
 
-    final library = Library((builder) {
-      builder.directives = _directives;
-      builder.body = _body;
-    });
+    final [library] = programElement.accept(this) as List<Library>;
 
     sink.write(library.accept(emmiter));
   }
 
   @override
-  void visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) {}
+  List<Code> visitIdentifierElement(IdentifierElement node) {
+    return [Code(node.name)];
+  }
 
   @override
-  void visitImportElement(ImportElement importElement) async {
+  Null visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) {}
+
+  @override
+  List<Directive> visitImportElement(ImportElement importElement) {
     final String url;
 
     switch (importElement.package) {
@@ -45,100 +46,117 @@ final class Compiler implements ElementVisitor<void> {
         throw 'Nope'; // TODO(mateusfccp): CurrentPackage shouldn't exist
     }
 
-    _directives.add(
-      Directive.import(url),
-    );
+    return [Directive.import(url)];
   }
 
   @override
-  void visitLetVariableDeclaration(LetVariableDeclaration node) {
+  List<Field>? visitLetVariableDeclaration(LetVariableDeclaration node) {
     if (node.type is! UnitType) {
-      final code = switch (node.body) {
-        IdentifierExpression(:final identifier) => Code(identifier.lexeme),
-        Literal(:final literal) => Code(literal.lexeme),
-        LetExpression() => null,
-      };
+      final [code] = node.body.accept(this) as List<Code>;
 
-      // TODO(mateusfccp): Also make it const if its an identifier for a constant expression.
-      // TODO(mateusfccp): Once we have string literals with interpolation, we should only consider them const if all the internal expressions are const
-      final constant = node.body is Literal;
+      final field = Field((builder) {
+        if (node.body.constant) {
+          builder.modifier = FieldModifier.constant;
+        } else {
+          builder.modifier = FieldModifier.final$;
+        }
+        builder.name = node.name;
+        builder.assignment = code;
+      });
 
-      _body.add(
-        Field((builder) {
-          if (constant) {
-            builder.modifier = FieldModifier.constant;
-          } else {
-            builder.modifier = FieldModifier.final$;
-          }
-          builder.name = node.name;
-          builder.assignment = code;
-        }),
-      );
+      return [field];
+    } else {
+      return null;
     }
   }
 
   @override
-  void visitProgramElement(ProgramElement programElement) {
-    for (final import in programElement.imports) {
-      import.accept(this);
-    }
-
-    for (final declaration in programElement.declarations) {
-      declaration.accept(this);
-    }
+  List<Code> visitLiteralElement(LiteralElement node) {
+    return [literal(node.constantValue).code];
   }
 
   @override
-  void visitTypeDefinitionElement(TypeDefinitionElement typeDefinitionElement) {
+  List<Library> visitProgramElement(ProgramElement programElement) {
+    final library = Library((builder) {
+      for (final import in programElement.imports) {
+        final [element] = import.accept(this) as List<Directive>;
+        builder.directives.add(element);
+      }
+
+      for (final declaration in programElement.declarations) {
+        final elements = declaration.accept(this);
+        if (elements != null) {
+          builder.body.addAll(elements);
+        }
+      }
+    });
+
+    return [library];
+  }
+
+  @override
+  List<Class> visitTypeDefinitionElement(TypeDefinitionElement typeDefinitionElement) {
+    final classes = <Class>[];
+
     if (typeDefinitionElement.variants case [final variant]) {
-      variant.accept(this);
+      final [class_] = variant.accept(this) as List<Class>;
+      classes.add(class_);
     } else {
       final topClass = ClassBuilder(name: typeDefinitionElement.name);
 
       topClass.sealed = true;
 
-      final typeParameters = typeDefinitionElement.parameters;
-
-      for (final parameter in typeParameters) {
-        topClass.addParameter(parameter.type!);
+      for (final parameter in typeDefinitionElement.parameters) {
+        final [reference] = parameter.accept(this) as List<Reference>;
+        topClass.addParameter(reference);
       }
 
-      _body.add(topClass.asCodeBuilderClass());
+      classes.add(topClass.asCodeBuilderClass());
 
       for (final variant in typeDefinitionElement.variants) {
-        variant.accept(this);
+        final [class_] = variant.accept(this) as List<Class>;
+        classes.add(class_);
       }
     }
+
+    return classes;
   }
 
   @override
-  void visitParameterElement(ParameterElement parameterElement) {}
+  Null visitParameterElement(ParameterElement node) {
+    // We still don't have a way to compile it to a single element, as for classes we have to both add constructor parameters and fields
+  }
 
   @override
-  void visitTypeParameterElement(TypeParameterElement node) {}
+  List<Reference> visitTypeParameterElement(TypeParameterElement node) {
+    return [_typeReferenceFromType(node.definedType)];
+  }
 
   @override
-  void visitTypeVariantElement(TypeVariantElement typeParameterElement) {
-    final typeDefinitionElement = typeParameterElement.enclosingElement;
+  List<Class> visitTypeVariantElement(TypeVariantElement node) {
+    final typeDefinitionElement = node.enclosingElement;
 
     final variantClass = ClassBuilder(
-      name: typeParameterElement.name,
+      name: node.name,
       withEquality: true,
     )..final$ = true;
 
-    for (final parameter in typeParameterElement.parameters) {
+    for (final parameter in node.parameters) {
       for (final type in _typeParametersFromType(parameter.type!)) {
-        variantClass.addParameter(type);
+        variantClass.addParameter(_typeReferenceFromType(type));
       }
 
-      variantClass.addField(parameter.type!, parameter);
+      variantClass.addField(
+        _typeReferenceFromType(parameter.type!),
+        parameter,
+      );
     }
 
     if (typeDefinitionElement.variants.length > 1) {
-      variantClass.defineSuperypeName(typeDefinitionElement.name);
+      variantClass.defineSupertypeName(typeDefinitionElement.name);
 
       final currentVariantTypes = [
-        for (final parameter in typeParameterElement.parameters) parameter.type!,
+        for (final parameter in node.parameters) parameter.type!,
       ];
 
       final typeParameters = _typeParametersFromTypeList(currentVariantTypes);
@@ -148,11 +166,50 @@ final class Compiler implements ElementVisitor<void> {
             ? typeParameter.type!
             : const BottomType();
 
-        variantClass.addParameterToSupertype(argument);
+        final parameter = _typeReferenceFromType(argument);
+        variantClass.addParameterToSupertype(parameter);
       }
     }
 
-    _body.add(variantClass.asCodeBuilderClass());
+    return [variantClass.asCodeBuilderClass()];
+  }
+}
+
+@pragma('vm:prefer-inline')
+String _buildTypeName(Type type) {
+  return switch (type) {
+    BooleanType() => 'bool',
+    BottomType() => 'Never',
+    PolymorphicType(:final name) || TypeParameterType(:final name) => name,
+    StringType() => 'String',
+    TopType() => 'Object?',
+    TypeType() => 'Type',
+    UnitType() => 'Null',
+  };
+}
+
+TypeReference _typeReferenceFromType(Type type) {
+  if (type case PolymorphicType(name: '?')) {
+    final innerType = _typeReferenceFromType(type.arguments[0]);
+
+    return innerType.rebuild((builder) {
+      builder.isNullable = true;
+    });
+  } else {
+    return TypeReference((builder) {
+      if (type case PolymorphicType(name: '?')) {
+        builder.symbol = _buildTypeName(type.arguments[0]);
+        builder.isNullable = true;
+      } else {
+        builder.symbol = _buildTypeName(type);
+      }
+
+      if (type is PolymorphicType) {
+        for (final type in type.arguments) {
+          builder.types.add(_typeReferenceFromType(type));
+        }
+      }
+    });
   }
 }
 

@@ -11,20 +11,20 @@ final class ClassBuilder {
   final String name;
   final bool withEquality;
 
-  final _typeParameters = <String>{};
+  final _typeParameters = <Reference>{};
   final _constructorParameters = ListBuilder<Parameter>();
   final _fields = ListBuilder<Field>();
 
   bool sealed = false;
   bool final$ = false;
-  (String name, List<Type> parameters)? _supertype;
+  (String name, List<Reference> parameters)? _supertype;
 
-  void defineSuperypeName(String name) {
+  void defineSupertypeName(String name) {
     final parameters = _supertype?.$2 ?? [];
     _supertype = (name, parameters);
   }
 
-  void addParameterToSupertype(Type parameter) {
+  void addParameterToSupertype(Reference parameter) {
     assert(_supertype != null);
     final supertype = _supertype!;
 
@@ -34,12 +34,11 @@ final class ClassBuilder {
     );
   }
 
-  void addParameter(Type parameter) {
-    final name = buildTypeName(parameter);
-    _typeParameters.add(name);
+  void addParameter(Reference parameter) {
+    _typeParameters.add(parameter);
   }
 
-  void addField(Type type, ParameterElement field) {
+  void addField(Reference type, ParameterElement field) {
     _constructorParameters.add(
       Parameter((builder) {
         builder.name = field.name;
@@ -53,7 +52,7 @@ final class ClassBuilder {
       Field((builder) {
         builder.modifier = FieldModifier.final$;
         builder.name = field.name;
-        builder.type = _buildTypeReference(type);
+        builder.type = type;
       }),
     );
   }
@@ -61,9 +60,7 @@ final class ClassBuilder {
   Class asCodeBuilderClass() {
     return Class((builder) {
       builder.name = name;
-      builder.types = ListBuilder([
-        for (final parameter in _typeParameters) refer(parameter),
-      ]);
+      builder.types = ListBuilder(_typeParameters);
 
       if (final$) {
         builder.modifier = ClassModifier.final$;
@@ -77,9 +74,7 @@ final class ClassBuilder {
             final (symbol, types) = supertype;
 
             builder.symbol = symbol;
-            builder.types = ListBuilder([
-              for (final type in types) _buildTypeReference(type),
-            ]);
+            builder.types = ListBuilder(types);
           }),
         );
       }
@@ -156,9 +151,7 @@ final class ClassBuilder {
 
       final className = TypeReference((builder) {
         builder.symbol = name;
-        builder.types = ListBuilder([
-          for (final parameter in _typeParameters) refer(parameter),
-        ]);
+        builder.types = ListBuilder(_typeParameters);
       });
 
       final expression = refer('other').isA(className);
@@ -226,40 +219,40 @@ final class ClassBuilder {
   }
 }
 
-@pragma('vm:prefer-inline')
-String buildTypeName(Type type) {
-  return switch (type) {
-    BooleanType() => 'bool',
-    BottomType() => 'Never',
-    PolymorphicType(:final name) || TypeParameterType(:final name) => name,
-    StringType() => 'String',
-    TopType() => 'Object?',
-    TypeType() => 'Type',
-    UnitType() => 'Null',
-  };
-}
+// @pragma('vm:prefer-inline')
+// String buildTypeName(Type type) {
+//   return switch (type) {
+//     BooleanType() => 'bool',
+//     BottomType() => 'Never',
+//     PolymorphicType(:final name) || TypeParameterType(:final name) => name,
+//     StringType() => 'String',
+//     TopType() => 'Object?',
+//     TypeType() => 'Type',
+//     UnitType() => 'Null',
+//   };
+// }
 
-TypeReference _buildTypeReference(Type type) {
-  if (type case PolymorphicType(name: '?')) {
-    final innerType = _buildTypeReference(type.arguments[0]);
+// TypeReference _buildTypeReference(Type type) {
+//   if (type case PolymorphicType(name: '?')) {
+//     final innerType = _buildTypeReference(type.arguments[0]);
 
-    return innerType.rebuild((builder) {
-      builder.isNullable = true;
-    });
-  } else {
-    return TypeReference((builder) {
-      if (type case PolymorphicType(name: '?')) {
-        builder.symbol = buildTypeName(type.arguments[0]);
-        builder.isNullable = true;
-      } else {
-        builder.symbol = buildTypeName(type);
-      }
+//     return innerType.rebuild((builder) {
+//       builder.isNullable = true;
+//     });
+//   } else {
+//     return TypeReference((builder) {
+//       if (type case PolymorphicType(name: '?')) {
+//         builder.symbol = buildTypeName(type.arguments[0]);
+//         builder.isNullable = true;
+//       } else {
+//         builder.symbol = buildTypeName(type);
+//       }
 
-      if (type is PolymorphicType) {
-        for (final type in type.arguments) {
-          builder.types.add(_buildTypeReference(type));
-        }
-      }
-    });
-  }
-}
+//       if (type is PolymorphicType) {
+//         for (final type in type.arguments) {
+//           builder.types.add(_buildTypeReference(type));
+//         }
+//       }
+//     });
+//   }
+// }

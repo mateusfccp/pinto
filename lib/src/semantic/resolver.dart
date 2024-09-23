@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
+import 'package:pinto/lexer.dart';
 
 import 'element.dart';
 import 'environment.dart';
@@ -93,14 +94,29 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   }
 
   @override
-  Future<Element>? visitIdentifierExpression(IdentifierExpression node) {
-    if (_environment.getDefinition(node.identifier.lexeme) == null) {
+  Future<Element> visitBooleanLiteral(BooleanLiteral node) async {
+    return LiteralElement(
+      constant: true,
+      constantValue: node.literal.type == TokenType.trueKeyword ? true : false,
+    );
+  }
+
+  @override
+  Future<Element> visitIdentifierExpression(IdentifierExpression node) async {
+    final definition = _environment.getDefinition(node.identifier.lexeme);
+
+    if (definition == null) {
       throw SymbolNotInScopeError(node.identifier);
     }
 
+    final constant = definition is LetVariableDeclaration && definition.body.constant;
+
     // TODO (mateusfccp): Deal with recursive definitions?
 
-    return null;
+    return IdentifierElement(
+      name: node.identifier.lexeme,
+      constant: constant,
+    );
   }
 
   @override
@@ -123,10 +139,12 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       throw SymbolNotInScopeError(node.body);
     }
 
+    final expressionElement = await node.body.accept(this);
+
     final declaration = LetVariableDeclaration(
       name: node.identifier.lexeme,
       type: type,
-      body: node.body,
+      body: expressionElement,
     );
 
     _environment.defineSymbol(node.identifier.lexeme, declaration);
@@ -137,6 +155,15 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     _environment = _environment.enclosing!;
 
     return declaration;
+  }
+
+  @override
+  Future<Element> visitStringLiteral(StringLiteral node) async {
+    // TODO(mateusfccp): Once we have string literals with interpolation, we should only consider them const if all the internal expressions are const
+    return LiteralElement(
+      constant: true,
+      constantValue: node.literal.lexeme.substring(1, node.literal.lexeme.length - 1),
+    );
   }
 
   @override
@@ -222,6 +249,14 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       _unresolvedParameters[parameter] = node;
       return parameter;
     }
+  }
+
+  @override
+  Future<Element> visitUnitLiteral(UnitLiteral node) async {
+    return LiteralElement(
+      constant: true,
+      constantValue: null,
+    );
   }
 
   Type _resolveTypeIdentifier(TypeIdentifier typeIdentifier) {

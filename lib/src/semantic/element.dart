@@ -1,5 +1,3 @@
-import 'package:pinto/ast.dart';
-
 import 'package.dart';
 import 'type.dart';
 import 'visitors.dart';
@@ -33,6 +31,62 @@ final class ParameterElement extends Element implements TypedElement {
   @override
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitParameterElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+sealed class ExpressionElement extends Element implements TypedElement {
+  ExpressionElement();
+
+  @override
+  late Element enclosingElement;
+
+  bool get constant;
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+final class IdentifierElement extends ExpressionElement {
+  IdentifierElement({
+    required this.name,
+    this.type,
+    required this.constant,
+  });
+
+  final String name;
+
+  @override
+  Type? type;
+
+  @override
+  final bool constant;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitIdentifierElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+final class LiteralElement extends ExpressionElement {
+  LiteralElement({
+    this.type,
+    required this.constant,
+    required this.constantValue,
+  });
+
+  @override
+  Type? type;
+
+  @override
+  final bool constant;
+
+  final Object? constantValue;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) => visitor.visitLiteralElement(this);
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
@@ -95,14 +149,16 @@ final class LetVariableDeclaration extends DeclarationElement
   @override
   Type? type;
 
-  final Expression body;
+  final ExpressionElement body;
 
   @override
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitLetVariableDeclaration(this);
 
   @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    body.accept(visitor);
+  }
 }
 
 sealed class TypeDefiningDeclaration extends DeclarationElement {

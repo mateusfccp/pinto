@@ -2,6 +2,8 @@ import 'element.dart';
 
 abstract interface class ElementVisitor<R> {
   R? visitParameterElement(ParameterElement node);
+  R? visitIdentifierElement(IdentifierElement node);
+  R? visitLiteralElement(LiteralElement node);
   R? visitTypeVariantElement(TypeVariantElement node);
   R? visitImportElement(ImportElement node);
   R? visitLetVariableDeclaration(LetVariableDeclaration node);
@@ -14,6 +16,12 @@ abstract interface class ElementVisitor<R> {
 abstract base class SimpleElementVisitor<R> implements ElementVisitor {
   @override
   R? visitParameterElement(ParameterElement node) => null;
+
+  @override
+  R? visitIdentifierElement(IdentifierElement node) => null;
+
+  @override
+  R? visitLiteralElement(LiteralElement node) => null;
 
   @override
   R? visitTypeVariantElement(TypeVariantElement node) => null;
@@ -46,6 +54,15 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
 
   @override
   R? visitParameterElement(ParameterElement node) => visitElement(node);
+
+  R? visitExpressionElement(ExpressionElement node) => visitElement(node);
+
+  @override
+  R? visitIdentifierElement(IdentifierElement node) =>
+      visitExpressionElement(node);
+
+  @override
+  R? visitLiteralElement(LiteralElement node) => visitExpressionElement(node);
 
   @override
   R? visitTypeVariantElement(TypeVariantElement node) => visitElement(node);
