@@ -4,16 +4,21 @@
 <identifier_part> ::= <identifier_start>  | <digit>
 <digit> ::= [0-9]
 
-<program> ::= <import>* <type_definition>*
+<program> ::= <import>* <non_import_declaration>*
 
 <import> ::= "import" ( <dart_import> |  <package_import> )
 <dart_import> ::= "@" <import_identifier>
 <package_import> ::= <import_identifier>
 <import_identifier> ::= <identifier> ( "/" <identifier> )*
 
+<non_import_declaration> ::= <type_definition>
+                           | <let_declaration>
+
 <type_definition> ::= "type" <identifier> ( "(" <named_type_literal> ( "," <named_type_literal> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
 <type_variant> ::= <identifier> ( "(" <type_variant_parameter> ( "," <type_variant_parameter> )* ")" )?
 <type_variant_parameter> ::= <type_literal> <identifier>
+
+<let_declaration> ::= "let" <identifier> "=" <expression>
 
 <type_literal> ::= <top_type_literal>
 		 | <bottom_type_literal>
@@ -31,5 +36,10 @@
 <identified_type_literal> ::= <identifier> ( "(" <type_literal> ( "," <type_literal> )* ")" )?
 <option_type_literal> ::= <type_literal> "?"
 
+<expression> ::= <unit_literal>
+               | <bool_literal>
+	       | <string_literal>
+<unit_literal> ::= "()"
+<bool_literal> ::= "true" | "false"
 <string_literal> ::= '"' + <string_character>* + '"'
 <string_character> ::= ~( '"' | '\n' | '\r')
