@@ -50,7 +50,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
         } else if (declaration is LetDeclaration) {
           await imports.wait;
 
-          final letVariableDeclaration = await declaration.accept(this) as LetVariableDeclaration;
+          final letVariableDeclaration = await declaration.accept(this) as DeclarationElement;
           letVariableDeclaration.enclosingElement = programElement;
           programElement.declarations.add(letVariableDeclaration);
         } else {
@@ -130,7 +130,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   }
 
   @override
-  Future<Element> visitLetDeclaration(LetDeclaration node) async {
+  Future<TypedElement> visitLetDeclaration(LetDeclaration node) async {
     // TODO(mateusfccp): Deal with let function declaration
 
     final type = _resolveStaticTypeForExpression(node.body);
@@ -141,11 +141,27 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
     final expressionElement = await node.body.accept(this);
 
-    final declaration = LetVariableDeclaration(
-      name: node.identifier.lexeme,
-      type: type,
-      body: expressionElement,
-    );
+    final TypedElement declaration;
+
+    if (node.parameter case final parameter?) {
+      final functionType = FunctionType(returnType: type);
+
+      final element = LetFunctionDeclaration(
+        name: node.identifier.lexeme,
+        parameter: parameter,
+        type: functionType,
+        body: expressionElement,
+      );
+
+      declaration = element;
+      functionType.element = element;
+    } else {
+      declaration = LetVariableDeclaration(
+        name: node.identifier.lexeme,
+        type: type,
+        body: expressionElement,
+      );
+    }
 
     _environment.defineSymbol(node.identifier.lexeme, declaration);
     _environment = _environment.fork();

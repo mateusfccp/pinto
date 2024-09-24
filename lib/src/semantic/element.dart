@@ -1,3 +1,5 @@
+import 'package:pinto/lexer.dart';
+
 import 'package.dart';
 import 'type.dart';
 import 'visitors.dart';
@@ -134,6 +136,34 @@ final class ImportElement extends DeclarationElement {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
+final class LetFunctionDeclaration extends DeclarationElement
+    implements TypedElement {
+  LetFunctionDeclaration({
+    required this.name,
+    required this.parameter,
+    required this.type,
+    required this.body,
+  });
+
+  final String name;
+
+  final Token parameter;
+
+  @override
+  FunctionType type;
+
+  final ExpressionElement body;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitLetFunctionDeclaration(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    body.accept(visitor);
+  }
 }
 
 final class LetVariableDeclaration extends DeclarationElement

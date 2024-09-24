@@ -5,9 +5,9 @@ import 'package:pinto/syntactic_entity.dart';
 import 'ast.dart';
 import 'import.dart';
 
-/// A Pinto parser.
+/// A pint° parser.
 final class Parser {
-  /// Creates a Pinto parser.
+  /// Creates a pint° parser.
   Parser({
     required List<Token> tokens,
     ErrorHandler? errorHandler,

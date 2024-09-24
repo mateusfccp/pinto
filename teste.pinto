@@ -10,6 +10,10 @@ let myBool = myFalse
 
 let myString = "lorem ipsum"
 
+let myFunction _ = "lorem ipsum"
+
+let myFunction2 _ = ()
+
 type Option(T) = Some(T value) + None
 
 type Other(T) = Other(

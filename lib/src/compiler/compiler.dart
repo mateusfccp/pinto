@@ -1,4 +1,4 @@
-import 'package:code_builder/code_builder.dart' hide ClassBuilder, Expression;
+import 'package:code_builder/code_builder.dart' hide ClassBuilder, Expression, FunctionType;
 import 'package:pinto/semantic.dart';
 
 import 'class_builder.dart';
@@ -47,6 +47,24 @@ final class Compiler implements ElementVisitor<List<Spec>> {
     }
 
     return [Directive.import(url)];
+  }
+
+  @override
+  List<Method> visitLetFunctionDeclaration(LetFunctionDeclaration node) {
+    final method = Method((builder) {
+      builder.returns = _typeReferenceFromType(
+        node.type.returnType,
+        position: _ParameterPosition.contravariant,
+      );
+      builder.name = node.name;
+      // We currently ignore the parameter as we still don't have it properly defined
+      builder.lambda = true;
+
+      final [code] = node.body.accept(this) as List<Code>;
+      builder.body = code;
+    });
+
+    return [method];
   }
 
   @override
@@ -175,20 +193,32 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   }
 }
 
+enum _ParameterPosition { covariant, contravariant }
+
 @pragma('vm:prefer-inline')
-String _buildTypeName(Type type) {
+String _buildTypeName(
+  Type type, {
+  _ParameterPosition position = _ParameterPosition.covariant,
+}) {
   return switch (type) {
     BooleanType() => 'bool',
     BottomType() => 'Never',
+    FunctionType() => '${_buildTypeName(type.returnType, position: _ParameterPosition.contravariant)} Function(${_buildTypeName(type.parameterType)})',
     PolymorphicType(:final name) || TypeParameterType(:final name) => name,
     StringType() => 'String',
     TopType() => 'Object?',
     TypeType() => 'Type',
-    UnitType() => 'Null',
+    UnitType() => switch (position) {
+        _ParameterPosition.covariant => '',
+        _ParameterPosition.contravariant => 'void',
+      },
   };
 }
 
-TypeReference _typeReferenceFromType(Type type) {
+TypeReference _typeReferenceFromType(
+  Type type, {
+  _ParameterPosition position = _ParameterPosition.covariant,
+}) {
   if (type case PolymorphicType(name: '?')) {
     final innerType = _typeReferenceFromType(type.arguments[0]);
 
@@ -198,15 +228,15 @@ TypeReference _typeReferenceFromType(Type type) {
   } else {
     return TypeReference((builder) {
       if (type case PolymorphicType(name: '?')) {
-        builder.symbol = _buildTypeName(type.arguments[0]);
+        builder.symbol = _buildTypeName(type.arguments[0], position: position);
         builder.isNullable = true;
       } else {
-        builder.symbol = _buildTypeName(type);
+        builder.symbol = _buildTypeName(type, position: position);
       }
 
       if (type is PolymorphicType) {
         for (final type in type.arguments) {
-          builder.types.add(_typeReferenceFromType(type));
+          builder.types.add(_typeReferenceFromType(type, position: position));
         }
       }
     });
@@ -217,7 +247,7 @@ List<TypeParameterType> _typeParametersFromType(Type type) {
   return switch (type) {
     PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments),
     TypeParameterType() => [type],
-    TopType() || BottomType() || UnitType() || BooleanType() || TypeType() || StringType() => const [],
+    TopType() || BottomType() || UnitType() || BooleanType() || TypeType() || StringType() || FunctionType() => const [],
   };
 }
 

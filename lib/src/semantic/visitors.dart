@@ -6,6 +6,7 @@ abstract interface class ElementVisitor<R> {
   R? visitLiteralElement(LiteralElement node);
   R? visitTypeVariantElement(TypeVariantElement node);
   R? visitImportElement(ImportElement node);
+  R? visitLetFunctionDeclaration(LetFunctionDeclaration node);
   R? visitLetVariableDeclaration(LetVariableDeclaration node);
   R? visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node);
   R? visitTypeParameterElement(TypeParameterElement node);
@@ -28,6 +29,9 @@ abstract base class SimpleElementVisitor<R> implements ElementVisitor {
 
   @override
   R? visitImportElement(ImportElement node) => null;
+
+  @override
+  R? visitLetFunctionDeclaration(LetFunctionDeclaration node) => null;
 
   @override
   R? visitLetVariableDeclaration(LetVariableDeclaration node) => null;
@@ -71,6 +75,10 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
 
   @override
   R? visitImportElement(ImportElement node) => visitDeclarationElement(node);
+
+  @override
+  R? visitLetFunctionDeclaration(LetFunctionDeclaration node) =>
+      visitDeclarationElement(node);
 
   @override
   R? visitLetVariableDeclaration(LetVariableDeclaration node) =>

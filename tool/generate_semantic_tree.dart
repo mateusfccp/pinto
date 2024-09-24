@@ -128,6 +128,16 @@ Future<void> main(List<String> args) async {
                 ],
               ),
               TreeNode(
+                name: 'LetFunctionDeclaration',
+                implements: ['TypedElement'],
+                properties: [
+                  StringProperty('name'),
+                  Token('parameter'), // TODO(mateusfccp): have an element for this in the future
+                  TypeProperty(type: 'FunctionType'),
+                  Property('ExpressionElement', 'body'),
+                ],
+              ),
+              TreeNode(
                 name: 'LetVariableDeclaration',
                 implements: ['TypedElement'],
                 properties: [
@@ -192,6 +202,7 @@ Future<void> main(List<String> args) async {
       constructorRule: TreeGeneratorConstructorRule.named,
     );
 
+    astGenerator.imports.add('package:pinto/lexer.dart');
     astGenerator.imports.add('package.dart');
     astGenerator.imports.add('type.dart');
 
@@ -200,9 +211,9 @@ Future<void> main(List<String> args) async {
 }
 
 final class TypeProperty extends Property {
-  TypeProperty({String name = 'type', Expression? initializer})
+  TypeProperty({String type = 'Type?', String name = 'type', Expression? initializer})
       : super(
-          'Type?',
+          type,
           name,
           visitable: false,
           final$: false,

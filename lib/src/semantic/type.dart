@@ -137,7 +137,7 @@ final class TypeType implements Type {
   int get hashCode => runtimeType.hashCode;
 
   @override
-  String toString() => 'Type';
+  String toString() => '★';
 }
 
 // TODO(mateusfccp): Generalize to records-like
@@ -171,4 +171,27 @@ final class BottomType implements Type {
 
   @override
   String toString() => '⊥';
+}
+
+final class FunctionType implements Type {
+  FunctionType({
+    required this.returnType,
+    this.element,
+  });
+
+  Type get parameterType => const UnitType(); // Dummy paramter type for now
+
+  final Type returnType;
+
+  @override
+  late LetFunctionDeclaration? element;
+
+  @override
+  bool operator ==(Object other) => other is BottomType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '$parameterType → $returnType';
 }
