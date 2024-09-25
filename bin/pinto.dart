@@ -16,6 +16,8 @@ import 'package:pinto/error.dart';
 import 'package:pinto/localization.dart';
 import 'package:pinto/semantic.dart';
 
+const _padSize = 5;
+
 final _resourceProvider = PhysicalResourceProvider.INSTANCE;
 
 Future<void> main(List<String> args) async {
@@ -172,13 +174,14 @@ final class ErrorFormatter {
   }
 
   void writeLineWithErrorPointer(int line, int column, int length) {
+    print('Writing to line $line and column $column, length = $length');
     if (line - 1 >= 1) {
       addLine(line - 1);
     }
 
     addLine(line);
 
-    sink.write('   '); // Padding equivalent to the line indicators
+    sink.write(' ' * (_padSize + 2)); // Padding equivalent to the line indicators
 
     for (int i = 0; i < column - 1; i++) {
       sink.write(' ');
@@ -198,6 +201,6 @@ final class ErrorFormatter {
   }
 
   void addLine(int line) {
-    sink.writeln('${chalk.gray('$line: ')}${lines[line - 1]}');
+    sink.writeln('${chalk.gray('${line.toString().padLeft(_padSize)}: ')}${lines[line - 1]}');
   }
 }
