@@ -42,7 +42,6 @@ final class Parser {
           );
 
           _errorHandler?.emit(error);
-          throw error;
         }
 
         body.add(declaration);
