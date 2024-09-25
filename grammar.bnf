@@ -12,13 +12,15 @@
 <import_identifier> ::= <identifier> ( "/" <identifier> )*
 
 <non_import_declaration> ::= <type_definition>
-                           | <let_declaration>
+			   | <let_function_declaration>
+                           | <let_variable_declaration>
 
 <type_definition> ::= "type" <identifier> ( "(" <named_type_literal> ( "," <named_type_literal> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
 <type_variant> ::= <identifier> ( "(" <type_variant_parameter> ( "," <type_variant_parameter> )* ")" )?
 <type_variant_parameter> ::= <type_literal> <identifier>
 
-<let_declaration> ::= "let" <identifier> "=" <expression>
+<let_function_declaration> ::= "let" <identifier> <identifier> "=" <expression>
+<let_variable_declaration> ::= "let" <identifier> "=" <expression>
 
 <type_literal> ::= <top_type_literal>
 		 | <bottom_type_literal>
