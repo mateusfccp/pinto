@@ -75,7 +75,7 @@ final class Lexer {
       Token(
         type: TokenType.endOfFile,
         lexeme: '',
-        offset: _current,
+        offset: _start,
       ),
     );
     return _tokens;
@@ -84,11 +84,8 @@ final class Lexer {
   (int line, int column) positionForOffset(int offset) {
     final bound = lowerBound(_lineBreaks, offset);
     final line = bound + 1;
-
     final start = bound == 0 ? 0 : _lineBreaks[bound - 1];
     final column = offset - start;
-
-    print('Offset: $offset, Line: $line');
 
     return (line, column);
   }

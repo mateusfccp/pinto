@@ -131,16 +131,12 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
   @override
   Future<TypedElement> visitLetDeclaration(LetDeclaration node) async {
-    // TODO(mateusfccp): Deal with let function declaration
-
-    final type = _resolveStaticTypeForExpression(node.body);
-
-    if (type == null) {
-      throw SymbolNotInScopeError(node.body);
+    if (_environment.getDefinition(node.identifier.lexeme) != null) {
+      throw IdentifierAlreadyDefinedError(node.identifier);
     }
 
+    final type = _resolveStaticTypeForExpression(node.body);
     final expressionElement = await node.body.accept(this);
-
     final TypedElement declaration;
 
     if (node.parameter case final parameter?) {
@@ -378,10 +374,10 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     return elements;
   }
 
-  Type? _resolveStaticTypeForExpression(Expression expression) {
+  Type _resolveStaticTypeForExpression(Expression expression) {
     return switch (expression) {
       BooleanLiteral() => BooleanType(),
-      IdentifierExpression(:final identifier) => _environment.getDefinition(identifier.lexeme)?.type,
+      IdentifierExpression(:final identifier) => _environment.getDefinition(identifier.lexeme)?.type ?? (throw "Identifier of type is unresolved. This shouldn't ever happen."),
       LetExpression() => throw UnimplementedError(), // TODO(mateusfccp): We will probably need the semantic element for dealing with let environments
       StringLiteral() => StringType(),
       UnitLiteral() => UnitType(),

@@ -21,7 +21,8 @@ String messageFromError(PintoError error, String source) {
     ExpectBeforeError error => expectBeforeError('${error.expectation}', '${error.before}', fragment),
 
     // Resolve errors
-    ImportedPackageNotAvailableError()  => importedPackageNotAvailableError(fragment),
+    ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
+    IdentifierAlreadyDefinedError() => identifierAlreadyDefinedError(fragment),
     SymbolNotInScopeError()  => symbolNotInScopeError(fragment),
     TypeParameterAlreadyDefinedError()  => typeParameterAlreadyDefinedError(fragment),
     WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
@@ -33,7 +34,6 @@ String messageFromError(PintoError error, String source) {
 }
 
 // Parse errors
-
 String expectError(String expectation, String found) {
   return Intl.message(
     "Expected to find $expectation. Found '$found'.",
@@ -62,6 +62,15 @@ String expectBeforeError(String expectation, String before, String found) {
 }
 
 // Resolve errors
+String identifierAlreadyDefinedError(String identifier) {
+  return Intl.message(
+    "The identifier '$identifier' is already defined in the context.",
+    name: 'identifierAlreadyDefineErrorMessage',
+    args: [identifier],
+    desc: 'The error describing that the identifier that is being defined has'
+        'a named that was already used by other definition.',
+  );
+}
 
 String importedPackageNotAvailableError(String import) {
   return Intl.message(

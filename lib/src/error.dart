@@ -97,6 +97,13 @@ sealed class ResolveError implements PintoError {
   SyntacticEntity get syntacticEntity;
 }
 
+final class IdentifierAlreadyDefinedError implements ResolveError {
+  const IdentifierAlreadyDefinedError(this.syntacticEntity);
+
+  @override
+  final Token syntacticEntity;
+}
+
 final class ImportedPackageNotAvailableError implements ResolveError {
   const ImportedPackageNotAvailableError(this.syntacticEntity);
 
@@ -108,14 +115,14 @@ final class SymbolNotInScopeError implements ResolveError {
   const SymbolNotInScopeError(this.syntacticEntity);
 
   @override
-  final SyntacticEntity syntacticEntity;
+  final Token syntacticEntity;
 }
 
 final class TypeParameterAlreadyDefinedError implements ResolveError {
   const TypeParameterAlreadyDefinedError(this.syntacticEntity);
 
   @override
-  final SyntacticEntity syntacticEntity;
+  final Token syntacticEntity;
 }
 
 final class WrongNumberOfArgumentsError implements ResolveError {
