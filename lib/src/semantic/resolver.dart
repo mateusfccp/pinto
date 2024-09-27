@@ -31,7 +31,8 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
     final syntheticTypeDefinitions = await _resolvePackage(core);
 
-    final imports = <Future<ImportElement>>[];
+    final importsDeclarations = <ImportDeclaration>[];
+    final importsElementsFuture = <Future<ImportElement>>[];
 
     // At this point, imports should be guaranteed to come before anything else.
     // This is guaranteed in the parser (maybe not the best place?).
@@ -39,7 +40,8 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     for (final declaration in program) {
       try {
         if (declaration is ImportDeclaration) {
-          imports.add(
+          importsDeclarations.add(declaration);
+          importsElementsFuture.add(
             () async {
               final import = await declaration.accept(this) as ImportElement;
               import.enclosingElement = programElement;
@@ -48,13 +50,13 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
             }(),
           );
         } else if (declaration is LetDeclaration) {
-          await imports.wait;
+          await importsElementsFuture.wait;
 
           final letVariableDeclaration = await declaration.accept(this) as DeclarationElement;
           letVariableDeclaration.enclosingElement = programElement;
           programElement.declarations.add(letVariableDeclaration);
         } else {
-          await imports.wait;
+          await importsElementsFuture.wait;
 
           final typeDefinition = await declaration.accept(this) as TypeDefinitionElement;
           typeDefinition.enclosingElement = programElement;
@@ -65,9 +67,16 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       }
     }
 
-    for (final import in await imports.wait) {
+    final importElements = await importsElementsFuture.wait;
+    for (int i = 0; i < importElements.length; i++) {
       try {
-        syntheticTypeDefinitions.addAll(await _resolvePackage(import.package));
+        try {
+          final element = importElements[i];
+          syntheticTypeDefinitions.addAll(await _resolvePackage(element.package));
+        } catch (error) {
+          final declaration = importsDeclarations[i];
+          throw ImportedPackageNotAvailableError(declaration.identifier);
+        }
       } on ResolveError catch (error) {
         _errorHandler?.emit(error);
       }

@@ -15,6 +15,7 @@ import 'package:pinto/compiler.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/localization.dart';
 import 'package:pinto/semantic.dart';
+import 'package:pinto/syntactic_entity.dart';
 
 const _padSize = 5;
 
@@ -156,8 +157,7 @@ final class ErrorFormatter {
     final errorHeader = switch (error) {
       ParseError(syntacticEntity: Token(type: TokenType.endOfFile)) => '[$line:$column] Error at end:',
       ParseError() => "[$line:$column]:",
-      ResolveError(syntacticEntity: final Token token) => "[$line:$column] Error at '${token.lexeme}':",
-      ResolveError() => "[$line:$column] Error at UNHANDLED:",
+      ResolveError(:final syntacticEntity) => "[$line:$column] Error at ${_syntacticEntityDescription(syntacticEntity)}:",
       LexingError() => '[$line:$column]:',
     };
 
@@ -174,7 +174,6 @@ final class ErrorFormatter {
   }
 
   void writeLineWithErrorPointer(int line, int column, int length) {
-    print('Writing to line $line and column $column, length = $length');
     if (line - 1 >= 1) {
       addLine(line - 1);
     }
@@ -203,4 +202,12 @@ final class ErrorFormatter {
   void addLine(int line) {
     sink.writeln('${chalk.gray('${line.toString().padLeft(_padSize)}: ')}${lines[line - 1]}');
   }
+}
+
+String _syntacticEntityDescription(SyntacticEntity entity) {
+  return switch (entity) {
+    Token() => "'${entity.lexeme}'",
+    ImportDeclaration() => 'import',
+    SyntacticEntity() => 'syntactic entity',
+  };
 }

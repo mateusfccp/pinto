@@ -84,7 +84,7 @@ final class Lexer {
   (int line, int column) positionForOffset(int offset) {
     final bound = lowerBound(_lineBreaks, offset);
     final line = bound + 1;
-    final start = bound == 0 ? 0 : _lineBreaks[bound - 1];
+    final start = bound == 0 ? -1 : _lineBreaks[bound - 1];
     final column = offset - start;
 
     return (line, column);

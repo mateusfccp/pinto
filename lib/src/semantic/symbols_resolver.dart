@@ -34,6 +34,11 @@ final class SymbolsResolver {
       throw _SymbolResolvingException(package);
     }
 
+    // TODO(mateusfccp): Improve this
+    if (uri == '.') {
+      return [];
+    }
+
     final library = await analysisContextCollection.contexts.first.currentSession.getResolvedLibrary(uri);
 
     if (library is ResolvedLibraryResult) {
@@ -74,14 +79,18 @@ final class SymbolsResolver {
 
         return folder == null ? null : '$folder/$file';
       case CurrentPackage():
-        // TODO(mateusfccp): Handle this properly
-        return null;
+        return '.';
     }
   }
 }
 
 final class _SymbolResolvingException implements Exception {
-  const _SymbolResolvingException(this.package);
+  _SymbolResolvingException(this.package);
 
   final Package package;
+
+  @override
+  String toString() {
+    return "Couldn't resolve symbols for package $package.";
+  }
 }
