@@ -107,6 +107,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     return LiteralElement(
       constant: true,
       constantValue: node.literal.type == TokenType.trueKeyword ? true : false,
+      type: const BooleanType(),
     );
   }
 
@@ -125,7 +126,36 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     return IdentifierElement(
       name: node.identifier.lexeme,
       constant: constant,
+      type: definition.type,
     );
+  }
+
+  @override
+  Future<Element>? visitInvocationExpression(InvocationExpression node) async {
+    final identifier = await node.identifierExpression.accept(this) as IdentifierElement;
+    final argument = await node.argument.accept(this) as ExpressionElement;
+
+    final invocationElement = InvocationElement(
+      identifier: identifier,
+      argument: argument,
+      // TODO(mateusfccp): It will be potentially constant when we have macros
+      constant: false,
+    );
+
+    identifier.enclosingElement = invocationElement;
+    argument.enclosingElement = invocationElement;
+
+    if (identifier.type case final FunctionType functionType) {
+      invocationElement.type = functionType.returnType;
+
+      // Check if the argument type matches the parameter type
+      return invocationElement;
+    } else {
+      throw NotAFunctionError(
+        syntacticEntity: node.identifierExpression,
+        calledType: identifier.type!,
+      );
+    }
   }
 
   @override
@@ -144,12 +174,11 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       throw IdentifierAlreadyDefinedError(node.identifier);
     }
 
-    final type = _resolveStaticTypeForExpression(node.body);
-    final expressionElement = await node.body.accept(this);
+    final expressionElement = await node.body.accept(this) as ExpressionElement;
     final TypedElement declaration;
 
     if (node.parameter case final parameter?) {
-      final functionType = FunctionType(returnType: type);
+      final functionType = FunctionType(returnType: expressionElement.type!);
 
       final element = LetFunctionDeclaration(
         name: node.identifier.lexeme,
@@ -163,10 +192,12 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     } else {
       declaration = LetVariableDeclaration(
         name: node.identifier.lexeme,
-        type: type,
+        type: expressionElement.type,
         body: expressionElement,
       );
     }
+
+    expressionElement.enclosingElement = declaration;
 
     _environment.defineSymbol(node.identifier.lexeme, declaration);
     _environment = _environment.fork();
@@ -184,6 +215,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     return LiteralElement(
       constant: true,
       constantValue: node.literal.lexeme.substring(1, node.literal.lexeme.length - 1),
+      type: const StringType(),
     );
   }
 
@@ -381,16 +413,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     }
 
     return elements;
-  }
-
-  Type _resolveStaticTypeForExpression(Expression expression) {
-    return switch (expression) {
-      BooleanLiteral() => BooleanType(),
-      IdentifierExpression(:final identifier) => _environment.getDefinition(identifier.lexeme)?.type ?? (throw "Identifier of type is unresolved. This shouldn't ever happen."),
-      LetExpression() => throw UnimplementedError(), // TODO(mateusfccp): We will probably need the semantic element for dealing with let environments
-      StringLiteral() => StringType(),
-      UnitLiteral() => UnitType(),
-    };
   }
 }
 

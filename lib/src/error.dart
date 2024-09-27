@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'ast/ast.dart';
 import 'lexer/token.dart';
 import 'syntactic_entity.dart';
+import 'semantic/type.dart';
 
 part 'error.freezed.dart';
 
@@ -109,6 +110,18 @@ final class ImportedPackageNotAvailableError implements ResolveError {
 
   @override
   final SyntacticEntity syntacticEntity;
+}
+
+final class NotAFunctionError implements ResolveError {
+  const NotAFunctionError({
+    required this.syntacticEntity,
+    required this.calledType,
+  });
+
+  @override
+  final SyntacticEntity syntacticEntity;
+
+  final Type calledType;
 }
 
 final class SymbolNotInScopeError implements ResolveError {

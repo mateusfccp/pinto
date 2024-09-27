@@ -303,6 +303,33 @@ final class IdentifierExpression extends Expression {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
 }
 
+final class InvocationExpression extends Expression {
+  const InvocationExpression(
+    this.identifierExpression,
+    this.argument,
+  );
+
+  final IdentifierExpression identifierExpression;
+
+  final Expression argument;
+
+  @override
+  int get offset => identifierExpression.offset;
+
+  @override
+  int get end => argument.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitInvocationExpression(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    identifierExpression.accept(visitor);
+    argument.accept(visitor);
+  }
+}
+
 final class LetExpression extends Expression {
   const LetExpression(
     this.identifier,
@@ -343,25 +370,6 @@ sealed class Literal extends Expression {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
 }
 
-final class UnitLiteral extends Literal {
-  const UnitLiteral(this.literal);
-
-  @override
-  final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitUnitLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-}
-
 final class BooleanLiteral extends Literal {
   const BooleanLiteral(this.literal);
 
@@ -376,6 +384,25 @@ final class BooleanLiteral extends Literal {
 
   @override
   R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitBooleanLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+}
+
+final class UnitLiteral extends Literal {
+  const UnitLiteral(this.literal);
+
+  @override
+  final Token literal;
+
+  @override
+  int get offset => literal.offset;
+
+  @override
+  int get end => literal.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitUnitLiteral(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}

@@ -141,6 +141,13 @@ Future<void> main(List<String> args) async {
                 ],
               ),
               TreeNode(
+                name: 'InvocationExpression',
+                properties: [
+                  Property('IdentifierExpression', 'identifierExpression'),
+                  Property('Expression', 'argument'),
+                ],
+              ),
+              TreeNode(
                 name: 'LetExpression',
                 properties: [
                   Token('identifier'),
@@ -160,13 +167,19 @@ Future<void> main(List<String> args) async {
                 ],
                 children: [
                   TreeNode(
+                    name: 'BooleanLiteral',
+                    properties: [
+                      Token('literal', override: true),
+                    ],
+                  ),
+                  TreeNode(
                     name: 'UnitLiteral',
                     properties: [
                       Token('literal', override: true),
                     ],
                   ),
                   TreeNode(
-                    name: 'BooleanLiteral',
+                    name: 'StringLiteral',
                     properties: [
                       Token('literal', override: true),
                     ],
@@ -183,12 +196,6 @@ Future<void> main(List<String> args) async {
                   //     Token('literal'),
                   //   ],
                   // ),
-                  TreeNode(
-                    name: 'StringLiteral',
-                    properties: [
-                      Token('literal', override: true),
-                    ],
-                  ),
                 ],
               ),
             ],

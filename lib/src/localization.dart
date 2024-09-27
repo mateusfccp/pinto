@@ -23,8 +23,9 @@ String messageFromError(PintoError error, String source) {
     // Resolve errors
     ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
     IdentifierAlreadyDefinedError() => identifierAlreadyDefinedError(fragment),
-    SymbolNotInScopeError()  => symbolNotInScopeError(fragment),
-    TypeParameterAlreadyDefinedError()  => typeParameterAlreadyDefinedError(fragment),
+    NotAFunctionError() => notAFunctionError(fragment),
+    SymbolNotInScopeError() => symbolNotInScopeError(fragment),
+    TypeParameterAlreadyDefinedError() => typeParameterAlreadyDefinedError(fragment),
     WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
 
     // Scan errors
@@ -79,6 +80,16 @@ String importedPackageNotAvailableError(String import) {
     args: [import],
     desc: 'The error describing that the package that is being imported does '
         'exist or was not fetched by `pub get`',
+  );
+}
+
+String notAFunctionError(String identifier) {
+  return Intl.message(
+    "'$identifier' is not a function, so it can't receive an argument.",
+    name: 'notAFunctionErrorMessage',
+    args: [identifier],
+    desc: 'The error describing that the identifier that receive as parameter'
+        "is not a function, and thus it shouldn't receive a parameter.",
   );
 }
 

@@ -208,6 +208,7 @@ String _syntacticEntityDescription(SyntacticEntity entity) {
   return switch (entity) {
     Token() => "'${entity.lexeme}'",
     ImportDeclaration() => 'import',
+    IdentifierExpression() => 'identifier',
     SyntacticEntity() => 'syntactic entity',
   };
 }

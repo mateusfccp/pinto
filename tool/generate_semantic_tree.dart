@@ -90,6 +90,15 @@ Future<void> main(List<String> args) async {
             ],
             children: [
               TreeNode(
+                name: 'InvocationElement',
+                properties: [
+                  TypeProperty(),
+                  Property('IdentifierElement', 'identifier'),
+                  Property('ExpressionElement', 'argument'),
+                  Property('bool', 'constant', override: true, visitable: false),
+                ],
+              ),
+              TreeNode(
                 name: 'IdentifierElement',
                 properties: [
                   StringProperty('name'),

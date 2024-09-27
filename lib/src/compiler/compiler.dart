@@ -1,4 +1,4 @@
-import 'package:code_builder/code_builder.dart' hide ClassBuilder, Expression, FunctionType;
+import 'package:code_builder/code_builder.dart' hide ClassBuilder, FunctionType;
 import 'package:pinto/semantic.dart';
 
 import 'class_builder.dart';
@@ -20,8 +20,15 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   }
 
   @override
-  List<Code> visitIdentifierElement(IdentifierElement node) {
-    return [Code(node.name)];
+  List<Expression> visitIdentifierElement(IdentifierElement node) {
+    return [refer(node.name)];
+  }
+
+  @override
+  List<Expression> visitInvocationElement(InvocationElement node) {
+    final parameter = node.argument.accept(this) as List<Expression>;
+    final call = refer(node.identifier.name).call(parameter);
+    return [call];
   }
 
   @override
@@ -60,8 +67,8 @@ final class Compiler implements ElementVisitor<List<Spec>> {
       // We currently ignore the parameter as we still don't have it properly defined
       builder.lambda = true;
 
-      final [code] = node.body.accept(this) as List<Code>;
-      builder.body = code;
+      final [expression] = node.body.accept(this) as List<Expression>;
+      builder.body = expression.code;
     });
 
     return [method];
@@ -70,7 +77,7 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   @override
   List<Field>? visitLetVariableDeclaration(LetVariableDeclaration node) {
     if (node.type is! UnitType) {
-      final [code] = node.body.accept(this) as List<Code>;
+      final [expression] = node.body.accept(this) as List<Expression>;
 
       final field = Field((builder) {
         if (node.body.constant) {
@@ -79,7 +86,7 @@ final class Compiler implements ElementVisitor<List<Spec>> {
           builder.modifier = FieldModifier.final$;
         }
         builder.name = node.name;
-        builder.assignment = code;
+        builder.assignment = expression.code;
       });
 
       return [field];
@@ -89,8 +96,8 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   }
 
   @override
-  List<Code> visitLiteralElement(LiteralElement node) {
-    return [literal(node.constantValue).code];
+  List<Expression> visitLiteralElement(LiteralElement node) {
+    return [literal(node.constantValue)];
   }
 
   @override

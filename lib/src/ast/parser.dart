@@ -5,6 +5,15 @@ import 'package:pinto/syntactic_entity.dart';
 import 'ast.dart';
 import 'import.dart';
 
+const _expressionTokens = [
+  TokenType.falseKeyword,
+  TokenType.identifier,
+  // TokenType.letKeyword,
+  TokenType.stringLiteral,
+  TokenType.trueKeyword,
+  TokenType.unitLiteral,
+];
+
 /// A pint° parser.
 final class Parser {
   /// Creates a pint° parser.
@@ -93,7 +102,15 @@ final class Parser {
     return false;
   }
 
+  bool _matchExpressionToken() {
+    return _expressionTokens.any(_match);
+  }
+
   bool _check(TokenType type) => _isNotAtEnd && _peek.type == type;
+
+  bool _checkExpressionToken() {
+    return _expressionTokens.any(_check);
+  }
 
   Token _advance() {
     if (_isNotAtEnd) _current++;
@@ -163,16 +180,7 @@ final class Parser {
   Expression _expression() {
     // TODO(mateusfccp): Implement let expression parsing
 
-    final matchExpression = _match(
-      TokenType.falseKeyword,
-      // TokenType.letKeyword,
-      TokenType.stringLiteral,
-      TokenType.trueKeyword,
-      TokenType.unitLiteral,
-      TokenType.identifier,
-    );
-
-    if (matchExpression) {
+    if (_matchExpressionToken()) {
       switch (_previous.type) {
         case TokenType.falseKeyword:
         case TokenType.trueKeyword:
@@ -182,9 +190,17 @@ final class Parser {
         case TokenType.unitLiteral:
           return UnitLiteral(_previous);
         case TokenType.identifier:
-          return IdentifierExpression(_previous);
+          final identifier = IdentifierExpression(_previous);
+          if (_checkExpressionToken()) {
+            return InvocationExpression(
+              identifier,
+              _expression(),
+            );
+          } else {
+            return identifier;
+          }
         default:
-          throw 'unreachable'; // This should not be reachable because of `_match` above
+          throw StateError('This branch should be unreachable.');
       }
     } else {
       throw ExpectError(

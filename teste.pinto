@@ -1,3 +1,5 @@
+import @convert
+
 let myTrue = true
 
 let myFalse = false
@@ -12,9 +14,16 @@ let myString = "lorem ipsum"
 
 let myFunction _ = "lorem ipsum"
 
-let myFunction2 _ = ()
+let myFunction2 _ =
+  myFunction "calling myFunction2"
+
+let myFunction3 _ =
+  myString "not calling"
 
 type Option(T) = Some(T value) + None
+
+// 👇 This should be an error, as we are importing `@convert`
+let jsonEncode _ = "encode"
 
 type Other(T) = Other(
   ⊤ top,

@@ -49,6 +49,35 @@ sealed class ExpressionElement extends Element implements TypedElement {
   void visitChildren<R>(ElementVisitor<R> visitor) {}
 }
 
+final class InvocationElement extends ExpressionElement {
+  InvocationElement({
+    this.type,
+    required this.identifier,
+    required this.argument,
+    required this.constant,
+  });
+
+  @override
+  Type? type;
+
+  final IdentifierElement identifier;
+
+  final ExpressionElement argument;
+
+  @override
+  final bool constant;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitInvocationElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    identifier.accept(visitor);
+    argument.accept(visitor);
+  }
+}
+
 final class IdentifierElement extends ExpressionElement {
   IdentifierElement({
     required this.name,
