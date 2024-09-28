@@ -31,8 +31,6 @@ Future<void> runFile(String path) async {
   if (await file.exists()) {
     final fileString = file.readAsStringSync();
 
-    stdout.writeln('Included paths: ${file.absolute.path}');
-
     final analysisContextCollection = AnalysisContextCollection(
       includedPaths: [file.absolute.path],
       resourceProvider: _resourceProvider,
