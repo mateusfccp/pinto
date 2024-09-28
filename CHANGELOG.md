@@ -3,6 +3,10 @@
 - Type resolution order fixed
 - Initial syntatic tree implementation
 
+## 0.0.3+1
+
+- Remove included paths information from `pinto` main script
+
 ## 0.0.3
 
 - Provide basic LSP implementation through `pinto_server`
