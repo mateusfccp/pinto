@@ -2,6 +2,12 @@
 
 - Type resolution order fixed
 - Initial syntatic tree implementation
+- Basic literal implementations:
+  - bools
+  - Basic strings
+  - unit
+- Let declarations
+- Basic support for function calling
 
 ## 0.0.3+1
 
