@@ -133,21 +133,6 @@ enum TokenType {
   /// The verum token (`⊤`).
   verum,
 
-  /// The integer literal.
-  /// 
-  /// It follows the following grammar:
-  /// ```ebnf
-  /// <digit_separator> ::= "_"
-  /// <integer_literal> ::= <digit>+ ( <digit_separator> <digit>+ )*
-  /// ```
-  ///
-  /// Some examples of valid integer literals:
-  /// ```
-  /// 0100
-  /// 1094812
-  /// 100_000
-  /// ```
-  integerLiteral,
 
   /// /// The double literal.
   /// 
@@ -164,7 +149,23 @@ enum TokenType {
   /// 53.000_001
   /// 5_2.000_001
   /// ```
-  doubleLiteral;
+  doubleLiteral,
+
+  /// The integer literal.
+  /// 
+  /// It follows the following grammar:
+  /// ```ebnf
+  /// <digit_separator> ::= "_"
+  /// <integer_literal> ::= <digit>+ ( <digit_separator> <digit>+ )*
+  /// ```
+  ///
+  /// Some examples of valid integer literals:
+  /// ```
+  /// 0100
+  /// 1094812
+  /// 100_000
+  /// ```
+  integerLiteral;
 
   @override
   String toString() {
@@ -195,8 +196,8 @@ enum TokenType {
       typeKeyword => 'type',
       unitLiteral => '()',
       verum => '⊤',
-      integerLiteral => 'integer literal',
       doubleLiteral => 'double literal',
+      integerLiteral => 'integer literal',
     };
   }
 }

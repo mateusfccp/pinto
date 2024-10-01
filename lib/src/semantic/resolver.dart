@@ -224,8 +224,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     );
   }
 
-  String _removeSeparators(String literal) => literal.replaceAll('_', '');
-
   @override
   Future<Element> visitIntegerLiteral(IntegerLiteral node) async {
     return LiteralElement(
@@ -430,3 +428,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 }
 
 final class _SymbolNotResolved implements Exception {}
+
+// TODO(mateusfccp): Remove this method after Dart 3.6 when separators will be supported
+String _removeSeparators(String literal) => literal.replaceAll('_', '');

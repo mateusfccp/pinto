@@ -29,11 +29,11 @@ String messageFromError(PintoError error, String source) {
     WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
 
     // Scan errors
+    DecimalPartNotStartingWithANumberError() => decimalPartNotStartingWithANumberError(),
+    NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
+    NumberLiteralTwoSeparatorsError() => numberLiteralTwoSeparatorsError(),
     UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
-    NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
-    DecimalPartNotStartingWithANumberError() => decimalPartNotStartingWithANumberError(),
-    NumberLiteralTwoSeparatorsError() => numberLiteralTwoSeparatorsError(),
   };
 }
 
@@ -161,28 +161,28 @@ String unterminatedStringError() {
   );
 }
 
-String numberEndingWithSeparatorError() {
-  return Intl.message(
-    "Unexpected number termination. Numbers must not end with an underscore '_'.",
-    name: 'numberEndingWithSeparatorError',
-    args: [],
-    desc: "The error message when the lexer finds a number ending with an underscore.",
-  );
-}
-
 String decimalPartNotStartingWithANumberError() {
   return Intl.message(
     "Unexpected token. Double literals must have numbers on both sides of the dot.",
-    name: 'decimalPartNotStartingWithANumberError',
+    name: 'decimalPartNotStartingWithANumberErrorMessage',
     args: [],
     desc: "The error message when the lexer finds a double literal without numbers on the right side.",
+  );
+}
+
+String numberEndingWithSeparatorError() {
+  return Intl.message(
+    "Unexpected number termination. Numbers must not end with an underscore '_'.",
+    name: 'numberEndingWithSeparatorErrorMessage',
+    args: [],
+    desc: "The error message when the lexer finds a number ending with an underscore.",
   );
 }
 
 String numberLiteralTwoSeparatorsError() {
   return Intl.message(
     "Unexpected token. Number literals must have at most 1 separator between numbers.",
-    name: 'numberLiteralTwoSeparatorsError',
+    name: 'numberLiteralTwoSeparatorsErrorMessage',
     args: [],
     desc: "The error message when the lexer finds a number literal with two separators side by side.",
   );
