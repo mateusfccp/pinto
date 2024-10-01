@@ -67,6 +67,28 @@ Future<void> main(List<String> args) async {
             ],
           ),
           TreeNode(
+            name: 'TypeDefiningElement',
+            interface: true,
+            visitable: false,
+            methods: [
+              Method((builder) {
+                builder.returns = refer('Type');
+                builder.type = MethodType.getter;
+                builder.name = 'definedType';
+              })
+            ],
+          ),
+          TreeNode(
+            name: 'TypeParameterElement',
+            implements: ['TypedElement', 'TypeDefiningElement'],
+            properties: [
+              StringProperty('name'),
+              EnclosingElement('TypeDefinitionElement'),
+              TypeProperty(initializer: refer('TypeType').call([])),
+              Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
+            ],
+          ),
+          TreeNode(
             name: 'ParameterElement',
             implements: ['TypedElement'],
             properties: [
@@ -156,44 +178,32 @@ Future<void> main(List<String> args) async {
                 ],
               ),
               TreeNode(
-                name: 'TypeDefiningDeclaration',
+                name: 'ImportedSymbolSyntheticElement',
+                implements: ['TypedElement'],
+                properties: [
+                  StringProperty('name'),
+                  Property('TypedElement', 'syntheticElement'),
+                ],
                 methods: [
                   Method((builder) {
+                    builder.annotations.add(refer('override'));
                     builder.returns = refer('Type');
                     builder.type = MethodType.getter;
-                    builder.name = 'definedType';
+                    builder.name = 'type';
+                    builder.lambda = true;
+                    builder.body = refer('syntheticElement').property('type').nullChecked.code;
                   })
                 ],
-                children: [
-                  TreeNode(
-                    name: 'ImportedSymbolSyntheticElement',
-                    implements: ['TypedElement'],
-                    properties: [
-                      StringProperty('name'),
-                      TypeProperty(),
-                      Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
-                    ],
-                  ),
-                  TreeNode(
-                    name: 'TypeParameterElement',
-                    implements: ['TypedElement'],
-                    properties: [
-                      StringProperty('name'),
-                      TypeProperty(initializer: refer('TypeType').call([])),
-                      Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
-                    ],
-                  ),
-                  TreeNode(
-                    name: 'TypeDefinitionElement',
-                    implements: ['TypedElement'],
-                    properties: [
-                      StringProperty('name'),
-                      EmptyList('List<TypeParameterElement>', 'parameters'),
-                      EmptyList('List<TypeVariantElement>', 'variants'),
-                      TypeProperty(initializer: refer('TypeType').call([])),
-                      Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
-                    ],
-                  ),
+              ),
+              TreeNode(
+                name: 'TypeDefinitionElement',
+                implements: ['TypedElement', 'TypeDefiningElement'],
+                properties: [
+                  StringProperty('name'),
+                  EmptyList('List<TypeParameterElement>', 'parameters'),
+                  EmptyList('List<TypeVariantElement>', 'variants'),
+                  TypeProperty(initializer: refer('TypeType').call([])),
+                  Property('Type', 'definedType', final$: false, late: true, override: true, visitable: false),
                 ],
               ),
             ],

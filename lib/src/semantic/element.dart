@@ -16,6 +16,33 @@ abstract interface class TypedElement extends Element {
   Type? get type;
 }
 
+abstract interface class TypeDefiningElement extends Element {
+  Type get definedType;
+}
+
+final class TypeParameterElement extends Element
+    implements TypedElement, TypeDefiningElement {
+  TypeParameterElement({required this.name});
+
+  final String name;
+
+  @override
+  late TypeDefinitionElement enclosingElement;
+
+  @override
+  Type? type = TypeType();
+
+  @override
+  late Type definedType;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitTypeParameterElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+}
+
 final class ParameterElement extends Element implements TypedElement {
   ParameterElement({
     required this.name,
@@ -220,59 +247,32 @@ final class LetVariableDeclaration extends DeclarationElement
   }
 }
 
-sealed class TypeDefiningDeclaration extends DeclarationElement {
-  TypeDefiningDeclaration();
-
-  Type get definedType;
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-}
-
-final class ImportedSymbolSyntheticElement extends TypeDefiningDeclaration
+final class ImportedSymbolSyntheticElement extends DeclarationElement
     implements TypedElement {
   ImportedSymbolSyntheticElement({
     required this.name,
-    this.type,
+    required this.syntheticElement,
   });
 
   final String name;
 
-  @override
-  Type? type;
+  final TypedElement syntheticElement;
 
   @override
-  late Type definedType;
+  Type get type => syntheticElement.type!;
 
   @override
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitImportedSymbolSyntheticElement(this);
 
   @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    syntheticElement.accept(visitor);
+  }
 }
 
-final class TypeParameterElement extends TypeDefiningDeclaration
-    implements TypedElement {
-  TypeParameterElement({required this.name});
-
-  final String name;
-
-  @override
-  Type? type = TypeType();
-
-  @override
-  late Type definedType;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitTypeParameterElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-}
-
-final class TypeDefinitionElement extends TypeDefiningDeclaration
-    implements TypedElement {
+final class TypeDefinitionElement extends DeclarationElement
+    implements TypedElement, TypeDefiningElement {
   TypeDefinitionElement({required this.name});
 
   final String name;

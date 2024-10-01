@@ -1,6 +1,7 @@
 import 'element.dart';
 
 abstract interface class ElementVisitor<R> {
+  R? visitTypeParameterElement(TypeParameterElement node);
   R? visitParameterElement(ParameterElement node);
   R? visitInvocationElement(InvocationElement node);
   R? visitIdentifierElement(IdentifierElement node);
@@ -10,12 +11,14 @@ abstract interface class ElementVisitor<R> {
   R? visitLetFunctionDeclaration(LetFunctionDeclaration node);
   R? visitLetVariableDeclaration(LetVariableDeclaration node);
   R? visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node);
-  R? visitTypeParameterElement(TypeParameterElement node);
   R? visitTypeDefinitionElement(TypeDefinitionElement node);
   R? visitProgramElement(ProgramElement node);
 }
 
 abstract base class SimpleElementVisitor<R> implements ElementVisitor {
+  @override
+  R? visitTypeParameterElement(TypeParameterElement node) => null;
+
   @override
   R? visitParameterElement(ParameterElement node) => null;
 
@@ -45,9 +48,6 @@ abstract base class SimpleElementVisitor<R> implements ElementVisitor {
       null;
 
   @override
-  R? visitTypeParameterElement(TypeParameterElement node) => null;
-
-  @override
   R? visitTypeDefinitionElement(TypeDefinitionElement node) => null;
 
   @override
@@ -59,6 +59,9 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
     node.visitChildren(this);
     return null;
   }
+
+  @override
+  R? visitTypeParameterElement(TypeParameterElement node) => visitElement(node);
 
   @override
   R? visitParameterElement(ParameterElement node) => visitElement(node);
@@ -92,20 +95,13 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
   R? visitLetVariableDeclaration(LetVariableDeclaration node) =>
       visitDeclarationElement(node);
 
-  R? visitTypeDefiningDeclaration(TypeDefiningDeclaration node) =>
+  @override
+  R? visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) =>
       visitDeclarationElement(node);
 
   @override
-  R? visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) =>
-      visitTypeDefiningDeclaration(node);
-
-  @override
-  R? visitTypeParameterElement(TypeParameterElement node) =>
-      visitTypeDefiningDeclaration(node);
-
-  @override
   R? visitTypeDefinitionElement(TypeDefinitionElement node) =>
-      visitTypeDefiningDeclaration(node);
+      visitDeclarationElement(node);
 
   @override
   R? visitProgramElement(ProgramElement node) => visitElement(node);

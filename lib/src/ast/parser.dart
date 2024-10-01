@@ -69,7 +69,13 @@ final class Parser {
       } else if (_match(TokenType.typeKeyword)) {
         return _typeDefinition();
       } else {
-        return null;
+        final error = ExpectError(
+          syntacticEntity: _peek,
+          expectation: ExpectationType.declaration(),
+        );
+
+        _errorHandler?.emit(error);
+        throw error;
       }
     } on ParseError {
       _synchronize();

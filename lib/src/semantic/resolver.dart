@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/lexer.dart';
@@ -28,7 +29,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   Future<ProgramElement> resolve() async {
     const core = DartSdkPackage(name: 'core');
     final programElement = ProgramElement();
-
     final syntheticTypeDefinitions = await _resolvePackage(core);
 
     final importsDeclarations = <ImportDeclaration>[];
@@ -37,31 +37,17 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     // At this point, imports should be guaranteed to come before anything else.
     // This is guaranteed in the parser (maybe not the best place?).
 
-    for (final declaration in program) {
+    for (final importDeclaration in program.whereType<ImportDeclaration>()) {
       try {
-        if (declaration is ImportDeclaration) {
-          importsDeclarations.add(declaration);
-          importsElementsFuture.add(
-            () async {
-              final import = await declaration.accept(this) as ImportElement;
-              import.enclosingElement = programElement;
-              programElement.imports.add(import);
-              return import;
-            }(),
-          );
-        } else if (declaration is LetDeclaration) {
-          await importsElementsFuture.wait;
-
-          final letVariableDeclaration = await declaration.accept(this) as DeclarationElement;
-          letVariableDeclaration.enclosingElement = programElement;
-          programElement.declarations.add(letVariableDeclaration);
-        } else {
-          await importsElementsFuture.wait;
-
-          final typeDefinition = await declaration.accept(this) as TypeDefinitionElement;
-          typeDefinition.enclosingElement = programElement;
-          programElement.declarations.add(typeDefinition);
-        }
+        importsDeclarations.add(importDeclaration);
+        importsElementsFuture.add(
+          () async {
+            final import = await importDeclaration.accept(this) as ImportElement;
+            import.enclosingElement = programElement;
+            programElement.imports.add(import);
+            return import;
+          }(),
+        );
       } on ResolveError catch (error) {
         _errorHandler?.emit(error);
       }
@@ -72,8 +58,16 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       try {
         try {
           final element = importElements[i];
-          syntheticTypeDefinitions.addAll(await _resolvePackage(element.package));
-        } catch (error) {
+
+          syntheticTypeDefinitions.addAll(
+            await _resolvePackage(element.package),
+          );
+          
+          for (final definition in syntheticTypeDefinitions) {
+            programElement.declarations.add(definition);
+            definition.enclosingElement = programElement;
+          }
+        } on Exception {
           final declaration = importsDeclarations[i];
           throw ImportedPackageNotAvailableError(declaration.identifier);
         }
@@ -82,9 +76,20 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       }
     }
 
-    for (final definition in syntheticTypeDefinitions) {
-      programElement.declarations.add(definition);
-      definition.enclosingElement = programElement;
+    for (final declaration in program.whereNot((declaration) => declaration is ImportDeclaration)) {
+      try {
+        if (declaration is LetDeclaration) {
+          final letVariableDeclaration = await declaration.accept(this) as DeclarationElement;
+          letVariableDeclaration.enclosingElement = programElement;
+          programElement.declarations.add(letVariableDeclaration);
+        } else {
+          final typeDefinition = await declaration.accept(this) as TypeDefinitionElement;
+          typeDefinition.enclosingElement = programElement;
+          programElement.declarations.add(typeDefinition);
+        }
+      } on ResolveError catch (error) {
+        _errorHandler?.emit(error);
+      }
     }
 
     for (final MapEntry(key: parameterElement, value: node) in _unresolvedParameters.entries) {
@@ -345,8 +350,10 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
         if (definition == null) {
           throw _SymbolNotResolved();
-        } else if (definition case TypeDefiningDeclaration(:final definedType)) {
+        } else if (definition case TypeDefiningElement(:final definedType)) {
           baseType = definedType;
+        } else if (definition case ImportedSymbolSyntheticElement(syntheticElement: final TypeDefiningElement el)) {
+          baseType = el.definedType;
         } else {
           // TODO(mateusfccp): Make a proper ResolveError and throw it
           throw StateError('${typeIdentifier.identifier.lexeme} has type ${definition.runtimeType}.');
@@ -371,7 +378,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
             source: baseType.source,
             arguments: passedArguments,
           );
-        } else if (baseType is TypeParameterType) {
+        } else if (baseType is TypeParameterType || baseType is StringType) {
           return baseType;
         } else {
           throw StateError("Symbol $baseType is non-polymorphic, which shouldn't happen.");
@@ -391,28 +398,14 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   Future<List<ImportedSymbolSyntheticElement>> _resolvePackage(Package package) async {
     final symbols = await symbolsResolver.getSymbolsForPackage(package: package);
 
-    final elements = <ImportedSymbolSyntheticElement>[];
-
     for (final symbol in symbols) {
-      if (symbol is PolymorphicType) {
-        final element = ImportedSymbolSyntheticElement(
-          name: symbol.name,
-          type: TypeType(), // TODO(mateusfccp): Change this when we import other symbols
-        );
-
-        element.definedType = symbol;
-        symbol.element = element;
-
-        _environment.defineSymbol(
-          symbol.name,
-          element,
-        );
-
-        elements.add(element);
-      }
+      _environment.defineSymbol(
+        symbol.name,
+        symbol,
+      );
     }
 
-    return elements;
+    return symbols;
   }
 }
 
