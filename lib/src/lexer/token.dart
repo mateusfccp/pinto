@@ -133,10 +133,20 @@ enum TokenType {
   /// The verum token (`⊤`).
   verum,
 
-  /// Integer literals:
+  /// The integer literal.
+  /// 
+  /// It follows the following grammar:
+  /// ```ebnf
+  /// <digit_separator> ::= "_"
+  /// <integer_literal> ::= <digit>+ ( <digit_separator> <digit>+ )*
+  /// ```
+  ///
+  /// Some examples of valid integer literals:
+  /// ```
   /// 0100
   /// 1094812
   /// 100_000
+  /// ```
   integerLiteral,
 
   /// Double literals:
