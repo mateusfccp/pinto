@@ -219,6 +219,8 @@ String _buildTypeName(
         _ParameterPosition.covariant => '',
         _ParameterPosition.contravariant => 'void',
       },
+    IntegerType() => 'int',
+    DoubleType() => 'double',
   };
 }
 
@@ -254,7 +256,7 @@ List<TypeParameterType> _typeParametersFromType(Type type) {
   return switch (type) {
     PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments),
     TypeParameterType() => [type],
-    TopType() || BottomType() || UnitType() || BooleanType() || TypeType() || StringType() || FunctionType() => const [],
+    TopType() || BottomType() || UnitType() || BooleanType() || TypeType() || StringType() || FunctionType() || IntegerType() || DoubleType() => const [],
   };
 }
 

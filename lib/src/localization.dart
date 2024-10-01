@@ -31,6 +31,9 @@ String messageFromError(PintoError error, String source) {
     // Scan errors
     UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
+    NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
+    DecimalPartNotStartingWithANumberError() => decimalPartNotStartingWithANumberError(),
+    NumberLiteralTwoSeparatorsError() => numberLiteralTwoSeparatorsError(),
   };
 }
 
@@ -155,5 +158,32 @@ String unterminatedStringError() {
     name: 'unterminatedStringErrorMessage',
     args: [],
     desc: "The error message from when the lexer can't find the end of a string literal.",
+  );
+}
+
+String numberEndingWithSeparatorError() {
+  return Intl.message(
+    "Unexpected number termination. Numbers must not end with an underscore '_'.",
+    name: 'numberEndingWithSeparatorError',
+    args: [],
+    desc: "The error message when the lexer finds a number ending with an underscore.",
+  );
+}
+
+String decimalPartNotStartingWithANumberError() {
+  return Intl.message(
+    "Unexpected token. Double literals must have numbers on both sides of the dot.",
+    name: 'decimalPartNotStartingWithANumberError',
+    args: [],
+    desc: "The error message when the lexer finds a double literal without numbers on the right side.",
+  );
+}
+
+String numberLiteralTwoSeparatorsError() {
+  return Intl.message(
+    "Unexpected token. Number literals must have at most 1 separator between numbers.",
+    name: 'numberLiteralTwoSeparatorsError',
+    args: [],
+    desc: "The error message when the lexer finds a number literal with two separators side by side.",
   );
 }

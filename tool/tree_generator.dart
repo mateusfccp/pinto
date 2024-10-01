@@ -285,7 +285,7 @@ final class TreeGenerator {
                   case TreeGeneratorConstructorRule.named:
                     builder.optionalParameters.add(
                       Parameter((builder) {
-                        builder.required = property.final$  || !property.optional;
+                        builder.required = property.final$ || !property.optional;
                         builder.named = true;
                         builder.toThis = true;
                         builder.name = property.name;

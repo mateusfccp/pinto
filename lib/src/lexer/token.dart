@@ -131,7 +131,19 @@ enum TokenType {
   unitLiteral,
 
   /// The verum token (`⊤`).
-  verum;
+  verum,
+
+  /// Integer literals:
+  /// 0100
+  /// 1094812
+  /// 100_000
+  integerLiteral,
+
+  /// Double literals:
+  /// 0.100
+  /// 53.000_001
+  /// 5_2.000_001
+  doubleLiteral;
 
   @override
   String toString() {
@@ -162,6 +174,8 @@ enum TokenType {
       typeKeyword => 'type',
       unitLiteral => '()',
       verum => '⊤',
+      integerLiteral => 'integer literal',
+      doubleLiteral => 'double literal',
     };
   }
 }

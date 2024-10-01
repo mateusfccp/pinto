@@ -111,7 +111,7 @@ final class Lexer {
       '/' => _slash(),
       ' ' || '\r' || '\t' => null,
       '\n' => _lineBreak(),
-      final character => _character(character),
+      final character => _isNumeric(character) ? _number() : _character(character),
     };
   }
 
@@ -150,6 +150,60 @@ final class Lexer {
       // Advance to the closing quotes (")
       _advance();
       _addToken(TokenType.stringLiteral);
+    }
+  }
+
+  void _advanceNumericAndSeparatorMany1() {
+    // The first character must be numeric
+    if (_isNumeric(_peek)) {
+      _advance();
+    } else {
+      _errorHandler?.emit(
+        DecimalPartNotStartingWithANumberError(offset: _current),
+      );
+      return;
+    }
+
+    while ((_isNumeric(_peek) || _peek == '_') && !_isAtEnd) {
+      final isSeparator = _peek == '_';
+
+      _advance();
+
+      if (_peek == '_' && isSeparator) {
+        // two neighbour separators found (e.g. 14__4)
+        _errorHandler?.emit(
+          NumberLiteralTwoSeparatorsError(offset: _current),
+        );
+        return;
+      }
+    }
+  }
+
+  void _number() {
+    _advanceNumericAndSeparatorMany1();
+
+    // Found dot. Try parsing double
+    if (_peek == '.') {
+      // Advance the dot
+      _advance();
+      _advanceNumericAndSeparatorMany1();
+
+      if (_peek == '_') {
+        _errorHandler?.emit(
+          NumberEndingWithSeparatorError(offset: _current),
+        );
+      } else {
+        _addToken(TokenType.doubleLiteral);
+      }
+      return;
+    }
+
+    if (_peek == '_') {
+      _errorHandler?.emit(
+        NumberEndingWithSeparatorError(offset: _current),
+      );
+    } else {
+      _addToken(TokenType.integerLiteral);
     }
   }
 
@@ -246,4 +300,9 @@ final class Lexer {
 
     _addToken(tokenType);
   }
+}
+
+bool _isNumeric(String character) {
+  assert(character.length == 1);
+  return RegExp(r'[\d]').hasMatch(character);
 }

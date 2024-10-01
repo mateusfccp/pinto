@@ -2,6 +2,8 @@ import 'package:pinto/ast.dart';
 import 'package:pinto/lexer.dart';
 import 'package:pinto/syntactic_entity.dart';
 
+import 'visitors.dart';
+
 sealed class AstNode implements SyntacticEntity {
   const AstNode();
 
@@ -422,6 +424,44 @@ final class StringLiteral extends Literal {
 
   @override
   R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStringLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+}
+
+final class IntegerLiteral extends Literal {
+  const IntegerLiteral(this.literal);
+
+  @override
+  final Token literal;
+
+  @override
+  int get offset => literal.offset;
+
+  @override
+  int get end => literal.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitIntegerLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+}
+
+final class DoubleLiteral extends Literal {
+  const DoubleLiteral(this.literal);
+
+  @override
+  final Token literal;
+
+  @override
+  int get offset => literal.offset;
+
+  @override
+  int get end => literal.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitDoubleLiteral(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}

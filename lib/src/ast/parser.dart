@@ -12,6 +12,8 @@ const _expressionTokens = [
   TokenType.stringLiteral,
   TokenType.trueKeyword,
   TokenType.unitLiteral,
+  TokenType.integerLiteral,
+  TokenType.doubleLiteral,
 ];
 
 /// A pint° parser.
@@ -205,6 +207,10 @@ final class Parser {
           } else {
             return identifier;
           }
+        case TokenType.integerLiteral:
+          return IntegerLiteral(_previous);
+        case TokenType.doubleLiteral:
+          return DoubleLiteral(_previous);
         default:
           throw StateError('This branch should be unreachable.');
       }

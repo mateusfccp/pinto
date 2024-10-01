@@ -16,6 +16,8 @@ abstract interface class AstNodeVisitor<R> {
   R? visitBooleanLiteral(BooleanLiteral node);
   R? visitUnitLiteral(UnitLiteral node);
   R? visitStringLiteral(StringLiteral node);
+  R? visitIntegerLiteral(IntegerLiteral node);
+  R? visitDoubleLiteral(DoubleLiteral node);
   R? visitImportDeclaration(ImportDeclaration node);
   R? visitTypeDefinition(TypeDefinition node);
   R? visitLetDeclaration(LetDeclaration node);
@@ -66,6 +68,12 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
 
   @override
   R? visitStringLiteral(StringLiteral node) => null;
+
+  @override
+  R? visitIntegerLiteral(IntegerLiteral node) => null;
+
+  @override
+  R? visitDoubleLiteral(DoubleLiteral node) => null;
 
   @override
   R? visitImportDeclaration(ImportDeclaration node) => null;
@@ -145,6 +153,12 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor {
 
   @override
   R? visitStringLiteral(StringLiteral node) => visitLiteral(node);
+
+  @override
+  R? visitIntegerLiteral(IntegerLiteral node) => visitLiteral(node);
+
+  @override
+  R? visitDoubleLiteral(DoubleLiteral node) => visitLiteral(node);
 
   R? visitDeclaration(Declaration node) => visitAstNode(node);
 

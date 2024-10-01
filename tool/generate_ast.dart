@@ -184,18 +184,18 @@ Future<void> main(List<String> args) async {
                       Token('literal', override: true),
                     ],
                   ),
-                  // TreeNode(
-                  //   name: 'IntegerLiteral',
-                  //   properties: [
-                  //     Token('literal'),
-                  //   ],
-                  // ),
-                  // TreeNode(
-                  //   name: 'DoubleLiteral',
-                  //   properties: [
-                  //     Token('literal'),
-                  //   ],
-                  // ),
+                  TreeNode(
+                    name: 'IntegerLiteral',
+                    properties: [
+                      Token('literal', override: true),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'DoubleLiteral',
+                    properties: [
+                      Token('literal', override: true),
+                    ],
+                  ),
                 ],
               ),
             ],

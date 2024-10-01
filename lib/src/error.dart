@@ -33,6 +33,27 @@ final class UnterminatedStringError implements LexingError {
   final int offset;
 }
 
+final class NumberEndingWithSeparatorError implements LexingError {
+  const NumberEndingWithSeparatorError({required this.offset});
+
+  @override
+  final int offset;
+}
+
+final class DecimalPartNotStartingWithANumberError implements LexingError {
+  const DecimalPartNotStartingWithANumberError({required this.offset});
+
+  @override
+  final int offset;
+}
+
+final class NumberLiteralTwoSeparatorsError implements LexingError {
+  const NumberLiteralTwoSeparatorsError({required this.offset});
+
+  @override
+  final int offset;
+}
+
 /// An error that happened while the program was being parsed.
 sealed class ParseError implements PintoError {
   SyntacticEntity get syntacticEntity;
