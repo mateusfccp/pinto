@@ -149,10 +149,21 @@ enum TokenType {
   /// ```
   integerLiteral,
 
-  /// Double literals:
+  /// /// The double literal.
+  /// 
+  /// It follows the following grammar:
+  /// ```ebnf
+  /// <digit_separator> ::= "_"
+  /// <integer_literal> ::= <digit>+ ( <digit_separator> <digit>+ )*
+  /// <double_literal>  ::= <integer_literal> "." <integer_literal>
+  /// ```
+  ///
+  /// Some examples of valid double literals:
+  /// ```
   /// 0.100
   /// 53.000_001
   /// 5_2.000_001
+  /// ```
   doubleLiteral;
 
   @override
