@@ -47,13 +47,6 @@ final class DecimalPartNotStartingWithANumberError implements LexingError {
   final int offset;
 }
 
-final class NumberLiteralTwoSeparatorsError implements LexingError {
-  const NumberLiteralTwoSeparatorsError({required this.offset});
-
-  @override
-  final int offset;
-}
-
 /// An error that happened while the program was being parsed.
 sealed class ParseError implements PintoError {
   SyntacticEntity get syntacticEntity;

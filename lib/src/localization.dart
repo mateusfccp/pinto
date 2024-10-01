@@ -31,7 +31,6 @@ String messageFromError(PintoError error, String source) {
     // Scan errors
     DecimalPartNotStartingWithANumberError() => decimalPartNotStartingWithANumberError(),
     NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
-    NumberLiteralTwoSeparatorsError() => numberLiteralTwoSeparatorsError(),
     UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
   };
@@ -176,14 +175,5 @@ String numberEndingWithSeparatorError() {
     name: 'numberEndingWithSeparatorErrorMessage',
     args: [],
     desc: "The error message when the lexer finds a number ending with an underscore.",
-  );
-}
-
-String numberLiteralTwoSeparatorsError() {
-  return Intl.message(
-    "Unexpected token. Number literals must have at most 1 separator between numbers.",
-    name: 'numberLiteralTwoSeparatorsErrorMessage',
-    args: [],
-    desc: "The error message when the lexer finds a number literal with two separators side by side.",
   );
 }

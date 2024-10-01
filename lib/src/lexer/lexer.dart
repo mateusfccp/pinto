@@ -153,7 +153,7 @@ final class Lexer {
     }
   }
 
-  void _advanceNumericAndSeparatorMany1() {
+  void advanceOneOrMoreNumbersAndSeparators() {
     // The first character must be numeric
     if (_isNumeric(_peek)) {
       _advance();
@@ -164,47 +164,32 @@ final class Lexer {
       return;
     }
 
+    String? lastRead;
     while ((_isNumeric(_peek) || _peek == '_') && !_isAtEnd) {
-      final isSeparator = _peek == '_';
-
+      lastRead = _peek;
       _advance();
+    }
 
-      if (_peek == '_' && isSeparator) {
-        // two neighbour separators found (e.g. 14__4)
-        _errorHandler?.emit(
-          NumberLiteralTwoSeparatorsError(offset: _current),
-        );
-        return;
-      }
+    if (lastRead == '_') {
+      _errorHandler?.emit(
+        NumberEndingWithSeparatorError(offset: _current),
+      );
     }
   }
 
   void _number() {
-    _advanceNumericAndSeparatorMany1();
+    advanceOneOrMoreNumbersAndSeparators();
 
     // Found dot. Try parsing double
     if (_peek == '.') {
       // Advance the dot
       _advance();
-      _advanceNumericAndSeparatorMany1();
-
-      if (_peek == '_') {
-        _errorHandler?.emit(
-          NumberEndingWithSeparatorError(offset: _current),
-        );
-      } else {
-        _addToken(TokenType.doubleLiteral);
-      }
+      advanceOneOrMoreNumbersAndSeparators();
+      _addToken(TokenType.doubleLiteral);
       return;
     }
 
-    if (_peek == '_') {
-      _errorHandler?.emit(
-        NumberEndingWithSeparatorError(offset: _current),
-      );
-    } else {
-      _addToken(TokenType.integerLiteral);
-    }
+    _addToken(TokenType.integerLiteral);
   }
 
   void _lineBreak() => _lineBreaks.add(_current - 1);
