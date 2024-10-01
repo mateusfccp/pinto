@@ -29,7 +29,6 @@ String messageFromError(PintoError error, String source) {
     WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
 
     // Scan errors
-    DecimalPartNotStartingWithANumberError() => decimalPartNotStartingWithANumberError(),
     NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
     UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
@@ -157,15 +156,6 @@ String unterminatedStringError() {
     name: 'unterminatedStringErrorMessage',
     args: [],
     desc: "The error message from when the lexer can't find the end of a string literal.",
-  );
-}
-
-String decimalPartNotStartingWithANumberError() {
-  return Intl.message(
-    "Unexpected token. Double literals must have numbers on both sides of the dot.",
-    name: 'decimalPartNotStartingWithANumberErrorMessage',
-    args: [],
-    desc: "The error message when the lexer finds a double literal without numbers on the right side.",
   );
 }
 

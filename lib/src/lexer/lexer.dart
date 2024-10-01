@@ -153,17 +153,7 @@ final class Lexer {
     }
   }
 
-  void advanceOneOrMoreNumbersAndSeparators() {
-    // The first character must be numeric
-    if (_isNumeric(_peek)) {
-      _advance();
-    } else {
-      _errorHandler?.emit(
-        DecimalPartNotStartingWithANumberError(offset: _current),
-      );
-      return;
-    }
-
+  void advanceNumbersAndSeparators() {
     String? lastRead;
     while ((_isNumeric(_peek) || _peek == '_') && !_isAtEnd) {
       lastRead = _peek;
@@ -178,18 +168,17 @@ final class Lexer {
   }
 
   void _number() {
-    advanceOneOrMoreNumbersAndSeparators();
+    advanceNumbersAndSeparators();
 
     // Found dot. Try parsing double
-    if (_peek == '.') {
+    if (_peek == '.' && !_isAtEnd && _isNumeric(_source[_current + 1])) {
       // Advance the dot
       _advance();
-      advanceOneOrMoreNumbersAndSeparators();
+      advanceNumbersAndSeparators();
       _addToken(TokenType.doubleLiteral);
-      return;
+    } else {
+      _addToken(TokenType.integerLiteral);
     }
-
-    _addToken(TokenType.integerLiteral);
   }
 
   void _lineBreak() => _lineBreaks.add(_current - 1);
