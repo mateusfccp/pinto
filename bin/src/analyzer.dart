@@ -117,13 +117,13 @@ Diagnostic _diagnosticFromError(Lexer lexer, PintoError error, String source) {
   };
 
   final start = Position(
-    line: line,
-    character: column,
+    line: line - 1,
+    character: column - 1,
   );
 
   final end = Position(
-    line: line,
-    character: column + length,
+    line: line - 1,
+    character: column - 1 + length,
   );
 
   final range = Range(start: start, end: end);
