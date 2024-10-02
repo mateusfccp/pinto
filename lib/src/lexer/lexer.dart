@@ -111,7 +111,7 @@ final class Lexer {
       '/' => _slash(),
       ' ' || '\r' || '\t' => null,
       '\n' => _lineBreak(),
-      final character => _character(character),
+      final character => _isNumeric(character) ? _number() : _character(character),
     };
   }
 
@@ -150,6 +150,34 @@ final class Lexer {
       // Advance to the closing quotes (")
       _advance();
       _addToken(TokenType.stringLiteral);
+    }
+  }
+
+  void advanceNumbersAndSeparators() {
+    String? lastRead;
+    while ((_isNumeric(_peek) || _peek == '_') && !_isAtEnd) {
+      lastRead = _peek;
+      _advance();
+    }
+
+    if (lastRead == '_') {
+      _errorHandler?.emit(
+        NumberEndingWithSeparatorError(offset: _current - 1),
+      );
+    }
+  }
+
+  void _number() {
+    advanceNumbersAndSeparators();
+
+    // Found dot. Try parsing double
+    if (_peek == '.' && !_isAtEnd && _isNumeric(_source[_current + 1])) {
+      // Advance the dot
+      _advance();
+      advanceNumbersAndSeparators();
+      _addToken(TokenType.doubleLiteral);
+    } else {
+      _addToken(TokenType.integerLiteral);
     }
   }
 
@@ -246,4 +274,9 @@ final class Lexer {
 
     _addToken(tokenType);
   }
+}
+
+bool _isNumeric(String character) {
+  assert(character.length == 1);
+  return RegExp(r'[\d]').hasMatch(character);
 }

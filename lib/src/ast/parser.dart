@@ -6,8 +6,10 @@ import 'ast.dart';
 import 'import.dart';
 
 const _expressionTokens = [
+  TokenType.doubleLiteral,
   TokenType.falseKeyword,
   TokenType.identifier,
+  TokenType.integerLiteral,
   // TokenType.letKeyword,
   TokenType.stringLiteral,
   TokenType.trueKeyword,
@@ -188,6 +190,8 @@ final class Parser {
 
     if (_matchExpressionToken()) {
       switch (_previous.type) {
+        case TokenType.doubleLiteral:
+          return DoubleLiteral(_previous);
         case TokenType.falseKeyword:
         case TokenType.trueKeyword:
           return BooleanLiteral(_previous);
@@ -205,6 +209,8 @@ final class Parser {
           } else {
             return identifier;
           }
+        case TokenType.integerLiteral:
+          return IntegerLiteral(_previous);
         default:
           throw StateError('This branch should be unreachable.');
       }

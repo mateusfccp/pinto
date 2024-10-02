@@ -103,6 +103,38 @@ final class StringType implements Type {
   String toString() => 'String';
 }
 
+final class IntegerType implements Type {
+  const IntegerType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is IntegerType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'Integer';
+}
+
+final class DoubleType implements Type {
+  const DoubleType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is DoubleType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'Double';
+}
+
 final class TypeParameterType implements Type {
   TypeParameterType({required this.name});
 

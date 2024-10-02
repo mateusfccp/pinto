@@ -62,7 +62,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
           syntheticTypeDefinitions.addAll(
             await _resolvePackage(element.package),
           );
-          
+
           for (final definition in syntheticTypeDefinitions) {
             programElement.declarations.add(definition);
             definition.enclosingElement = programElement;
@@ -221,6 +221,24 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       constant: true,
       constantValue: node.literal.lexeme.substring(1, node.literal.lexeme.length - 1),
       type: const StringType(),
+    );
+  }
+
+  @override
+  Future<Element> visitIntegerLiteral(IntegerLiteral node) async {
+    return LiteralElement(
+      constant: true,
+      constantValue: int.parse(_removeSeparators(node.literal.lexeme)),
+      type: const IntegerType(),
+    );
+  }
+
+  @override
+  Future<Element> visitDoubleLiteral(DoubleLiteral node) async {
+    return LiteralElement(
+      constant: true,
+      constantValue: double.parse(_removeSeparators(node.literal.lexeme)),
+      type: const DoubleType(),
     );
   }
 
@@ -410,3 +428,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 }
 
 final class _SymbolNotResolved implements Exception {}
+
+// TODO(mateusfccp): Remove this method after Dart 3.6 when separators will be supported
+String _removeSeparators(String literal) => literal.replaceAll('_', '');

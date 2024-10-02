@@ -43,6 +43,24 @@ enum TokenType {
   /// The comma token (`,`).
   comma,
 
+  /// /// The double literal.
+  ///
+  /// It follows the following grammar:
+  /// ```ebnf
+  /// <digit_separator> ::= "_"
+  /// <integer_literal> ::= <digit> (<digit_separator>* <digit>+)*
+  /// <double_literal>  ::= <integer_literal> "." <integer_literal>
+  /// ```
+  ///
+  /// Some examples of valid double literals:
+  /// ```
+  /// 0.100
+  /// 53.000_001
+  /// 5_2.000_001
+  /// 5__2.000___001
+  /// ```
+  doubleLiteral,
+
   /// The end-of-file token.
   endOfFile,
 
@@ -82,6 +100,23 @@ enum TokenType {
 
   /// The `import` keyword token.
   importKeyword,
+
+  /// The integer literal.
+  ///
+  /// It follows the following grammar:
+  /// ```ebnf
+  /// <digit_separator> ::= "_"
+  /// <integer_literal> ::= <digit> (<digit_separator>* <digit>+)*
+  /// ```
+  ///
+  /// Some examples of valid integer literals:
+  /// ```
+  /// 0100
+  /// 1094812
+  /// 100_000
+  /// 1__000
+  /// ```
+  integerLiteral,
 
   /// The left brace token (`{`).
   leftBrace,
@@ -139,6 +174,7 @@ enum TokenType {
       at => '@',
       colon => ':',
       comma => ',',
+      doubleLiteral => 'double literal',
       endOfFile => 'EOF',
       equalitySign => '=',
       eroteme => '?',
@@ -147,6 +183,7 @@ enum TokenType {
       identifier => 'identifier',
       importIdentifier => 'import identifier',
       importKeyword => 'import',
+      integerLiteral => 'integer literal',
       leftBrace => '{',
       leftBracket => '[',
       leftParenthesis => '(',

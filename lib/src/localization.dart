@@ -29,6 +29,7 @@ String messageFromError(PintoError error, String source) {
     WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
 
     // Scan errors
+    NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
     UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
   };
@@ -155,5 +156,14 @@ String unterminatedStringError() {
     name: 'unterminatedStringErrorMessage',
     args: [],
     desc: "The error message from when the lexer can't find the end of a string literal.",
+  );
+}
+
+String numberEndingWithSeparatorError() {
+  return Intl.message(
+    "Unexpected number termination. Numbers must not end with an underscore '_'.",
+    name: 'numberEndingWithSeparatorErrorMessage',
+    args: [],
+    desc: "The error message when the lexer finds a number ending with an underscore.",
   );
 }
