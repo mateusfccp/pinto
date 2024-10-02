@@ -48,7 +48,7 @@ enum TokenType {
   /// It follows the following grammar:
   /// ```ebnf
   /// <digit_separator> ::= "_"
-  /// <integer_literal> ::= <digit>+ ( <digit_separator> <digit>+ )*
+  /// <integer_literal> ::= <digit> (<digit_separator>* <digit>+)*
   /// <double_literal>  ::= <integer_literal> "." <integer_literal>
   /// ```
   ///
@@ -57,6 +57,7 @@ enum TokenType {
   /// 0.100
   /// 53.000_001
   /// 5_2.000_001
+  /// 5__2.000___001
   /// ```
   doubleLiteral,
 
@@ -105,7 +106,7 @@ enum TokenType {
   /// It follows the following grammar:
   /// ```ebnf
   /// <digit_separator> ::= "_"
-  /// <integer_literal> ::= <digit>+ ( <digit_separator> <digit>+ )*
+  /// <integer_literal> ::= <digit> (<digit_separator>* <digit>+)*
   /// ```
   ///
   /// Some examples of valid integer literals:
@@ -113,6 +114,7 @@ enum TokenType {
   /// 0100
   /// 1094812
   /// 100_000
+  /// 1__000
   /// ```
   integerLiteral,
 

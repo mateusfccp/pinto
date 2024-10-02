@@ -162,7 +162,7 @@ final class Lexer {
 
     if (lastRead == '_') {
       _errorHandler?.emit(
-        NumberEndingWithSeparatorError(offset: _current),
+        NumberEndingWithSeparatorError(offset: _current - 1),
       );
     }
   }

@@ -97,8 +97,7 @@ final class Parser {
     }
   }
 
-  bool _match(TokenType type1,
-      [TokenType? type2, TokenType? type3, TokenType? type4, TokenType? type5, TokenType? type6, TokenType? type7, TokenType? type8]) {
+  bool _match(TokenType type1, [TokenType? type2, TokenType? type3, TokenType? type4, TokenType? type5, TokenType? type6, TokenType? type7, TokenType? type8]) {
     final types = [type1, type2, type3, type4, type5, type6, type7, type8].nonNulls;
 
     for (final type in types) {
