@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:lsp_server/lsp_server.dart';
 
-import 'src/analyzer.dart';
+import 'analyzer.dart';
 
-void main() async {
+void runServer() async {
   final connection = Connection(stdin, stdout);
   final analyzer = Analyzer();
 

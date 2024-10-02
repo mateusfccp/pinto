@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   analyzer: ^6.8.0
+  args: ^2.5.0
   built_collection: ^5.1.1
   code_builder: ^4.10.0
   collection: ^1.19.0
@@ -30,4 +31,3 @@ dev_dependencies:
 
 executables:
   pinto:
-  pinto_server:

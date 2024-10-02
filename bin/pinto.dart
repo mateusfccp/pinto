@@ -5,6 +5,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/src/dart/sdk/sdk.dart';
 import 'package:analyzer/src/util/sdk.dart';
+import 'package:args/args.dart';
 import 'package:chalkdart/chalkstrings.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:exitcode/exitcode.dart';
@@ -17,16 +18,49 @@ import 'package:pinto/localization.dart';
 import 'package:pinto/semantic.dart';
 import 'package:pinto/syntactic_entity.dart';
 
+import 'src/server.dart';
+
 const _padSize = 5;
 
 final _resourceProvider = PhysicalResourceProvider.INSTANCE;
 
+final _argParser = ArgParser()
+  ..addFlag(
+    'help',
+    help: 'Shows this help.',
+    negatable: false,
+  )
+  ..addFlag(
+    'server',
+    help: 'Makes program run in LSP server mode.',
+    negatable: false,
+  )
+  ..addFlag(
+    'version',
+    help: 'Shows the installed pint° version.',
+    negatable: false,
+  );
+
 Future<void> main(List<String> args) async {
-  if (args.length == 1) {
-    await runFile(args.single);
+  final result = _argParser.parse(args);
+
+  if (result.flag('version')) {
+    stdout.writeln('pinto CLI, version 0.0.4');
+    return;
+  } else if (result.flag('help')) {
+    stdout.writeln(_argParser.usage);
+    return;
+  }
+
+  if (result.flag('server')) {
+    runServer();
   } else {
-    stderr.writeln('Usage: pinto [script]');
-    exit(usage);
+    if (args.length == 1) {
+      await runFile(args.single);
+    } else {
+      stderr.writeln('Usage: pinto [script]');
+      exit(usage);
+    }
   }
 }
 
