@@ -1,4 +1,4 @@
-## Unreleased
+## 0.0.4
 
 - Type resolution order fixed
 - Initial syntatic tree implementation
