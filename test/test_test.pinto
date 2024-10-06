@@ -1,2 +1,0 @@
-let invalidInt = 100_
-//                  ^ NumberEndingWithSeparatorError

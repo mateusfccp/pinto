@@ -10,11 +10,23 @@ import 'semantic/type.dart';
 part 'error.freezed.dart';
 
 /// A Pinto error.
-sealed class PintoError {}
+sealed class PintoError {
+  String get code;
+}
 
 /// An error that happened while the program was being lexed.
 sealed class LexingError implements PintoError {
   int get offset;
+}
+
+final class NumberEndingWithSeparatorError implements LexingError {
+  const NumberEndingWithSeparatorError({required this.offset});
+
+  @override
+  final int offset;
+
+  @override
+  String get code => 'number_ending_with_separator';
 }
 
 final class UnexpectedCharacterError implements LexingError {
@@ -24,6 +36,9 @@ final class UnexpectedCharacterError implements LexingError {
 
   @override
   final int offset;
+
+  @override
+  String get code => 'unexpected_character';
 }
 
 final class UnterminatedStringError implements LexingError {
@@ -31,13 +46,9 @@ final class UnterminatedStringError implements LexingError {
 
   @override
   final int offset;
-}
-
-final class NumberEndingWithSeparatorError implements LexingError {
-  const NumberEndingWithSeparatorError({required this.offset});
 
   @override
-  final int offset;
+  String get code => 'unterminated_string';
 }
 
 /// An error that happened while the program was being parsed.
@@ -46,29 +57,44 @@ sealed class ParseError implements PintoError {
 }
 
 @freezed
-sealed class ExpectError with _$ExpectError implements ParseError {
-  const factory ExpectError({
+sealed class ExpectedError with _$ExpectedError implements ParseError {
+  const factory ExpectedError({
     required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
   }) = _ExpectError;
+
+  const ExpectedError._();
+
+  @override
+  String get code => 'expected_${expectation.code}';
 }
 
 @freezed
-sealed class ExpectAfterError with _$ExpectAfterError implements ParseError {
-  const factory ExpectAfterError({
+sealed class ExpectedAfterError with _$ExpectedAfterError implements ParseError {
+  const factory ExpectedAfterError({
     required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
     required ExpectationType after,
   }) = _ExpectAfterError;
+
+  const ExpectedAfterError._();
+
+  @override
+  String get code => 'expected_${expectation.code}_after_${after.code}';
 }
 
 @freezed
-sealed class ExpectBeforeError with _$ExpectBeforeError implements ParseError {
-  const factory ExpectBeforeError({
+sealed class ExpectedBeforeError with _$ExpectedBeforeError implements ParseError {
+  const factory ExpectedBeforeError({
     required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
     required ExpectationType before,
   }) = _ExpectBeforeError;
+
+  const ExpectedBeforeError._();
+
+  @override
+  String get code => 'expected_${expectation.code}_before_${before.code}';
 }
 
 @freezed
@@ -86,6 +112,18 @@ sealed class ExpectationType with _$ExpectationType {
     String? description,
   }) = TokenExpectation;
 
+  String get code {
+    return switch (this) {
+      DeclarationExpectation(declaration: ImportDeclaration()) => 'import',
+      DeclarationExpectation(declaration: LetDeclaration()) => 'let_declaration',
+      DeclarationExpectation(declaration: TypeDefinition()) => 'type_definition',
+      DeclarationExpectation() => 'declaration',
+      ExpressionExpectation() => 'expression',
+      OneOfExpectation(:final expectations) => expectations.map((expectation) => expectation.code).join('_or_'),
+      TokenExpectation(:final token) => token.code,
+    };
+  }
+
   @override
   String toString() {
     return switch (this) {
@@ -100,6 +138,18 @@ sealed class ExpectationType with _$ExpectationType {
   }
 }
 
+final class MisplacedImport implements ParseError {
+  const MisplacedImport({
+    required ImportDeclaration importDeclaration,
+  }) : syntacticEntity = importDeclaration;
+
+  @override
+  final ImportDeclaration syntacticEntity;
+
+  @override
+  String get code => 'misplaced_import';
+}
+
 /// An error that happened while the program was being resolved.
 sealed class ResolveError implements PintoError {
   SyntacticEntity get syntacticEntity;
@@ -110,6 +160,9 @@ final class IdentifierAlreadyDefinedError implements ResolveError {
 
   @override
   final Token syntacticEntity;
+
+  @override
+  String get code => 'identifier_already_defined';
 }
 
 final class ImportedPackageNotAvailableError implements ResolveError {
@@ -117,6 +170,9 @@ final class ImportedPackageNotAvailableError implements ResolveError {
 
   @override
   final SyntacticEntity syntacticEntity;
+
+  @override
+  String get code => 'imported_package_not_available';
 }
 
 final class NotAFunctionError implements ResolveError {
@@ -129,6 +185,9 @@ final class NotAFunctionError implements ResolveError {
   final SyntacticEntity syntacticEntity;
 
   final Type calledType;
+
+  @override
+  String get code => 'not_a_function';
 }
 
 final class SymbolNotInScopeError implements ResolveError {
@@ -136,6 +195,9 @@ final class SymbolNotInScopeError implements ResolveError {
 
   @override
   final Token syntacticEntity;
+
+  @override
+  String get code => 'symbol_not_in_scope';
 }
 
 final class TypeParameterAlreadyDefinedError implements ResolveError {
@@ -143,6 +205,9 @@ final class TypeParameterAlreadyDefinedError implements ResolveError {
 
   @override
   final Token syntacticEntity;
+
+  @override
+  String get code => 'type_parameter_already_defined';
 }
 
 final class WrongNumberOfArgumentsError implements ResolveError {
@@ -158,6 +223,9 @@ final class WrongNumberOfArgumentsError implements ResolveError {
   final int argumentsCount;
 
   final int expectedArgumentsCount;
+
+  @override
+  String get code => 'wrong_number_of_arguments';
 }
 
 /// An pint° error handler.

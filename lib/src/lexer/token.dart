@@ -168,6 +168,39 @@ enum TokenType {
   /// The verum token (`⊤`).
   verum;
 
+  String get code {
+    return switch (this) {
+      at => 'at',
+      colon => 'colon',
+      comma => 'comma',
+      doubleLiteral => 'double_literal',
+      endOfFile => 'eof',
+      equalitySign => 'equality_sign',
+      eroteme => 'question_mark',
+      falseKeyword => 'false',
+      falsum => 'bottom_type',
+      identifier => 'identifier',
+      importIdentifier => 'import_identifier',
+      importKeyword => 'import',
+      integerLiteral => 'integer_literal',
+      leftBrace => 'left_brace',
+      leftBracket => 'left_bracket',
+      leftParenthesis => 'left_parenthesis',
+      letKeyword => 'let',
+      plusSign => 'plus_sign',
+      reserved => 'reserved',
+      rightBrace => 'right_brace',
+      rightBracket => 'right_bracket',
+      rightParenthesis => 'right_parenthesis',
+      slash => 'slash',
+      stringLiteral => 'string_literal',
+      trueKeyword => 'true',
+      typeKeyword => 'type',
+      unitLiteral => 'unit',
+      verum => 'top_type',
+    };
+  }
+
   @override
   String toString() {
     return switch (this) {

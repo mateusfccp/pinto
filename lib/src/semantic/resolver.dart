@@ -244,6 +244,10 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
   @override
   Future<Element> visitTypeDefinition(TypeDefinition node) async {
+    if (_environment.getDefinition(node.name.lexeme) != null) {
+      throw IdentifierAlreadyDefinedError(node.name);
+    }
+
     const source = CurrentPackage();
 
     final definition = TypeDefinitionElement(name: node.name.lexeme);
@@ -264,6 +268,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       node.name.lexeme,
       definition,
     );
+
     _environment = _environment.fork();
 
     if (node.parameters case final parameters?) {
@@ -332,6 +337,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     return LiteralElement(
       constant: true,
       constantValue: null,
+      type: UnitType(),
     );
   }
 

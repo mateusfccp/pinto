@@ -45,7 +45,7 @@ Future<void> main(List<String> args) async {
   final result = _argParser.parse(args);
 
   if (result.flag('version')) {
-    stdout.writeln('pinto CLI, version 0.0.4');
+    stdout.writeln('pinto CLI, version 0.0.4+1');
     return;
   } else if (result.flag('help')) {
     stdout.writeln(_argParser.usage);

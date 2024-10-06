@@ -13,8 +13,9 @@ import 'package:pinto/semantic.dart';
 
 const _marker = '^';
 
-final class Tester {
-  Tester.path(String path) {
+// TODO(mateusfccp): Maybe optimizing it by merging it with [ErrorAnalyzer], so we don't have to read the same file twice
+final class ExpectationsParser {
+  ExpectationsParser(String path) {
     final file = File(path);
     final stream = file.openRead();
     final stringStream = _utf8Decoder.bind(stream);
@@ -25,7 +26,7 @@ final class Tester {
   final _lineSplitter = LineSplitter();
   late final Stream<String> _linesStream;
 
-  Stream<Expectation> getExpectations() async* {
+  Stream<ErrorEmission> getExpectations() async* {
     var currentLineOffset = 0;
     var lastAnalyzedLineOffset = currentLineOffset;
 
@@ -36,27 +37,28 @@ final class Tester {
       } else {
         yield expectation;
       }
-      currentLineOffset = currentLineOffset + line.length;
+
+      currentLineOffset = currentLineOffset + line.length + 1; // + 1 for line break
     }
   }
 
-  Expectation? _processLine(int lineStartOffset, String line) {
+  ErrorEmission? _processLine(int lineStartOffset, String line) {
     final match = _lineRegex.firstMatch(line);
     if (match != null) {
       final expectedError = match[1];
       final begin = lineStartOffset + line.indexOf(_marker);
-      final end = lineStartOffset + line.lastIndexOf(_marker);
+      final end = lineStartOffset + line.lastIndexOf(_marker) + 1;
       return expectedError == null //
           ? Any(begin: begin, end: end)
-          : Specific(name: expectedError, begin: begin, end: end);
+          : Specific(code: expectedError, begin: begin, end: end);
     } else {
       return null;
     }
   }
 }
 
-final class ErrorExpectator {
-  ErrorExpectator(String path) {
+final class ErrorAnalyzer {
+  ErrorAnalyzer(String path) {
     _file = File(path);
 
     _errorHandler.addListener(_processError);
@@ -64,12 +66,12 @@ final class ErrorExpectator {
 
   final _resourceProvider = PhysicalResourceProvider.INSTANCE;
   final _errorHandler = ErrorHandler();
-  final _controller = StreamController<Expectation>();
+  final _controller = StreamController<ErrorEmission>();
   late final File _file;
 
-  Stream<Expectation> get expectations => _controller.stream;
+  Stream<ErrorEmission> get errors => _controller.stream;
 
-  Future<void> expect() async {
+  Future<void> analyze() async {
     final content = await _file.readAsString();
 
     final lexer = Lexer(
@@ -114,30 +116,25 @@ final class ErrorExpectator {
 
   void _processError(PintoError error) {
     final (begin, end) = switch (error) {
-      LexingError() => (error.offset, error.offset),
+      LexingError() => (error.offset, error.offset + 1),
       ParseError(syntacticEntity: final entity) || ResolveError(syntacticEntity: final entity) => (entity.offset, entity.end),
     };
 
-    final errorName = _errorNameRegExp.firstMatch('$error')![1]!;
-
     final expectation = Specific(
-      name: errorName,
+      code: error.code,
       begin: begin,
       end: end,
     );
 
     _controller.add(expectation);
   }
-
-  // TODO(mateusfccp): Do better.
-  static final _errorNameRegExp = RegExp(r"Instance of '(\w+)'");
 }
 
-final _lineRegex = RegExp('\\s*//\\s*\\$_marker+(?:\\s+(\\w+))?');
+final _lineRegex = RegExp('\\s*//\\s*\\$_marker+(?:\\s+(([A-Za-z_\$][A-Za-z_\$0-9]*)+))?');
 
-sealed class Expectation {}
+sealed class ErrorEmission {}
 
-final class Any implements Expectation {
+final class Any implements ErrorEmission {
   const Any({
     required this.begin,
     required this.end,
@@ -164,31 +161,31 @@ final class Any implements Expectation {
   int get hashCode => Object.hash(begin, end);
 }
 
-final class Specific implements Expectation {
+final class Specific implements ErrorEmission {
   const Specific({
-    required this.name,
+    required this.code,
     required this.begin,
     required this.end,
   });
 
-  final String name;
+  final String code;
   final int begin;
   final int end;
 
   @override
-  String toString() => '$name($begin, $end)';
+  String toString() => '$code($begin, $end)';
 
   @override
   bool operator ==(Object other) {
     if (other is Any) {
       return other.begin == begin && other.end == end;
     } else if (other is Specific) {
-      return other.name == name && other.begin == begin && other.end == end;
+      return other.code == code && other.begin == begin && other.end == end;
     } else {
       return false;
     }
   }
 
   @override
-  int get hashCode => Object.hash(name, begin, end);
+  int get hashCode => Object.hash(code, begin, end);
 }

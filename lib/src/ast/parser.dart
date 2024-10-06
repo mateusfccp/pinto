@@ -46,11 +46,7 @@ final class Parser {
 
       if (declaration != null) {
         if (body.isNotEmpty && declaration is ImportDeclaration && body[body.length - 1] is! ImportDeclaration) {
-          final error = ExpectAfterError(
-            syntacticEntity: declaration,
-            expectation: ExpectationType.token(token: TokenType.typeKeyword),
-            after: ExpectationType.declaration(declaration: declaration),
-          );
+          final error = MisplacedImport(importDeclaration: declaration);
 
           _errorHandler?.emit(error);
         }
@@ -71,7 +67,7 @@ final class Parser {
       } else if (_match(TokenType.typeKeyword)) {
         return _typeDefinition();
       } else {
-        final error = ExpectError(
+        final error = ExpectedError(
           syntacticEntity: _peek,
           expectation: ExpectationType.declaration(),
         );
@@ -89,7 +85,9 @@ final class Parser {
     _advance();
     while (_isNotAtEnd) {
       switch (_peek.type) {
-        case TokenType.importKeyword || TokenType.typeKeyword:
+        case TokenType.importKeyword || //
+              TokenType.typeKeyword ||
+              TokenType.letKeyword:
           return;
         default:
           _advance();
@@ -125,8 +123,8 @@ final class Parser {
     return _previous;
   }
 
-  Token _consume(TokenType type, ParseError error) {
-    if (_check(type)) {
+  Token _consume(TokenType tokenType, ParseError error) {
+    if (_check(tokenType)) {
       return _advance();
     } else {
       _errorHandler?.emit(error);
@@ -134,12 +132,35 @@ final class Parser {
     }
   }
 
-  Token _consumeExpecting(TokenType type) {
+  Token _consumeOneOf(List<TokenType> tokenTypes, ParseError error) {
+    if (tokenTypes.any(_check)) {
+      return _advance();
+    } else {
+      _errorHandler?.emit(error);
+      throw error;
+    }
+  }
+
+  Token _consumeExpecting(TokenType tokenType) {
     return _consume(
-      type,
-      ExpectError(
+      tokenType,
+      ExpectedError(
         syntacticEntity: _peek,
-        expectation: TokenExpectation(token: type),
+        expectation: TokenExpectation(token: tokenType),
+      ),
+    );
+  }
+
+  Token _consumeExpectingMany(List<TokenType> tokenTypes) {
+    return _consumeOneOf(
+      tokenTypes,
+      ExpectedError(
+        syntacticEntity: _peek,
+        expectation: ExpectationType.oneOf(
+          expectations: [
+            for (final tokenType in tokenTypes) TokenExpectation(token: tokenType),
+          ],
+        ),
       ),
     );
   }
@@ -151,7 +172,7 @@ final class Parser {
   }) {
     return _consume(
       type,
-      ExpectAfterError(
+      ExpectedAfterError(
         syntacticEntity: _peek,
         expectation: TokenExpectation(token: type),
         after: TokenExpectation(
@@ -165,18 +186,16 @@ final class Parser {
   ImportDeclaration _import() {
     final keyword = _previous;
 
-    final Token identifier;
-
-    // TODO(mateusfccp): Improve this to allow multiple expectations
-    if (_check(TokenType.identifier)) {
-      identifier = _consumeExpecting(TokenType.identifier);
-    } else {
-      identifier = _consumeExpecting(TokenType.importIdentifier);
-    }
+    final Token identifier = _consumeExpectingMany(
+      [
+        TokenType.identifier,
+        TokenType.importIdentifier,
+      ],
+    );
 
     final ImportType type;
 
-    if (identifier.lexeme[0] == '@') {
+    if (identifier.type == TokenType.importIdentifier) {
       type = ImportType.dart;
     } else {
       type = ImportType.package;
@@ -215,7 +234,7 @@ final class Parser {
           throw StateError('This branch should be unreachable.');
       }
     } else {
-      throw ExpectError(
+      throw ExpectedError(
         syntacticEntity: _previous,
         expectation: ExpectationType.expression(),
       );
@@ -235,7 +254,7 @@ final class Parser {
 
     final equals = _consume(
       TokenType.equalitySign,
-      ExpectAfterError(
+      ExpectedAfterError(
         syntacticEntity: _peek,
         expectation: ExpectationType.token(token: TokenType.equalitySign),
         after: ExpectationType.token(
@@ -359,7 +378,7 @@ final class Parser {
 
     final name = _consumeAfter(
       type: TokenType.identifier,
-      after: TokenType.leftParenthesis, // TODO(mateusfccp): Fix this
+      after: TokenType.identifier,
       description: 'parameter type',
     );
 

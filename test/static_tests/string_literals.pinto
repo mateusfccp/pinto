@@ -1,0 +1,6 @@
+let myString = "string"
+
+let unterminatedString = "string
+//                              ^ unterminated_string
+
+let returnString _ = "string"
