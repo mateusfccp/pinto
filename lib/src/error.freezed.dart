@@ -15,22 +15,22 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
-mixin _$ExpectError {
+mixin _$ExpectedError {
   SyntacticEntity get syntacticEntity => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
 
-  /// Create a copy of ExpectError
+  /// Create a copy of ExpectedError
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ExpectErrorCopyWith<ExpectError> get copyWith =>
+  $ExpectedErrorCopyWith<ExpectedError> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ExpectErrorCopyWith<$Res> {
-  factory $ExpectErrorCopyWith(
-          ExpectError value, $Res Function(ExpectError) then) =
-      _$ExpectErrorCopyWithImpl<$Res, ExpectError>;
+abstract class $ExpectedErrorCopyWith<$Res> {
+  factory $ExpectedErrorCopyWith(
+          ExpectedError value, $Res Function(ExpectedError) then) =
+      _$ExpectedErrorCopyWithImpl<$Res, ExpectedError>;
   @useResult
   $Res call({SyntacticEntity syntacticEntity, ExpectationType expectation});
 
@@ -38,16 +38,16 @@ abstract class $ExpectErrorCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ExpectErrorCopyWithImpl<$Res, $Val extends ExpectError>
-    implements $ExpectErrorCopyWith<$Res> {
-  _$ExpectErrorCopyWithImpl(this._value, this._then);
+class _$ExpectedErrorCopyWithImpl<$Res, $Val extends ExpectedError>
+    implements $ExpectedErrorCopyWith<$Res> {
+  _$ExpectedErrorCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ExpectError
+  /// Create a copy of ExpectedError
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -67,7 +67,7 @@ class _$ExpectErrorCopyWithImpl<$Res, $Val extends ExpectError>
     ) as $Val);
   }
 
-  /// Create a copy of ExpectError
+  /// Create a copy of ExpectedError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -80,7 +80,7 @@ class _$ExpectErrorCopyWithImpl<$Res, $Val extends ExpectError>
 
 /// @nodoc
 abstract class _$$ExpectErrorImplCopyWith<$Res>
-    implements $ExpectErrorCopyWith<$Res> {
+    implements $ExpectedErrorCopyWith<$Res> {
   factory _$$ExpectErrorImplCopyWith(
           _$ExpectErrorImpl value, $Res Function(_$ExpectErrorImpl) then) =
       __$$ExpectErrorImplCopyWithImpl<$Res>;
@@ -94,13 +94,13 @@ abstract class _$$ExpectErrorImplCopyWith<$Res>
 
 /// @nodoc
 class __$$ExpectErrorImplCopyWithImpl<$Res>
-    extends _$ExpectErrorCopyWithImpl<$Res, _$ExpectErrorImpl>
+    extends _$ExpectedErrorCopyWithImpl<$Res, _$ExpectErrorImpl>
     implements _$$ExpectErrorImplCopyWith<$Res> {
   __$$ExpectErrorImplCopyWithImpl(
       _$ExpectErrorImpl _value, $Res Function(_$ExpectErrorImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ExpectError
+  /// Create a copy of ExpectedError
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -123,9 +123,10 @@ class __$$ExpectErrorImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ExpectErrorImpl implements _ExpectError {
+class _$ExpectErrorImpl extends _ExpectError {
   const _$ExpectErrorImpl(
-      {required this.syntacticEntity, required this.expectation});
+      {required this.syntacticEntity, required this.expectation})
+      : super._();
 
   @override
   final SyntacticEntity syntacticEntity;
@@ -134,7 +135,7 @@ class _$ExpectErrorImpl implements _ExpectError {
 
   @override
   String toString() {
-    return 'ExpectError(syntacticEntity: $syntacticEntity, expectation: $expectation)';
+    return 'ExpectedError(syntacticEntity: $syntacticEntity, expectation: $expectation)';
   }
 
   @override
@@ -151,7 +152,7 @@ class _$ExpectErrorImpl implements _ExpectError {
   @override
   int get hashCode => Object.hash(runtimeType, syntacticEntity, expectation);
 
-  /// Create a copy of ExpectError
+  /// Create a copy of ExpectedError
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
@@ -160,17 +161,18 @@ class _$ExpectErrorImpl implements _ExpectError {
       __$$ExpectErrorImplCopyWithImpl<_$ExpectErrorImpl>(this, _$identity);
 }
 
-abstract class _ExpectError implements ExpectError {
+abstract class _ExpectError extends ExpectedError {
   const factory _ExpectError(
       {required final SyntacticEntity syntacticEntity,
       required final ExpectationType expectation}) = _$ExpectErrorImpl;
+  const _ExpectError._() : super._();
 
   @override
   SyntacticEntity get syntacticEntity;
   @override
   ExpectationType get expectation;
 
-  /// Create a copy of ExpectError
+  /// Create a copy of ExpectedError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -179,23 +181,23 @@ abstract class _ExpectError implements ExpectError {
 }
 
 /// @nodoc
-mixin _$ExpectAfterError {
+mixin _$ExpectedAfterError {
   SyntacticEntity get syntacticEntity => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
   ExpectationType get after => throw _privateConstructorUsedError;
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ExpectAfterErrorCopyWith<ExpectAfterError> get copyWith =>
+  $ExpectedAfterErrorCopyWith<ExpectedAfterError> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ExpectAfterErrorCopyWith<$Res> {
-  factory $ExpectAfterErrorCopyWith(
-          ExpectAfterError value, $Res Function(ExpectAfterError) then) =
-      _$ExpectAfterErrorCopyWithImpl<$Res, ExpectAfterError>;
+abstract class $ExpectedAfterErrorCopyWith<$Res> {
+  factory $ExpectedAfterErrorCopyWith(
+          ExpectedAfterError value, $Res Function(ExpectedAfterError) then) =
+      _$ExpectedAfterErrorCopyWithImpl<$Res, ExpectedAfterError>;
   @useResult
   $Res call(
       {SyntacticEntity syntacticEntity,
@@ -207,16 +209,16 @@ abstract class $ExpectAfterErrorCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
-    implements $ExpectAfterErrorCopyWith<$Res> {
-  _$ExpectAfterErrorCopyWithImpl(this._value, this._then);
+class _$ExpectedAfterErrorCopyWithImpl<$Res, $Val extends ExpectedAfterError>
+    implements $ExpectedAfterErrorCopyWith<$Res> {
+  _$ExpectedAfterErrorCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -241,7 +243,7 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
     ) as $Val);
   }
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -251,7 +253,7 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
     });
   }
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -264,7 +266,7 @@ class _$ExpectAfterErrorCopyWithImpl<$Res, $Val extends ExpectAfterError>
 
 /// @nodoc
 abstract class _$$ExpectAfterErrorImplCopyWith<$Res>
-    implements $ExpectAfterErrorCopyWith<$Res> {
+    implements $ExpectedAfterErrorCopyWith<$Res> {
   factory _$$ExpectAfterErrorImplCopyWith(_$ExpectAfterErrorImpl value,
           $Res Function(_$ExpectAfterErrorImpl) then) =
       __$$ExpectAfterErrorImplCopyWithImpl<$Res>;
@@ -283,13 +285,13 @@ abstract class _$$ExpectAfterErrorImplCopyWith<$Res>
 
 /// @nodoc
 class __$$ExpectAfterErrorImplCopyWithImpl<$Res>
-    extends _$ExpectAfterErrorCopyWithImpl<$Res, _$ExpectAfterErrorImpl>
+    extends _$ExpectedAfterErrorCopyWithImpl<$Res, _$ExpectAfterErrorImpl>
     implements _$$ExpectAfterErrorImplCopyWith<$Res> {
   __$$ExpectAfterErrorImplCopyWithImpl(_$ExpectAfterErrorImpl _value,
       $Res Function(_$ExpectAfterErrorImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -317,11 +319,12 @@ class __$$ExpectAfterErrorImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ExpectAfterErrorImpl implements _ExpectAfterError {
+class _$ExpectAfterErrorImpl extends _ExpectAfterError {
   const _$ExpectAfterErrorImpl(
       {required this.syntacticEntity,
       required this.expectation,
-      required this.after});
+      required this.after})
+      : super._();
 
   @override
   final SyntacticEntity syntacticEntity;
@@ -332,7 +335,7 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
 
   @override
   String toString() {
-    return 'ExpectAfterError(syntacticEntity: $syntacticEntity, expectation: $expectation, after: $after)';
+    return 'ExpectedAfterError(syntacticEntity: $syntacticEntity, expectation: $expectation, after: $after)';
   }
 
   @override
@@ -351,7 +354,7 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
   int get hashCode =>
       Object.hash(runtimeType, syntacticEntity, expectation, after);
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
@@ -361,11 +364,12 @@ class _$ExpectAfterErrorImpl implements _ExpectAfterError {
           this, _$identity);
 }
 
-abstract class _ExpectAfterError implements ExpectAfterError {
+abstract class _ExpectAfterError extends ExpectedAfterError {
   const factory _ExpectAfterError(
       {required final SyntacticEntity syntacticEntity,
       required final ExpectationType expectation,
       required final ExpectationType after}) = _$ExpectAfterErrorImpl;
+  const _ExpectAfterError._() : super._();
 
   @override
   SyntacticEntity get syntacticEntity;
@@ -374,7 +378,7 @@ abstract class _ExpectAfterError implements ExpectAfterError {
   @override
   ExpectationType get after;
 
-  /// Create a copy of ExpectAfterError
+  /// Create a copy of ExpectedAfterError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -383,23 +387,23 @@ abstract class _ExpectAfterError implements ExpectAfterError {
 }
 
 /// @nodoc
-mixin _$ExpectBeforeError {
+mixin _$ExpectedBeforeError {
   SyntacticEntity get syntacticEntity => throw _privateConstructorUsedError;
   ExpectationType get expectation => throw _privateConstructorUsedError;
   ExpectationType get before => throw _privateConstructorUsedError;
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ExpectBeforeErrorCopyWith<ExpectBeforeError> get copyWith =>
+  $ExpectedBeforeErrorCopyWith<ExpectedBeforeError> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ExpectBeforeErrorCopyWith<$Res> {
-  factory $ExpectBeforeErrorCopyWith(
-          ExpectBeforeError value, $Res Function(ExpectBeforeError) then) =
-      _$ExpectBeforeErrorCopyWithImpl<$Res, ExpectBeforeError>;
+abstract class $ExpectedBeforeErrorCopyWith<$Res> {
+  factory $ExpectedBeforeErrorCopyWith(
+          ExpectedBeforeError value, $Res Function(ExpectedBeforeError) then) =
+      _$ExpectedBeforeErrorCopyWithImpl<$Res, ExpectedBeforeError>;
   @useResult
   $Res call(
       {SyntacticEntity syntacticEntity,
@@ -411,16 +415,16 @@ abstract class $ExpectBeforeErrorCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
-    implements $ExpectBeforeErrorCopyWith<$Res> {
-  _$ExpectBeforeErrorCopyWithImpl(this._value, this._then);
+class _$ExpectedBeforeErrorCopyWithImpl<$Res, $Val extends ExpectedBeforeError>
+    implements $ExpectedBeforeErrorCopyWith<$Res> {
+  _$ExpectedBeforeErrorCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -445,7 +449,7 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
     ) as $Val);
   }
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -455,7 +459,7 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
     });
   }
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -468,7 +472,7 @@ class _$ExpectBeforeErrorCopyWithImpl<$Res, $Val extends ExpectBeforeError>
 
 /// @nodoc
 abstract class _$$ExpectBeforeErrorImplCopyWith<$Res>
-    implements $ExpectBeforeErrorCopyWith<$Res> {
+    implements $ExpectedBeforeErrorCopyWith<$Res> {
   factory _$$ExpectBeforeErrorImplCopyWith(_$ExpectBeforeErrorImpl value,
           $Res Function(_$ExpectBeforeErrorImpl) then) =
       __$$ExpectBeforeErrorImplCopyWithImpl<$Res>;
@@ -487,13 +491,13 @@ abstract class _$$ExpectBeforeErrorImplCopyWith<$Res>
 
 /// @nodoc
 class __$$ExpectBeforeErrorImplCopyWithImpl<$Res>
-    extends _$ExpectBeforeErrorCopyWithImpl<$Res, _$ExpectBeforeErrorImpl>
+    extends _$ExpectedBeforeErrorCopyWithImpl<$Res, _$ExpectBeforeErrorImpl>
     implements _$$ExpectBeforeErrorImplCopyWith<$Res> {
   __$$ExpectBeforeErrorImplCopyWithImpl(_$ExpectBeforeErrorImpl _value,
       $Res Function(_$ExpectBeforeErrorImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -521,11 +525,12 @@ class __$$ExpectBeforeErrorImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
+class _$ExpectBeforeErrorImpl extends _ExpectBeforeError {
   const _$ExpectBeforeErrorImpl(
       {required this.syntacticEntity,
       required this.expectation,
-      required this.before});
+      required this.before})
+      : super._();
 
   @override
   final SyntacticEntity syntacticEntity;
@@ -536,7 +541,7 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
 
   @override
   String toString() {
-    return 'ExpectBeforeError(syntacticEntity: $syntacticEntity, expectation: $expectation, before: $before)';
+    return 'ExpectedBeforeError(syntacticEntity: $syntacticEntity, expectation: $expectation, before: $before)';
   }
 
   @override
@@ -555,7 +560,7 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
   int get hashCode =>
       Object.hash(runtimeType, syntacticEntity, expectation, before);
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
@@ -565,11 +570,12 @@ class _$ExpectBeforeErrorImpl implements _ExpectBeforeError {
           this, _$identity);
 }
 
-abstract class _ExpectBeforeError implements ExpectBeforeError {
+abstract class _ExpectBeforeError extends ExpectedBeforeError {
   const factory _ExpectBeforeError(
       {required final SyntacticEntity syntacticEntity,
       required final ExpectationType expectation,
       required final ExpectationType before}) = _$ExpectBeforeErrorImpl;
+  const _ExpectBeforeError._() : super._();
 
   @override
   SyntacticEntity get syntacticEntity;
@@ -578,7 +584,7 @@ abstract class _ExpectBeforeError implements ExpectBeforeError {
   @override
   ExpectationType get before;
 
-  /// Create a copy of ExpectBeforeError
+  /// Create a copy of ExpectedBeforeError
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)

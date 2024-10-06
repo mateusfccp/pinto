@@ -1,0 +1,11 @@
+import 10
+//     ^^ expected_identifier_or_import_identifier
+
+import "my_string"
+//     ^^^^^^^^^^^ expected_identifier_or_import_identifier
+
+import #async
+//     ^ unexpected_character
+
+import @async
+

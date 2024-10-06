@@ -1,3 +1,9 @@
+## 0.0.4+1
+
+- Implement a basic static test framework to help us testing the static part of our language
+- Provide some basic tests for the existing features
+- Fix some few issues identified by the tests
+
 ## 0.0.4
 
 - Type resolution order fixed

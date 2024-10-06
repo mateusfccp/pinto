@@ -8,7 +8,7 @@ String messageFromError(PintoError error, String source) {
   };
 
   final end = switch (error) {
-    LexingError() => offset + 1,
+    LexingError() => error.offset + 1,
     ParseError(:final syntacticEntity) || ResolveError(syntacticEntity: final syntacticEntity) => syntacticEntity.end,
   };
 
@@ -16,9 +16,10 @@ String messageFromError(PintoError error, String source) {
 
   return switch (error) {
     // Parse errors
-    ExpectError error => expectError('${error.expectation}', fragment),
-    ExpectAfterError error => expectAfterError('${error.expectation}', '${error.after}', fragment),
-    ExpectBeforeError error => expectBeforeError('${error.expectation}', '${error.before}', fragment),
+    ExpectedError error => expectError('${error.expectation}', fragment),
+    ExpectedAfterError error => expectAfterError('${error.expectation}', '${error.after}', fragment),
+    ExpectedBeforeError error => expectBeforeError('${error.expectation}', '${error.before}', fragment),
+    MisplacedImport error => misplacedImportError('${error.syntacticEntity}'),
 
     // Resolve errors
     ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
@@ -60,6 +61,16 @@ String expectBeforeError(String expectation, String before, String found) {
     name: 'expectBeforeErrorMessage',
     args: [expectation, before, found],
     desc: 'The error message for expected element before the current token',
+  );
+}
+
+String misplacedImportError(String import) {
+  return Intl.message(
+    'Imports should be the first thing of a file. $import was found after'
+    'another kind of declaration.',
+    name: 'misplacedBeforeErrorMessage',
+    args: [import],
+    desc: 'The error message for when an import is placed after a non-import declaration.',
   );
 }
 
