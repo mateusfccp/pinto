@@ -8,7 +8,6 @@ import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/context/packages.dart' hide Package;
 import 'package:analyzer/dart/element/element.dart' as dart;
 import 'package:analyzer/src/dart/sdk/sdk.dart';
-import 'package:pinto/lexer.dart';
 import 'package:pinto/semantic.dart';
 
 final class SymbolsResolver {
@@ -57,21 +56,21 @@ final class SymbolsResolver {
 
     switch (element) {
       case dart.FunctionTypedElement():
+        final functionType = _dartTypeToPintoType(element.type) as FunctionType;
+
+        final body = SingletonLiteralElement()
+          ..constant = true
+          ..constantValue = null;
+
         syntheticElement = LetFunctionDeclaration(
           name: element.name!,
-          parameter: Token(
-            type: TokenType.unitLiteral,
-            offset: 0,
-            lexeme: '()',
-          ), // TODO(mateusfccp): Map to proper parameter. As it's synthetic, it shouldn't have an associated token anyway
-          type: FunctionType(
-            returnType: _dartTypeToPintoType(element.returnType),
-          ),
-          body: LiteralElement(
-            constant: true,
-            constantValue: null,
-          ),
-        );
+          parameter: StructLiteralElement()
+            ..constant = false
+            ..constantValue = null
+            ..type = functionType.parameterType,
+        )
+          ..type = functionType
+          ..body = body;
       case dart.InstanceElement():
         final typeDefinition = TypeDefinitionElement(name: element.name!);
 
@@ -97,23 +96,23 @@ final class SymbolsResolver {
 
         syntheticElement = typeDefinition;
       case dart.TopLevelVariableElement():
+        final body = SingletonLiteralElement()
+          ..constant = true
+          ..constantValue = null;
+
         syntheticElement = LetVariableDeclaration(
           name: element.name,
           type: _dartTypeToPintoType(element.type),
-          body: LiteralElement(
-            constant: true,
-            constantValue: null,
-          ),
-        );
+        )..body = body;
       case dart.TypeAliasElement(:final aliasedElement?) when element.aliasedType is! dart.FunctionType:
-        syntheticElement = LetVariableDeclaration(
-          name: element.name,
-          body: IdentifierElement(
-            name: aliasedElement.name!,
-            type: _dartTypeToPintoType(element.aliasedType),
-            constant: false,
-          ),
+        final body = IdentifierElement(
+          name: aliasedElement.name!,
+          type: _dartTypeToPintoType(element.aliasedType),
+          constant: false,
+          constantValue: null,
         );
+        
+        syntheticElement = LetVariableDeclaration(name: element.name)..body = body;
       default:
         // throw UnimplementedError('No conversion implemented from ${element.runtimeType} to a pint° element.');
         return null;
@@ -156,7 +155,7 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
   // TODO(mateusfccp): Implement T <: Object → Some(T <: NonSome)
   switch (type) {
     case dart.VoidType() when !contravariant:
-      return const UnitType();
+      return StructType.unit;
     case dart.VoidType():
     case dart.DynamicType():
     case dart.DartType(isDartCoreObject: true, nullabilitySuffix: NullabilitySuffix.question):
@@ -168,7 +167,21 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
         name: type.element.declaration.name,
       );
     case dart.FunctionType():
+      final typeMembers = <String, Type>{};
+
+      int index = 0;
+      for (final parameter in type.parameters) {
+        final type = _dartTypeToPintoType(parameter.type);
+
+        if (parameter.isPositional) {
+          typeMembers['\$${index++}'] = type;
+        } else {
+          typeMembers[parameter.name] = type;
+        }
+      }
+
       return FunctionType(
+        parameterType: StructType(members: typeMembers),
         returnType: _dartTypeToPintoType(type.returnType),
       );
     case dart.ParameterizedType():
@@ -177,7 +190,7 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
       } else if (type.isDartCoreString) {
         return const StringType();
       } else if (type.isDartCoreNull) {
-        return const UnitType();
+        return StructType.unit;
       } else if (type.isDartCoreType) {
         return const TypeType();
       } else if (type.element case final dart.InterfaceElement element) {

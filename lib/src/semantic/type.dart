@@ -1,24 +1,10 @@
+import 'package:quiver/collection.dart';
+
 import 'element.dart';
 import 'package.dart';
 
 sealed class Type {
   Element? get element;
-}
-
-final class TopType implements Type {
-  const TopType();
-
-  @override
-  Null get element => null;
-
-  @override
-  bool operator ==(Object other) => other is TopType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => 'TopType';
 }
 
 final class BooleanType implements Type {
@@ -35,6 +21,78 @@ final class BooleanType implements Type {
 
   @override
   String toString() => 'bool';
+}
+
+final class BottomType implements Type {
+  const BottomType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is BottomType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '⊥';
+}
+
+final class DoubleType implements Type {
+  const DoubleType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is DoubleType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'double';
+}
+
+final class FunctionType implements Type {
+  FunctionType({
+    required this.returnType,
+    required this.parameterType,
+    this.element,
+  });
+
+  final StructType parameterType;
+
+  final Type returnType;
+
+  @override
+  late LetFunctionDeclaration? element;
+
+  @override
+  bool operator ==(Object other) => other is BottomType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '$parameterType → $returnType';
+}
+
+final class IntegerType implements Type {
+  const IntegerType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is IntegerType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'integer';
 }
 
 final class PolymorphicType implements Type {
@@ -61,11 +119,7 @@ final class PolymorphicType implements Type {
   }
 
   @override
-  int get hashCode => Object.hash(
-        name,
-        source,
-        arguments,
-      );
+  int get hashCode => Object.hash(name, source, arguments);
 
   @override
   String toString() {
@@ -103,36 +157,75 @@ final class StringType implements Type {
   String toString() => 'String';
 }
 
-final class IntegerType implements Type {
-  const IntegerType();
+final class StructType implements Type {
+  const StructType({required this.members});
+
+  static final unit = StructType(members: {});
 
   @override
   Null get element => null;
 
-  @override
-  bool operator ==(Object other) => other is IntegerType;
+  final Map<String, Type> members;
+
+  bool get isUnit => members.isEmpty;
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  bool operator ==(Object other) {
+    if (other is! StructType) return false;
+    return !mapsEqual(other.members, members);
+  }
 
   @override
-  String toString() => 'Integer';
+  int get hashCode => Object.hashAll(members.entries);
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('(');
+    final entries = [...members.entries];
+
+    for (int i = 0; i < entries.length; i++) {
+      buffer.write(':${entries[i].value} ${entries[i].key}');
+
+      if (i < entries.length - 1) {
+        buffer.write(', ');
+      }
+    }
+
+    buffer.write(')');
+    return buffer.toString();
+  }
 }
 
-final class DoubleType implements Type {
-  const DoubleType();
+final class SymbolType implements Type {
+  const SymbolType();
 
   @override
   Null get element => null;
 
   @override
-  bool operator ==(Object other) => other is DoubleType;
+  bool operator ==(Object other) => other is SymbolType;
 
   @override
   int get hashCode => runtimeType.hashCode;
 
   @override
-  String toString() => 'Double';
+  String toString() => 'Symbol';
+}
+
+final class TopType implements Type {
+  const TopType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is TopType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '⊤';
 }
 
 final class TypeParameterType implements Type {
@@ -170,60 +263,4 @@ final class TypeType implements Type {
 
   @override
   String toString() => '★';
-}
-
-// TODO(mateusfccp): Generalize to records-like
-final class UnitType implements Type {
-  const UnitType();
-
-  @override
-  Null get element => null;
-
-  @override
-  bool operator ==(Object other) => other is UnitType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => '()';
-}
-
-final class BottomType implements Type {
-  const BottomType();
-
-  @override
-  Null get element => null;
-
-  @override
-  bool operator ==(Object other) => other is BottomType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => '⊥';
-}
-
-final class FunctionType implements Type {
-  FunctionType({
-    required this.returnType,
-    this.element,
-  });
-
-  Type get parameterType => const UnitType(); // Dummy paramter type for now
-
-  final Type returnType;
-
-  @override
-  late LetFunctionDeclaration? element;
-
-  @override
-  bool operator ==(Object other) => other is BottomType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => '$parameterType → $returnType';
 }

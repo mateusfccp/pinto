@@ -10,10 +10,11 @@ const _expressionTokens = [
   TokenType.falseKeyword,
   TokenType.identifier,
   TokenType.integerLiteral,
+  TokenType.leftParenthesis,
   // TokenType.letKeyword,
   TokenType.stringLiteral,
+  TokenType.symbolLiteral,
   TokenType.trueKeyword,
-  TokenType.unitLiteral,
 ];
 
 /// A pint° parser.
@@ -205,32 +206,26 @@ final class Parser {
   }
 
   Expression _expression() {
-    // TODO(mateusfccp): Implement let expression parsing
-
     if (_matchExpressionToken()) {
       switch (_previous.type) {
         case TokenType.doubleLiteral:
           return DoubleLiteral(_previous);
         case TokenType.falseKeyword:
-        case TokenType.trueKeyword:
           return BooleanLiteral(_previous);
-        case TokenType.stringLiteral:
-          return StringLiteral(_previous);
-        case TokenType.unitLiteral:
-          return UnitLiteral(_previous);
         case TokenType.identifier:
-          final identifier = IdentifierExpression(_previous);
-          if (_checkExpressionToken()) {
-            return InvocationExpression(
-              identifier,
-              _expression(),
-            );
-          } else {
-            return identifier;
-          }
+          return _identifier();
         case TokenType.integerLiteral:
           return IntegerLiteral(_previous);
+        case TokenType.leftParenthesis:
+          return _structLiteral();
+        case TokenType.stringLiteral:
+          return StringLiteral(_previous);
+        case TokenType.symbolLiteral:
+          return _symbolLiteral();
+        case TokenType.trueKeyword:
+          return BooleanLiteral(_previous);
         default:
+          // TODO(mateusfccp): We may exhaustively check this case by using a sealed class for tokens instead of enums
           throw StateError('This branch should be unreachable.');
       }
     } else {
@@ -241,15 +236,77 @@ final class Parser {
     }
   }
 
+  Expression _identifier() {
+    final identifier = IdentifierExpression(_previous);
+    if (_checkExpressionToken()) {
+      return InvocationExpression(
+        identifier,
+        _expression(),
+      );
+    } else {
+      return identifier;
+    }
+  }
+
+  StructLiteral _structLiteral() {
+    final leftParenthesis = _previous;
+
+    final SyntacticEntityList<StructMember>? members;
+
+    if (_check(TokenType.rightParenthesis)) {
+      members = null;
+    } else {
+      members = SyntacticEntityList();
+
+      while (!_check(TokenType.rightParenthesis)) {
+        members.add(_structMember());
+        _match(TokenType.comma);
+      }
+    }
+
+    final rightParenthesis = _consumeExpecting(TokenType.rightParenthesis);
+
+    return StructLiteral(
+      leftParenthesis,
+      members,
+      rightParenthesis,
+    );
+  }
+
+  StructMember _structMember() {
+    if (_match(TokenType.symbolLiteral)) {
+      final name = _symbolLiteral();
+
+      if (_checkExpressionToken()) {
+        return FullStructMember(
+          name,
+          _expression(),
+        );
+      } else {
+        return ValuelessStructMember(name);
+      }
+    } else {
+      final value = _expression();
+
+      return NamelessStructMember(value);
+    }
+  }
+
+  SymbolLiteral _symbolLiteral() {
+    assert(_previous.type == TokenType.symbolLiteral);
+    return SymbolLiteral(_previous);
+  }
+
   LetDeclaration _letDeclaration() {
     final keyword = _previous;
     final identifier = _consumeExpecting(TokenType.identifier);
 
-    final Token? parameter;
-    if (_match(TokenType.identifier)) {
-      parameter = _previous;
-    } else {
+    final StructLiteral? parameter;
+    if (_check(TokenType.equalitySign)) {
       parameter = null;
+    } else {
+      _consumeExpecting(TokenType.leftParenthesis);
+      parameter = _structLiteral();
     }
 
     final equals = _consume(

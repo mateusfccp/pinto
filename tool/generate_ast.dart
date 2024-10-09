@@ -116,6 +116,31 @@ Future<void> main(List<String> args) async {
             name: 'Node',
             children: [
               TreeNode(
+                name: 'StructMember',
+                children: [
+                  TreeNode(
+                    name: 'NamelessStructMember',
+                    properties: [
+                      Property('Expression', 'value'),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'ValuelessStructMember',
+                    properties: [
+                      Property('SymbolLiteral', 'name'),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'FullStructMember',
+                    properties: [
+                      Property('SymbolLiteral', 'name'),
+                      Property('Expression', 'value'),
+                    ],
+                  ),
+                ],
+              ),
+              // TODO(mateusfccp): Remove TypeVariantParameterNode and use regular parameter
+              TreeNode(
                 name: 'TypeVariantParameterNode',
                 properties: [
                   Property('TypeIdentifier', 'typeIdentifier'),
@@ -158,42 +183,43 @@ Future<void> main(List<String> args) async {
               ),
               TreeNode(
                 name: 'Literal',
-                methods: [
-                  Method((builder) {
-                    builder.returns = refer('Token');
-                    builder.type = MethodType.getter;
-                    builder.name = 'literal';
-                  }),
-                ],
                 children: [
                   TreeNode(
                     name: 'BooleanLiteral',
                     properties: [
-                      Token('literal', override: true),
-                    ],
-                  ),
-                  TreeNode(
-                    name: 'UnitLiteral',
-                    properties: [
-                      Token('literal', override: true),
-                    ],
-                  ),
-                  TreeNode(
-                    name: 'StringLiteral',
-                    properties: [
-                      Token('literal', override: true),
-                    ],
-                  ),
-                  TreeNode(
-                    name: 'IntegerLiteral',
-                    properties: [
-                      Token('literal', override: true),
+                      Token('literal'),
                     ],
                   ),
                   TreeNode(
                     name: 'DoubleLiteral',
                     properties: [
-                      Token('literal', override: true),
+                      Token('literal'),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'IntegerLiteral',
+                    properties: [
+                      Token('literal'),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'StringLiteral',
+                    properties: [
+                      Token('literal'),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'StructLiteral',
+                    properties: [
+                      Token('leftParenthesis'),
+                      Property('SyntacticEntityList<StructMember>?', 'members', iterable: true),
+                      Token('rightParenthesis'),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'SymbolLiteral',
+                    properties: [
+                      Token('literal'),
                     ],
                   ),
                 ],
@@ -228,7 +254,7 @@ Future<void> main(List<String> args) async {
                 properties: [
                   Token('keyword'),
                   Token('identifier'),
-                  Token('parameter', optional: true),
+                  Property('StructLiteral?', 'parameter'),
                   Token('equals'),
                   Property('Expression', 'body'),
                 ],

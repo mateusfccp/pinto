@@ -1,6 +1,10 @@
 let myString = "string"
 
-let unterminatedString = "string
-//                              ^ unterminated_string
+let returnString () = "string"
 
-let returnString _ = "string"
+let printName (:name String) = print returnString ()
+
+let main (:args String) = print printName "name"
+
+// let unterminatedString = "string
+//                              ^ unterminated_string

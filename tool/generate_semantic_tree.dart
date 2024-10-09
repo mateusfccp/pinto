@@ -89,6 +89,15 @@ Future<void> main(List<String> args) async {
             ],
           ),
           TreeNode(
+            name: 'StructMemberElement',
+            properties: [
+              StringProperty('name', late: true),
+              Property('ExpressionElement', 'value', late: true),
+              EnclosingElement('LiteralElement'),
+            ],
+          ),
+          // TODO(mateusfccp): Parameter Element should be completely replaced by struct element
+          TreeNode(
             name: 'ParameterElement',
             implements: ['TypedElement'],
             properties: [
@@ -106,6 +115,11 @@ Future<void> main(List<String> args) async {
                 builder.type = MethodType.getter;
                 builder.name = 'constant';
               }),
+              Method((builder) {
+                builder.returns = refer('Object?');
+                builder.type = MethodType.getter;
+                builder.name = 'constantValue';
+              }),
             ],
             properties: [
               EnclosingElement('Element'),
@@ -118,6 +132,7 @@ Future<void> main(List<String> args) async {
                   Property('IdentifierElement', 'identifier'),
                   Property('ExpressionElement', 'argument'),
                   Property('bool', 'constant', override: true, visitable: false),
+                  Property('Object?', 'constantValue', override: true, visitable: false),
                 ],
               ),
               TreeNode(
@@ -126,14 +141,29 @@ Future<void> main(List<String> args) async {
                   StringProperty('name'),
                   TypeProperty(),
                   Property('bool', 'constant', override: true, visitable: false),
+                  Property('Object?', 'constantValue', override: true, visitable: false),
                 ],
               ),
               TreeNode(
                 name: 'LiteralElement',
-                properties: [
-                  TypeProperty(),
-                  Property('bool', 'constant', override: true, visitable: false),
-                  Property('Object?', 'constantValue', visitable: false),
+                children: [
+                  TreeNode(
+                    name: 'SingletonLiteralElement',
+                    properties: [
+                      TypeProperty(),
+                      Property('bool', 'constant', override: true, visitable: false, late: true),
+                      Property('Object?', 'constantValue', override: true, visitable: false, late: true),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'StructLiteralElement',
+                    properties: [
+                      TypeProperty(type: 'StructType', late: true, final$: true),
+                      Property('List<StructMemberElement>', 'members', initializer: literalList([]), iterable: true),
+                      Property('bool', 'constant', override: true, visitable: false, late: true),
+                      Property('Object?', 'constantValue', override: true, visitable: false, late: true),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -159,22 +189,28 @@ Future<void> main(List<String> args) async {
                 ],
               ),
               TreeNode(
-                name: 'LetFunctionDeclaration',
+                name: 'LetDeclarationElement',
                 implements: ['TypedElement'],
                 properties: [
                   StringProperty('name'),
-                  Token('parameter'), // TODO(mateusfccp): have an element for this in the future
-                  TypeProperty(type: 'FunctionType'),
-                  Property('ExpressionElement', 'body'),
+                  Property('ExpressionElement', 'body', late: true),
                 ],
-              ),
-              TreeNode(
-                name: 'LetVariableDeclaration',
-                implements: ['TypedElement'],
-                properties: [
-                  StringProperty('name'),
-                  TypeProperty(),
-                  Property('ExpressionElement', 'body'),
+                children: [
+                  TreeNode(
+                    name: 'LetFunctionDeclaration',
+                    properties: [
+                      StringProperty('name', super$: true),
+                      Property('StructLiteralElement', 'parameter'),
+                      TypeProperty(type: 'FunctionType', late: true),
+                    ],
+                  ),
+                  TreeNode(
+                    name: 'LetVariableDeclaration',
+                    properties: [
+                      StringProperty('name', super$: true),
+                      TypeProperty(),
+                    ],
+                  ),
                 ],
               ),
               TreeNode(
@@ -221,7 +257,6 @@ Future<void> main(List<String> args) async {
       constructorRule: TreeGeneratorConstructorRule.named,
     );
 
-    astGenerator.imports.add('package:pinto/lexer.dart');
     astGenerator.imports.add('package.dart');
     astGenerator.imports.add('type.dart');
     astGenerator.imports.add('visitors.dart');
@@ -231,12 +266,16 @@ Future<void> main(List<String> args) async {
 }
 
 final class TypeProperty extends Property {
-  TypeProperty({String type = 'Type?', String name = 'type', Expression? initializer})
-      : super(
+  TypeProperty({
+    String type = 'Type?',
+    String name = 'type',
+    Expression? initializer,
+    super.late,
+    super.final$ = false,
+  }) : super(
           type,
           name,
           visitable: false,
-          final$: false,
           override: true,
           initializer: initializer,
         );

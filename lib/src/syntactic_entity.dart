@@ -21,7 +21,7 @@ abstract interface class SyntacticEntity {
 
 /// A list of syntactic entities that is treated as a syntactic entity itself.
 final class SyntacticEntityList<T extends SyntacticEntity> extends DelegatingList<T> implements SyntacticEntity {
-  const SyntacticEntityList(super.base);
+  SyntacticEntityList([List<T>? source]) : super(source ?? []);
 
   @override
   int get offset => this[0].offset;

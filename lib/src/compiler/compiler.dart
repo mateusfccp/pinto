@@ -63,8 +63,22 @@ final class Compiler implements ElementVisitor<List<Spec>> {
         node.type.returnType,
         position: _ParameterPosition.contravariant,
       );
+
       builder.name = node.name;
-      // We currently ignore the parameter as we still don't have it properly defined
+
+      for (final member in node.parameter.members) {
+        builder.optionalParameters.add(Parameter((builder) {
+          builder.named = true;
+
+          // TODO(mateusfccp): Make it required if non-null
+          builder.required = true;
+
+          // TODO(mateusfccp): We have to know what type TypeTyper refer to
+          builder.type = refer(_buildTypeName(TopType()));
+          builder.name = member.name;
+        }));
+      }
+
       builder.lambda = true;
 
       final [expression] = node.body.accept(this) as List<Expression>;
@@ -76,7 +90,9 @@ final class Compiler implements ElementVisitor<List<Spec>> {
 
   @override
   List<Field>? visitLetVariableDeclaration(LetVariableDeclaration node) {
-    if (node.type is! UnitType) {
+    if (node.type case StructType(isUnit: true)) {
+      return null;
+    } else {
       final [expression] = node.body.accept(this) as List<Expression>;
 
       final field = Field((builder) {
@@ -90,14 +106,7 @@ final class Compiler implements ElementVisitor<List<Spec>> {
       });
 
       return [field];
-    } else {
-      return null;
     }
-  }
-
-  @override
-  List<Expression> visitLiteralElement(LiteralElement node) {
-    return [literal(node.constantValue)];
   }
 
   @override
@@ -117,6 +126,42 @@ final class Compiler implements ElementVisitor<List<Spec>> {
     });
 
     return [library];
+  }
+
+  @override
+  Null visitParameterElement(ParameterElement node) {
+    // We still don't have a way to compile it to a single element, as for classes we have to both add constructor parameters and fields
+  }
+
+  @override
+  List<Expression> visitSingletonLiteralElement(SingletonLiteralElement node) {
+    return [literal(node.constantValue)];
+  }
+
+  @override
+  List<Expression> visitStructLiteralElement(StructLiteralElement node) {
+    if (node.members.isEmpty) {
+      return [];
+    }
+
+    final recordLiteral = literalRecord([], {});
+
+    for (final StructMemberElement(:name, :value) in node.members) {
+      final valueExpression = value.accept(this) as Expression;
+
+      if (int.tryParse(name.substring(1)) case final index? when name[0] == r'$') {
+        recordLiteral.positionalFieldValues[index] = valueExpression;
+      } else {
+        recordLiteral.namedFieldValues[name] = valueExpression;
+      }
+    }
+
+    return [recordLiteral];
+  }
+
+  @override
+  Null visitStructMemberElement(StructMemberElement node) {
+    // We still don't have a way to compile it to a single element, as for classes we have to both add constructor parameters and fields
   }
 
   @override
@@ -145,11 +190,6 @@ final class Compiler implements ElementVisitor<List<Spec>> {
     }
 
     return classes;
-  }
-
-  @override
-  Null visitParameterElement(ParameterElement node) {
-    // We still don't have a way to compile it to a single element, as for classes we have to both add constructor parameters and fields
   }
 
   @override
@@ -210,18 +250,36 @@ String _buildTypeName(
   return switch (type) {
     BooleanType() => 'bool',
     BottomType() => 'Never',
+    DoubleType() => 'double',
     FunctionType() => '${_buildTypeName(type.returnType, position: _ParameterPosition.contravariant)} Function(${_buildTypeName(type.parameterType)})',
+    IntegerType() => 'int',
     PolymorphicType(:final name) || TypeParameterType(:final name) => name,
     StringType() => 'String',
-    TopType() => 'Object?',
-    TypeType() => 'Type',
-    UnitType() => switch (position) {
+    StructType(isUnit: true) => switch (position) {
         _ParameterPosition.covariant => '',
         _ParameterPosition.contravariant => 'void',
       },
-    IntegerType() => 'int',
-    DoubleType() => 'double',
+    StructType() => _buildStructTypeName(type),
+    SymbolType() => 'Symbol',
+    TopType() => 'Object?',
+    TypeType() => 'Type',
   };
+}
+
+String _buildStructTypeName(StructType type) {
+  final recordLiteral = literalRecord([], {});
+
+  for (final MapEntry(key: name, value: type) in type.members.entries) {
+    final valueType = _buildTypeName(type);
+
+    if (int.tryParse(name.substring(1)) case final index? when name[0] == r'$') {
+      recordLiteral.positionalFieldValues[index] = Code(valueType);
+    } else {
+      recordLiteral.namedFieldValues[name] = Code(valueType);
+    }
+  }
+
+  return DartEmitter().visitLiteralRecordExpression(recordLiteral).toString();
 }
 
 TypeReference _typeReferenceFromType(
@@ -256,7 +314,17 @@ List<TypeParameterType> _typeParametersFromType(Type type) {
   return switch (type) {
     PolymorphicType(:final arguments) => _typeParametersFromTypeList(arguments),
     TypeParameterType() => [type],
-    TopType() || BottomType() || UnitType() || BooleanType() || TypeType() || StringType() || FunctionType() || IntegerType() || DoubleType() => const [],
+    BooleanType() || //
+    BottomType() ||
+    DoubleType() ||
+    FunctionType() ||
+    IntegerType() ||
+    StringType() ||
+    StructType() ||
+    SymbolType() ||
+    TopType() ||
+    TypeType() =>
+      const [],
   };
 }
 

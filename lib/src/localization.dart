@@ -15,6 +15,12 @@ String messageFromError(PintoError error, String source) {
   final fragment = source.substring(offset, end);
 
   return switch (error) {
+    // Lexing errors
+    InvalidIdentifierStart() => invalidIdentifierStartError(fragment),
+    NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
+    UnexpectedCharacterError() => unexpectedCharacterError(fragment),
+    UnterminatedStringError() => unterminatedStringError(),
+    
     // Parse errors
     ExpectedError error => expectError('${error.expectation}', fragment),
     ExpectedAfterError error => expectAfterError('${error.expectation}', '${error.after}', fragment),
@@ -28,15 +34,48 @@ String messageFromError(PintoError error, String source) {
     SymbolNotInScopeError() => symbolNotInScopeError(fragment),
     TypeParameterAlreadyDefinedError() => typeParameterAlreadyDefinedError(fragment),
     WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
-
-    // Scan errors
-    NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
-    UnexpectedCharacterError() => unexpectedCharacterError(fragment),
-    UnterminatedStringError() => unterminatedStringError(),
   };
 }
 
+// Lexing errors
+String invalidIdentifierStartError(String character) {
+  return Intl.message(
+    "The character '$character' is not valid as the first character of a identifier.",
+    name: 'invalidIdentifierStartErrorMessage',
+    args: [character],
+    desc: "The error message when the lexer tries to parse an identifier that starts with an invalid character.",
+  );
+}
+
+String numberEndingWithSeparatorError() {
+  return Intl.message(
+    "Unexpected number termination. Numbers must not end with an underscore '_'.",
+    name: 'numberEndingWithSeparatorErrorMessage',
+    args: [],
+    desc: "The error message when the lexer finds a number ending with an underscore.",
+  );
+}
+
+String unexpectedCharacterError(String character) {
+  return Intl.message(
+    "Unexpected character '$character'.",
+    name: 'unexpectedCharacterErrorMessage',
+    args: [character],
+    desc: "The error message from when the lexer finds a character that it's not supposed to scan.",
+  );
+}
+
+String unterminatedStringError() {
+  return Intl.message(
+    "Unexpected string termination.",
+    name: 'unterminatedStringErrorMessage',
+    args: [],
+    desc: "The error message from when the lexer can't find the end of a string literal.",
+  );
+}
+
 // Parse errors
+
 String expectError(String expectation, String found) {
   return Intl.message(
     "Expected to find $expectation. Found '$found'.",
@@ -75,6 +114,7 @@ String misplacedImportError(String import) {
 }
 
 // Resolve errors
+
 String identifierAlreadyDefinedError(String identifier) {
   return Intl.message(
     "The identifier '$identifier' is already defined in the context.",
@@ -147,34 +187,5 @@ String wrongNumberOfArgumentsError(int argumentsCount, int expectedArgumentsCoun
     name: 'wrongNumberOfArgumentsErrorMessage',
     args: [argumentsCount, expectedArgumentsCount, type],
     desc: 'The error message for when the number of type arguments passed to a type is different than the expected.',
-  );
-}
-
-// Lexing errors
-
-String unexpectedCharacterError(String character) {
-  return Intl.message(
-    "Unexpected character '$character'.",
-    name: 'unexpectedCharacterErrorMessage',
-    args: [character],
-    desc: "The error message from when the lexer finds a character that it's not supposed to scan.",
-  );
-}
-
-String unterminatedStringError() {
-  return Intl.message(
-    "Unexpected string termination.",
-    name: 'unterminatedStringErrorMessage',
-    args: [],
-    desc: "The error message from when the lexer can't find the end of a string literal.",
-  );
-}
-
-String numberEndingWithSeparatorError() {
-  return Intl.message(
-    "Unexpected number termination. Numbers must not end with an underscore '_'.",
-    name: 'numberEndingWithSeparatorErrorMessage',
-    args: [],
-    desc: "The error message when the lexer finds a number ending with an underscore.",
   );
 }

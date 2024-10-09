@@ -19,6 +19,16 @@ sealed class LexingError implements PintoError {
   int get offset;
 }
 
+final class InvalidIdentifierStart implements LexingError {
+  const InvalidIdentifierStart({required this.offset});
+
+  @override
+  final int offset;
+
+  @override
+  String get code => 'invalid_identifier_start';
+}
+
 final class NumberEndingWithSeparatorError implements LexingError {
   const NumberEndingWithSeparatorError({required this.offset});
 

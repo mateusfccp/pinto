@@ -1,5 +1,3 @@
-import 'package:pinto/lexer.dart';
-
 import 'package.dart';
 import 'type.dart';
 import 'visitors.dart';
@@ -52,6 +50,30 @@ final class TypeParameterElement extends Element
       'TypeParameterElement(name: $name, enclosingElement: $enclosingElement, type: $type, definedType: $definedType)';
 }
 
+final class StructMemberElement extends Element {
+  StructMemberElement();
+
+  late final String name;
+
+  late final ExpressionElement value;
+
+  @override
+  late LiteralElement enclosingElement;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitStructMemberElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    value.accept(visitor);
+  }
+
+  @override
+  String toString() =>
+      'StructMemberElement(name: $name, value: $value, enclosingElement: $enclosingElement)';
+}
+
 final class ParameterElement extends Element implements TypedElement {
   ParameterElement({
     required this.name,
@@ -84,6 +106,7 @@ sealed class ExpressionElement extends Element implements TypedElement {
   late Element enclosingElement;
 
   bool get constant;
+  Object? get constantValue;
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
@@ -96,6 +119,7 @@ final class InvocationElement extends ExpressionElement {
     required this.identifier,
     required this.argument,
     required this.constant,
+    required this.constantValue,
   });
 
   @override
@@ -109,6 +133,9 @@ final class InvocationElement extends ExpressionElement {
   final bool constant;
 
   @override
+  final Object? constantValue;
+
+  @override
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitInvocationElement(this);
 
@@ -120,7 +147,7 @@ final class InvocationElement extends ExpressionElement {
 
   @override
   String toString() =>
-      'InvocationElement(type: $type, identifier: $identifier, argument: $argument, constant: $constant, enclosingElement: $enclosingElement)';
+      'InvocationElement(type: $type, identifier: $identifier, argument: $argument, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
 }
 
 final class IdentifierElement extends ExpressionElement {
@@ -128,6 +155,7 @@ final class IdentifierElement extends ExpressionElement {
     required this.name,
     this.type,
     required this.constant,
+    required this.constantValue,
   });
 
   final String name;
@@ -139,6 +167,9 @@ final class IdentifierElement extends ExpressionElement {
   final bool constant;
 
   @override
+  final Object? constantValue;
+
+  @override
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitIdentifierElement(this);
 
@@ -146,32 +177,69 @@ final class IdentifierElement extends ExpressionElement {
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'IdentifierElement(name: $name, type: $type, constant: $constant, enclosingElement: $enclosingElement)';
+      'IdentifierElement(name: $name, type: $type, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
 }
 
-final class LiteralElement extends ExpressionElement {
-  LiteralElement({
-    this.type,
-    required this.constant,
-    required this.constantValue,
-  });
+sealed class LiteralElement extends ExpressionElement {
+  LiteralElement();
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() => 'LiteralElement(enclosingElement: $enclosingElement)';
+}
+
+final class SingletonLiteralElement extends LiteralElement {
+  SingletonLiteralElement({this.type});
 
   @override
   Type? type;
 
   @override
-  final bool constant;
-
-  final Object? constantValue;
+  late final bool constant;
 
   @override
-  R? accept<R>(ElementVisitor<R> visitor) => visitor.visitLiteralElement(this);
+  late final Object? constantValue;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitSingletonLiteralElement(this);
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'LiteralElement(type: $type, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
+      'SingletonLiteralElement(type: $type, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
+}
+
+final class StructLiteralElement extends LiteralElement {
+  StructLiteralElement();
+
+  @override
+  late final StructType type;
+
+  final List<StructMemberElement> members = [];
+
+  @override
+  late final bool constant;
+
+  @override
+  late final Object? constantValue;
+
+  @override
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitStructLiteralElement(this);
+
+  @override
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    for (final node in members) {
+      node.visitChildren(visitor);
+    }
+  }
+
+  @override
+  String toString() =>
+      'StructLiteralElement(type: $type, members: $members, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
 }
 
 final class TypeVariantElement extends Element {
@@ -228,23 +296,34 @@ final class ImportElement extends DeclarationElement {
       'ImportElement(package: $package, enclosingElement: $enclosingElement)';
 }
 
-final class LetFunctionDeclaration extends DeclarationElement
+sealed class LetDeclarationElement extends DeclarationElement
     implements TypedElement {
-  LetFunctionDeclaration({
-    required this.name,
-    required this.parameter,
-    required this.type,
-    required this.body,
-  });
+  LetDeclarationElement({required this.name});
 
   final String name;
 
-  final Token parameter;
+  late final ExpressionElement body;
 
   @override
-  FunctionType type;
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    body.accept(visitor);
+  }
 
-  final ExpressionElement body;
+  @override
+  String toString() =>
+      'LetDeclarationElement(name: $name, body: $body, enclosingElement: $enclosingElement)';
+}
+
+final class LetFunctionDeclaration extends LetDeclarationElement {
+  LetFunctionDeclaration({
+    required super.name,
+    required this.parameter,
+  });
+
+  final StructLiteralElement parameter;
+
+  @override
+  late FunctionType type;
 
   @override
   R? accept<R>(ElementVisitor<R> visitor) =>
@@ -252,41 +331,32 @@ final class LetFunctionDeclaration extends DeclarationElement
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {
-    body.accept(visitor);
+    parameter.accept(visitor);
   }
 
   @override
   String toString() =>
-      'LetFunctionDeclaration(name: $name, parameter: $parameter, type: $type, body: $body, enclosingElement: $enclosingElement)';
+      'LetFunctionDeclaration(name: $name, parameter: $parameter, type: $type, name: $name, body: $body, enclosingElement: $enclosingElement)';
 }
 
-final class LetVariableDeclaration extends DeclarationElement
-    implements TypedElement {
+final class LetVariableDeclaration extends LetDeclarationElement {
   LetVariableDeclaration({
-    required this.name,
+    required super.name,
     this.type,
-    required this.body,
   });
-
-  final String name;
 
   @override
   Type? type;
-
-  final ExpressionElement body;
 
   @override
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitLetVariableDeclaration(this);
 
   @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    body.accept(visitor);
-  }
-
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'LetVariableDeclaration(name: $name, type: $type, body: $body, enclosingElement: $enclosingElement)';
+      'LetVariableDeclaration(name: $name, type: $type, name: $name, body: $body, enclosingElement: $enclosingElement)';
 }
 
 final class ImportedSymbolSyntheticElement extends DeclarationElement

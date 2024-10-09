@@ -97,7 +97,7 @@ final class Lexer {
       '⊥' => _addToken(TokenType.falsum),
       '@' => _identifier(true),
       '?' => _addToken(TokenType.eroteme),
-      '(' => _leftParenthesis(),
+      '(' => _addToken(TokenType.leftParenthesis),
       ')' => _addToken(TokenType.rightParenthesis),
       '[' => _addToken(TokenType.leftBracket),
       ']' => _addToken(TokenType.rightBracket),
@@ -106,21 +106,14 @@ final class Lexer {
       ',' => _addToken(TokenType.comma),
       '+' => _addToken(TokenType.plusSign),
       '=' => _addToken(TokenType.equalitySign),
-      ':' => _addToken(TokenType.colon),
+      ':' => _symbolLiteral(),
       '"' => _string(),
       '/' => _slash(),
       ' ' || '\r' || '\t' => null,
       '\n' => _lineBreak(),
-      final character => _isNumeric(character) ? _number() : _character(character),
+      final character when _isNumeric(character) => _numberLiteral(),
+      final character => _character(character),
     };
-  }
-
-  void _leftParenthesis() {
-    if (_match(')')) {
-      _addToken(TokenType.unitLiteral);
-    } else {
-      _addToken(TokenType.leftParenthesis);
-    }
   }
 
   void _slash() {
@@ -133,6 +126,22 @@ final class Lexer {
     } else {
       _addToken(TokenType.slash);
     }
+  }
+
+  void _symbolLiteral() {
+    _advance();
+
+    if (!_isIdentifierStart(_peek)) {
+      _errorHandler?.emit(
+        InvalidIdentifierStart(offset: _current),
+      );
+    }
+
+    while (_isIdentifierPart(_peek)) {
+      _advance();
+    }
+
+    _addToken(TokenType.symbolLiteral);
   }
 
   void _string() {
@@ -167,7 +176,7 @@ final class Lexer {
     }
   }
 
-  void _number() {
+  void _numberLiteral() {
     advanceNumbersAndSeparators();
 
     // Found dot. Try parsing double
@@ -184,6 +193,8 @@ final class Lexer {
   void _lineBreak() => _lineBreaks.add(_current - 1);
 
   void _character(String character) {
+    assert(character.length == 1);
+
     if (_isIdentifierStart(character)) {
       _identifier(false);
     } else {

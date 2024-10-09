@@ -2,10 +2,12 @@ import 'element.dart';
 
 abstract interface class ElementVisitor<R> {
   R? visitTypeParameterElement(TypeParameterElement node);
+  R? visitStructMemberElement(StructMemberElement node);
   R? visitParameterElement(ParameterElement node);
   R? visitInvocationElement(InvocationElement node);
   R? visitIdentifierElement(IdentifierElement node);
-  R? visitLiteralElement(LiteralElement node);
+  R? visitSingletonLiteralElement(SingletonLiteralElement node);
+  R? visitStructLiteralElement(StructLiteralElement node);
   R? visitTypeVariantElement(TypeVariantElement node);
   R? visitImportElement(ImportElement node);
   R? visitLetFunctionDeclaration(LetFunctionDeclaration node);
@@ -20,6 +22,9 @@ abstract base class SimpleElementVisitor<R> implements ElementVisitor {
   R? visitTypeParameterElement(TypeParameterElement node) => null;
 
   @override
+  R? visitStructMemberElement(StructMemberElement node) => null;
+
+  @override
   R? visitParameterElement(ParameterElement node) => null;
 
   @override
@@ -29,7 +34,10 @@ abstract base class SimpleElementVisitor<R> implements ElementVisitor {
   R? visitIdentifierElement(IdentifierElement node) => null;
 
   @override
-  R? visitLiteralElement(LiteralElement node) => null;
+  R? visitSingletonLiteralElement(SingletonLiteralElement node) => null;
+
+  @override
+  R? visitStructLiteralElement(StructLiteralElement node) => null;
 
   @override
   R? visitTypeVariantElement(TypeVariantElement node) => null;
@@ -64,6 +72,9 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
   R? visitTypeParameterElement(TypeParameterElement node) => visitElement(node);
 
   @override
+  R? visitStructMemberElement(StructMemberElement node) => visitElement(node);
+
+  @override
   R? visitParameterElement(ParameterElement node) => visitElement(node);
 
   R? visitExpressionElement(ExpressionElement node) => visitElement(node);
@@ -76,8 +87,15 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
   R? visitIdentifierElement(IdentifierElement node) =>
       visitExpressionElement(node);
 
-  @override
   R? visitLiteralElement(LiteralElement node) => visitExpressionElement(node);
+
+  @override
+  R? visitSingletonLiteralElement(SingletonLiteralElement node) =>
+      visitLiteralElement(node);
+
+  @override
+  R? visitStructLiteralElement(StructLiteralElement node) =>
+      visitLiteralElement(node);
 
   @override
   R? visitTypeVariantElement(TypeVariantElement node) => visitElement(node);
@@ -87,13 +105,16 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
   @override
   R? visitImportElement(ImportElement node) => visitDeclarationElement(node);
 
-  @override
-  R? visitLetFunctionDeclaration(LetFunctionDeclaration node) =>
+  R? visitLetDeclarationElement(LetDeclarationElement node) =>
       visitDeclarationElement(node);
 
   @override
+  R? visitLetFunctionDeclaration(LetFunctionDeclaration node) =>
+      visitLetDeclarationElement(node);
+
+  @override
   R? visitLetVariableDeclaration(LetVariableDeclaration node) =>
-      visitDeclarationElement(node);
+      visitLetDeclarationElement(node);
 
   @override
   R? visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) =>

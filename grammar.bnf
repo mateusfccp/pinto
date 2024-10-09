@@ -2,6 +2,7 @@
 
 <identifier_start> ::= [A-Za-z_$]
 <identifier_part> ::= <identifier_start>  | <digit>
+
 <digit> ::= [0-9]
 
 <program> ::= <import>* <non_import_declaration>*
@@ -19,7 +20,7 @@
 <type_variant> ::= <identifier> ( "(" <type_variant_parameter> ( "," <type_variant_parameter> )* ")" )?
 <type_variant_parameter> ::= <type_literal> <identifier>
 
-<let_function_declaration> ::= "let" <identifier> <identifier> "=" <expression>
+<let_function_declaration> ::= "let" <identifier> <struct_literal> "=" <expression>
 <let_variable_declaration> ::= "let" <identifier> "=" <expression>
 
 <type_literal> ::= <top_type_literal>
@@ -38,10 +39,21 @@
 <identified_type_literal> ::= <identifier> ( "(" <type_literal> ( "," <type_literal> )* ")" )?
 <option_type_literal> ::= <type_literal> "?"
 
-<expression> ::= <unit_literal>
-               | <bool_literal>
-	       | <string_literal>
-<unit_literal> ::= "()"
-<bool_literal> ::= "true" | "false"
-<string_literal> ::= '"' + <string_character>* + '"'
+<digit_separator> ::= "_"
 <string_character> ::= ~( '"' | '\n' | '\r')
+
+<expression> ::= <bool_literal>
+	       | <integer_literal>
+	       | <string_literal>
+	       | <struct_literal>
+	       | <symbol_literal>
+	       | <unit_literal>
+	       | <identifier>
+
+<bool_literal> ::= "true" | "false"
+<double_literal>  ::= <integer_literal> "." <integer_literal>
+<integer_literal> ::= <digit> (<digit_separator>* <digit>+)*
+<struct_literal> ::= "(" (<symbol_literal>? <expression>? ",")* ")"
+<string_literal> ::= '"' + <string_character>* + '"'
+<symbol_literal> ::= ":" <identifier>
+<unit_literal> ::= "()"

@@ -254,6 +254,93 @@ sealed class Node extends AstNode {
   String toString() => 'Node';
 }
 
+sealed class StructMember extends Node {
+  const StructMember();
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'StructMember';
+}
+
+final class NamelessStructMember extends StructMember {
+  const NamelessStructMember(this.value);
+
+  final Expression value;
+
+  @override
+  int get offset => value.offset;
+
+  @override
+  int get end => value.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitNamelessStructMember(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    value.accept(visitor);
+  }
+
+  @override
+  String toString() => 'NamelessStructMember(value: $value)';
+}
+
+final class ValuelessStructMember extends StructMember {
+  const ValuelessStructMember(this.name);
+
+  final SymbolLiteral name;
+
+  @override
+  int get offset => name.offset;
+
+  @override
+  int get end => name.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitValuelessStructMember(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    name.accept(visitor);
+  }
+
+  @override
+  String toString() => 'ValuelessStructMember(name: $name)';
+}
+
+final class FullStructMember extends StructMember {
+  const FullStructMember(
+    this.name,
+    this.value,
+  );
+
+  final SymbolLiteral name;
+
+  final Expression value;
+
+  @override
+  int get offset => name.offset;
+
+  @override
+  int get end => value.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitFullStructMember(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    name.accept(visitor);
+    value.accept(visitor);
+  }
+
+  @override
+  String toString() => 'FullStructMember(name: $name, value: $value)';
+}
+
 final class TypeVariantParameterNode extends Node {
   const TypeVariantParameterNode(
     this.typeIdentifier,
@@ -414,7 +501,6 @@ final class LetExpression extends Expression {
 sealed class Literal extends Expression {
   const Literal();
 
-  Token get literal;
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
@@ -424,7 +510,6 @@ sealed class Literal extends Expression {
 final class BooleanLiteral extends Literal {
   const BooleanLiteral(this.literal);
 
-  @override
   final Token literal;
 
   @override
@@ -442,10 +527,9 @@ final class BooleanLiteral extends Literal {
   String toString() => 'BooleanLiteral(literal: $literal)';
 }
 
-final class UnitLiteral extends Literal {
-  const UnitLiteral(this.literal);
+final class DoubleLiteral extends Literal {
+  const DoubleLiteral(this.literal);
 
-  @override
   final Token literal;
 
   @override
@@ -455,39 +539,17 @@ final class UnitLiteral extends Literal {
   int get end => literal.end;
 
   @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitUnitLiteral(this);
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitDoubleLiteral(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() => 'UnitLiteral(literal: $literal)';
-}
-
-final class StringLiteral extends Literal {
-  const StringLiteral(this.literal);
-
-  @override
-  final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStringLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'StringLiteral(literal: $literal)';
+  String toString() => 'DoubleLiteral(literal: $literal)';
 }
 
 final class IntegerLiteral extends Literal {
   const IntegerLiteral(this.literal);
 
-  @override
   final Token literal;
 
   @override
@@ -505,10 +567,9 @@ final class IntegerLiteral extends Literal {
   String toString() => 'IntegerLiteral(literal: $literal)';
 }
 
-final class DoubleLiteral extends Literal {
-  const DoubleLiteral(this.literal);
+final class StringLiteral extends Literal {
+  const StringLiteral(this.literal);
 
-  @override
   final Token literal;
 
   @override
@@ -518,12 +579,68 @@ final class DoubleLiteral extends Literal {
   int get end => literal.end;
 
   @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitDoubleLiteral(this);
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStringLiteral(this);
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() => 'DoubleLiteral(literal: $literal)';
+  String toString() => 'StringLiteral(literal: $literal)';
+}
+
+final class StructLiteral extends Literal {
+  const StructLiteral(
+    this.leftParenthesis,
+    this.members,
+    this.rightParenthesis,
+  );
+
+  final Token leftParenthesis;
+
+  final SyntacticEntityList<StructMember>? members;
+
+  final Token rightParenthesis;
+
+  @override
+  int get offset => leftParenthesis.offset;
+
+  @override
+  int get end => rightParenthesis.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStructLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    if (members case final membersNodes?) {
+      for (final node in membersNodes) {
+        node.visitChildren(visitor);
+      }
+    }
+  }
+
+  @override
+  String toString() =>
+      'StructLiteral(leftParenthesis: $leftParenthesis, members: $members, rightParenthesis: $rightParenthesis)';
+}
+
+final class SymbolLiteral extends Literal {
+  const SymbolLiteral(this.literal);
+
+  final Token literal;
+
+  @override
+  int get offset => literal.offset;
+
+  @override
+  int get end => literal.end;
+
+  @override
+  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitSymbolLiteral(this);
+
+  @override
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'SymbolLiteral(literal: $literal)';
 }
 
 sealed class Declaration extends AstNode {
@@ -629,7 +746,7 @@ final class LetDeclaration extends Declaration {
 
   final Token identifier;
 
-  final Token? parameter;
+  final StructLiteral? parameter;
 
   final Token equals;
 
@@ -646,6 +763,7 @@ final class LetDeclaration extends Declaration {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    parameter?.accept(visitor);
     body.accept(visitor);
   }
 

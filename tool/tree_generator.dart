@@ -16,6 +16,7 @@ base class Property {
     this.visitable = true,
     this.late = false,
     this.override = false,
+    this.super$ = false,
   });
 
   final String type;
@@ -27,13 +28,17 @@ base class Property {
   final bool visitable;
   final bool late;
   final bool override;
+  final bool super$;
 
   bool get optional => type.endsWith('?');
 }
 
 final class StringProperty extends Property {
-  StringProperty(String name)
-      : super(
+  StringProperty(
+    String name, {
+    super.late,
+    super.super$,
+  }) : super(
           'String',
           name,
           visitable: false,
@@ -271,14 +276,16 @@ final class TreeGenerator {
                   case TreeGeneratorConstructorRule.positional when property.final$:
                     builder.requiredParameters.add(
                       Parameter((builder) {
-                        builder.toThis = true;
+                        builder.toThis = !property.super$;
+                        builder.toSuper = property.super$;
                         builder.name = property.name;
                       }),
                     );
                   case TreeGeneratorConstructorRule.positional:
                     builder.optionalParameters.add(
                       Parameter((builder) {
-                        builder.toThis = true;
+                        builder.toThis = !property.super$;
+                        builder.toSuper = property.super$;
                         builder.name = property.name;
                       }),
                     );
@@ -287,7 +294,8 @@ final class TreeGenerator {
                       Parameter((builder) {
                         builder.required = property.final$ || !property.optional;
                         builder.named = true;
-                        builder.toThis = true;
+                        builder.toThis = !property.super$;
+                        builder.toSuper = property.super$;
                         builder.name = property.name;
                       }),
                     );
@@ -299,29 +307,31 @@ final class TreeGenerator {
       }
 
       for (final property in node.properties) {
-        builder.fields.add(
-          Field((builder) {
-            if (property.override) {
-              builder.annotations.add(refer('override'));
-            }
+        if (!property.super$) {
+          builder.fields.add(
+            Field((builder) {
+              if (property.override) {
+                builder.annotations.add(refer('override'));
+              }
 
-            if (property.final$) {
-              builder.modifier = FieldModifier.final$;
-            }
+              if (property.final$) {
+                builder.modifier = FieldModifier.final$;
+              }
 
-            if (property.late) {
-              builder.late = true;
-            }
+              if (property.late) {
+                builder.late = true;
+              }
 
-            builder.type = refer(property.type);
+              builder.type = refer(property.type);
 
-            builder.name = property.name;
+              builder.name = property.name;
 
-            if (property.initializer case final initializer?) {
-              builder.assignment = initializer.code;
-            }
-          }),
-        );
+              if (property.initializer case final initializer?) {
+                builder.assignment = initializer.code;
+              }
+            }),
+          );
+        }
       }
 
       for (final method in node.methods) {
