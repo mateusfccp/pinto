@@ -1,1 +1,6 @@
 include: package:lints/recommended.yaml
+
+analyzer:
+  enable-experiment:
+    - macros
+
