@@ -224,6 +224,7 @@ Future<void> main(List<String> args) async {
     astGenerator.imports.add('package:pinto/lexer.dart');
     astGenerator.imports.add('package.dart');
     astGenerator.imports.add('type.dart');
+    astGenerator.imports.add('visitors.dart');
 
     astGenerator.write(outputFile);
   }

@@ -183,8 +183,6 @@ final class TreeGenerator {
   }
 
   Future<void> write(File outputFile) async {
-    imports.add('visitors.dart');
-
     // Generate tree nodes files
     final treeLibrary = LibraryBuilder();
 
