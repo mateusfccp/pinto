@@ -12,6 +12,8 @@ sealed class AstNode implements SyntacticEntity {
 
   R? accept<R>(AstNodeVisitor<R> visitor);
   void visitChildren<R>(AstNodeVisitor<R> visitor);
+  @override
+  String toString() => 'AstNode';
 }
 
 sealed class TypeIdentifier extends AstNode {
@@ -19,6 +21,8 @@ sealed class TypeIdentifier extends AstNode {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'TypeIdentifier';
 }
 
 final class TopTypeIdentifier extends TypeIdentifier {
@@ -38,6 +42,8 @@ final class TopTypeIdentifier extends TypeIdentifier {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'TopTypeIdentifier(verum: $verum)';
 }
 
 final class BottomTypeIdentifier extends TypeIdentifier {
@@ -57,6 +63,8 @@ final class BottomTypeIdentifier extends TypeIdentifier {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'BottomTypeIdentifier(falsum: $falsum)';
 }
 
 final class ListTypeIdentifier extends TypeIdentifier {
@@ -86,6 +94,10 @@ final class ListTypeIdentifier extends TypeIdentifier {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     identifier.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'ListTypeIdentifier(leftBracket: $leftBracket, identifier: $identifier, rightBracket: $rightBracket)';
 }
 
 final class SetTypeIdentifier extends TypeIdentifier {
@@ -115,6 +127,10 @@ final class SetTypeIdentifier extends TypeIdentifier {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     identifier.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'SetTypeIdentifier(leftBrace: $leftBrace, identifier: $identifier, rightBrace: $rightBrace)';
 }
 
 final class MapTypeIdentifier extends TypeIdentifier {
@@ -151,6 +167,10 @@ final class MapTypeIdentifier extends TypeIdentifier {
     key.accept(visitor);
     value.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'MapTypeIdentifier(leftBrace: $leftBrace, key: $key, colon: $colon, value: $value, rightBrace: $rightBrace)';
 }
 
 final class IdentifiedTypeIdentifier extends TypeIdentifier {
@@ -191,6 +211,10 @@ final class IdentifiedTypeIdentifier extends TypeIdentifier {
       }
     }
   }
+
+  @override
+  String toString() =>
+      'IdentifiedTypeIdentifier(identifier: $identifier, leftParenthesis: $leftParenthesis, arguments: $arguments, rightParenthesis: $rightParenthesis)';
 }
 
 final class OptionTypeIdentifier extends TypeIdentifier {
@@ -217,6 +241,10 @@ final class OptionTypeIdentifier extends TypeIdentifier {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     identifier.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'OptionTypeIdentifier(identifier: $identifier, eroteme: $eroteme)';
 }
 
 sealed class Node extends AstNode {
@@ -224,6 +252,8 @@ sealed class Node extends AstNode {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'Node';
 }
 
 final class TypeVariantParameterNode extends Node {
@@ -250,6 +280,10 @@ final class TypeVariantParameterNode extends Node {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     typeIdentifier.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'TypeVariantParameterNode(typeIdentifier: $typeIdentifier, name: $name)';
 }
 
 final class TypeVariantNode extends Node {
@@ -277,6 +311,9 @@ final class TypeVariantNode extends Node {
       node.visitChildren(visitor);
     }
   }
+
+  @override
+  String toString() => 'TypeVariantNode(name: $name, parameters: $parameters)';
 }
 
 sealed class Expression extends AstNode {
@@ -284,6 +321,8 @@ sealed class Expression extends AstNode {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'Expression';
 }
 
 final class IdentifierExpression extends Expression {
@@ -303,6 +342,8 @@ final class IdentifierExpression extends Expression {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'IdentifierExpression(identifier: $identifier)';
 }
 
 final class InvocationExpression extends Expression {
@@ -330,6 +371,10 @@ final class InvocationExpression extends Expression {
     identifierExpression.accept(visitor);
     argument.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'InvocationExpression(identifierExpression: $identifierExpression, argument: $argument)';
 }
 
 final class LetExpression extends Expression {
@@ -362,6 +407,10 @@ final class LetExpression extends Expression {
     binding.accept(visitor);
     result.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'LetExpression(identifier: $identifier, equals: $equals, binding: $binding, result: $result)';
 }
 
 sealed class Literal extends Expression {
@@ -370,6 +419,8 @@ sealed class Literal extends Expression {
   Token get literal;
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'Literal';
 }
 
 final class BooleanLiteral extends Literal {
@@ -389,6 +440,8 @@ final class BooleanLiteral extends Literal {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'BooleanLiteral(literal: $literal)';
 }
 
 final class UnitLiteral extends Literal {
@@ -408,6 +461,8 @@ final class UnitLiteral extends Literal {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'UnitLiteral(literal: $literal)';
 }
 
 final class StringLiteral extends Literal {
@@ -427,6 +482,8 @@ final class StringLiteral extends Literal {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'StringLiteral(literal: $literal)';
 }
 
 final class IntegerLiteral extends Literal {
@@ -446,6 +503,8 @@ final class IntegerLiteral extends Literal {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'IntegerLiteral(literal: $literal)';
 }
 
 final class DoubleLiteral extends Literal {
@@ -465,6 +524,8 @@ final class DoubleLiteral extends Literal {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'DoubleLiteral(literal: $literal)';
 }
 
 sealed class Declaration extends AstNode {
@@ -472,6 +533,8 @@ sealed class Declaration extends AstNode {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'Declaration';
 }
 
 final class ImportDeclaration extends Declaration {
@@ -499,6 +562,9 @@ final class ImportDeclaration extends Declaration {
 
   @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'ImportDeclaration(keyword: $keyword, type: $type, identifier: $identifier)';
 }
 
 final class TypeDefinition extends Declaration {
@@ -546,6 +612,10 @@ final class TypeDefinition extends Declaration {
       node.visitChildren(visitor);
     }
   }
+
+  @override
+  String toString() =>
+      'TypeDefinition(keyword: $keyword, name: $name, leftParenthesis: $leftParenthesis, parameters: $parameters, rightParenthesis: $rightParenthesis, equals: $equals, variants: $variants)';
 }
 
 final class LetDeclaration extends Declaration {
@@ -580,4 +650,8 @@ final class LetDeclaration extends Declaration {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     body.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'LetDeclaration(keyword: $keyword, identifier: $identifier, parameter: $parameter, equals: $equals, body: $body)';
 }

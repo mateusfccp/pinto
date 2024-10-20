@@ -10,14 +10,20 @@ sealed class Element {
   Element? get enclosingElement;
   R? accept<R>(ElementVisitor<R> visitor);
   void visitChildren<R>(ElementVisitor<R> visitor);
+  @override
+  String toString() => 'Element';
 }
 
 abstract interface class TypedElement extends Element {
   Type? get type;
+  @override
+  String toString() => 'TypedElement';
 }
 
 abstract interface class TypeDefiningElement extends Element {
   Type get definedType;
+  @override
+  String toString() => 'TypeDefiningElement';
 }
 
 final class TypeParameterElement extends Element
@@ -41,6 +47,9 @@ final class TypeParameterElement extends Element
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'TypeParameterElement(name: $name, enclosingElement: $enclosingElement, type: $type, definedType: $definedType)';
 }
 
 final class ParameterElement extends Element implements TypedElement {
@@ -63,6 +72,9 @@ final class ParameterElement extends Element implements TypedElement {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'ParameterElement(name: $name, type: $type, enclosingElement: $enclosingElement)';
 }
 
 sealed class ExpressionElement extends Element implements TypedElement {
@@ -74,6 +86,8 @@ sealed class ExpressionElement extends Element implements TypedElement {
   bool get constant;
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() => 'ExpressionElement(enclosingElement: $enclosingElement)';
 }
 
 final class InvocationElement extends ExpressionElement {
@@ -103,6 +117,10 @@ final class InvocationElement extends ExpressionElement {
     identifier.accept(visitor);
     argument.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'InvocationElement(type: $type, identifier: $identifier, argument: $argument, constant: $constant, enclosingElement: $enclosingElement)';
 }
 
 final class IdentifierElement extends ExpressionElement {
@@ -126,6 +144,9 @@ final class IdentifierElement extends ExpressionElement {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'IdentifierElement(name: $name, type: $type, constant: $constant, enclosingElement: $enclosingElement)';
 }
 
 final class LiteralElement extends ExpressionElement {
@@ -148,6 +169,9 @@ final class LiteralElement extends ExpressionElement {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'LiteralElement(type: $type, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
 }
 
 final class TypeVariantElement extends Element {
@@ -170,6 +194,10 @@ final class TypeVariantElement extends Element {
       node.visitChildren(visitor);
     }
   }
+
+  @override
+  String toString() =>
+      'TypeVariantElement(name: $name, parameters: $parameters, enclosingElement: $enclosingElement)';
 }
 
 sealed class DeclarationElement extends Element {
@@ -180,6 +208,9 @@ sealed class DeclarationElement extends Element {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'DeclarationElement(enclosingElement: $enclosingElement)';
 }
 
 final class ImportElement extends DeclarationElement {
@@ -192,6 +223,9 @@ final class ImportElement extends DeclarationElement {
 
   @override
   void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'ImportElement(package: $package, enclosingElement: $enclosingElement)';
 }
 
 final class LetFunctionDeclaration extends DeclarationElement
@@ -220,6 +254,10 @@ final class LetFunctionDeclaration extends DeclarationElement
   void visitChildren<R>(ElementVisitor<R> visitor) {
     body.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'LetFunctionDeclaration(name: $name, parameter: $parameter, type: $type, body: $body, enclosingElement: $enclosingElement)';
 }
 
 final class LetVariableDeclaration extends DeclarationElement
@@ -245,6 +283,10 @@ final class LetVariableDeclaration extends DeclarationElement
   void visitChildren<R>(ElementVisitor<R> visitor) {
     body.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'LetVariableDeclaration(name: $name, type: $type, body: $body, enclosingElement: $enclosingElement)';
 }
 
 final class ImportedSymbolSyntheticElement extends DeclarationElement
@@ -269,6 +311,10 @@ final class ImportedSymbolSyntheticElement extends DeclarationElement
   void visitChildren<R>(ElementVisitor<R> visitor) {
     syntheticElement.accept(visitor);
   }
+
+  @override
+  String toString() =>
+      'ImportedSymbolSyntheticElement(name: $name, syntheticElement: $syntheticElement, enclosingElement: $enclosingElement)';
 }
 
 final class TypeDefinitionElement extends DeclarationElement
@@ -300,6 +346,10 @@ final class TypeDefinitionElement extends DeclarationElement
       node.visitChildren(visitor);
     }
   }
+
+  @override
+  String toString() =>
+      'TypeDefinitionElement(name: $name, parameters: $parameters, variants: $variants, type: $type, definedType: $definedType, enclosingElement: $enclosingElement)';
 }
 
 final class ProgramElement extends Element {
@@ -324,4 +374,8 @@ final class ProgramElement extends Element {
       node.visitChildren(visitor);
     }
   }
+
+  @override
+  String toString() =>
+      'ProgramElement(imports: $imports, declarations: $declarations, enclosingElement: $enclosingElement)';
 }

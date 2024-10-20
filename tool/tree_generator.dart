@@ -108,6 +108,8 @@ extension type TreeNode._(Node<_NodeDescription> _node) implements Node<_NodeDes
 
     return true;
   }
+
+  List<Property> getAllProperties() => [..._node.value.properties, ...?parent?.getAllProperties()];
 }
 
 final class _NodeDescription {
@@ -339,6 +341,10 @@ final class TreeGenerator {
           _visitChildrenMethod(node: node),
         );
       }
+
+      builder.methods.add(
+        _toStringMethod(node: node),
+      );
     });
   }
 
@@ -400,6 +406,36 @@ final class TreeGenerator {
           }
         }
       });
+    });
+  }
+
+  Method _toStringMethod({required TreeNode node}) {
+    return Method((builder) {
+      builder.annotations.add(refer('override'));
+      builder.returns = refer('String');
+      builder.name = 'toString';
+
+      final fieldsDescription = StringBuffer();
+
+      if (node.getAllProperties() case List<Property>(isEmpty: false) && final properties) {
+        // final fields = _fields.build();
+        fieldsDescription.write('(');
+
+        for (int i = 0; i < properties.length; i = i + 1) {
+          fieldsDescription.write(properties[i].name);
+          fieldsDescription.write(r': $');
+          fieldsDescription.write(properties[i].name);
+
+          if (i < properties.length - 1) {
+            fieldsDescription.write(', ');
+          }
+        }
+
+        fieldsDescription.write(')');
+      }
+
+      final string = '${node.name}$fieldsDescription';
+      builder.body = literalString(string).code;
     });
   }
 
