@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:code_builder/code_builder.dart' as code_builder;
+import 'package:collection/collection.dart';
 import 'package:macros/macros.dart';
 
-macro class Tree implements LibraryTypesMacro, LibraryDefinitionMacro, ClassDeclarationsMacro {
+macro class Tree implements LibraryTypesMacro, LibraryDefinitionMacro, ClassDeclarationsMacro, ClassDefinitionMacro {
   const Tree(this.name);
 
   final String name;
@@ -27,14 +28,6 @@ macro class Tree implements LibraryTypesMacro, LibraryDefinitionMacro, ClassDecl
     final classes = types.whereType<ClassDeclaration>();
     final roots = classes.where((clazz) => clazz.isRoot);
 
-    final c = await builder.resolveIdentifier(library.uri, visitorName);
-    final cb = await builder.buildType(c);
-    final ms = await cb.methodsOf(c);
-    for (final m in ms) {
-      final mb = await cb.buildMethod(m.identifier);
-      // mb.augment(body)
-    }
-
     if (roots.isEmpty) {
       return builder.report(
           Diagnostic(
@@ -56,64 +49,58 @@ macro class Tree implements LibraryTypesMacro, LibraryDefinitionMacro, ClassDecl
       }
     }
 
-    final leaves = {
-      for (final clazz in classes) 
-        if(clazz.identifier.name != visitorName) 
-          clazz.identifier.name:  clazz,
-    };
+    // final leaves = {
+    //   for (final clazz in classes) 
+    //     if(clazz.identifier.name != visitorName) 
+    //       clazz.identifier.name:  clazz,
+    // };
 
-    for (final clazz in classes) {
-      if (clazz.superclass case final superclass?) {
-        leaves.remove(superclass.identifier.name);
-      }
+    // for (final clazz in classes) {
+    //   if (clazz.superclass case final superclass?) {
+    //     leaves.remove(superclass.identifier.name);
+    //   }
 
-      if (clazz == roots.single) {
-        leaves.remove(clazz.identifier.name);
-      }
-    }
+    //   if (clazz == roots.single) {
+    //     leaves.remove(clazz.identifier.name);
+    //   }
+    // }
 
-    builder.report(
-      Diagnostic(
-        DiagnosticMessage('Leaves: ${leaves.values.map((e) => e.identifier.name)}'),
-        Severity.info,
-      ),
-    );
+    // builder.report(
+    //   Diagnostic(
+    //     DiagnosticMessage('Leaves: ${leaves.values.map((e) => e.identifier.name)}'),
+    //     Severity.info,
+    //   ),
+    // );
 
-    for (final leaf in leaves.values) {
-         final method = code_builder.Method((builder) {
-            builder.returns = code_builder.refer('R?');
-            builder.name = 'visit${leaf.identifier.name}';
-            builder.requiredParameters.add(
-              code_builder.Parameter((builder) {
-                builder.type = code_builder.refer(leaf.identifier.name);
-                builder.name = 'node';
-              }),
-            );
-          });
+    // for (final leaf in leaves.values) {
+    //      final method = code_builder.Method((builder) {
+    //         builder.returns = code_builder.refer('R?');
+    //         builder.name = 'visit${leaf.identifier.name}';
+    //         builder.requiredParameters.add(
+    //           code_builder.Parameter((builder) {
+    //             builder.type = code_builder.refer(leaf.identifier.name);
+    //             builder.name = 'node';
+    //           }),
+    //         );
+    //       });
 
-          final typeBuilder = await builder.buildType(leaf.identifier);
-          final methods = await typeBuilder.methodsOf(leaf);
+    //       final typeBuilder = await builder.buildType(leaf.identifier);
+    //       final methods = await typeBuilder.methodsOf(leaf);
 
-          // typeBuilder.augment();
-          // typeBuilder.buildMethod('identifier');
-    }
+    //       // typeBuilder.augment();
+    //       // typeBuilder.buildMethod('identifier');
+    // }
   }
 
   @override
   Future<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder declarationBuilder) async {
-    // final root = await declarationBuilder.typesOf(clazz.library);
+    // final root = await clazz.library.getRoot(declarationBuilder);
 
-    //     @override
-    // R? accept<R>(AstNodeVisitor<R> visitor) =>
-    //     visitor.visitTopTypeIdentifier(this);
-
-    // @override
-    // void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-
-    final fields = await declarationBuilder.fieldsOf(clazz);
-
-    final method = code_builder.Method((builder) {
-      builder.annotations.add(code_builder.refer('override'));
+    final visitChildrenMethod = code_builder.Method((builder) {
+      if (!clazz.isRoot) {
+        builder.annotations.add(code_builder.refer('override'));
+      }
+      
       builder.returns = code_builder.refer('void');
       builder.name = 'visitChildren';
       builder.types.add(code_builder.refer('R'));
@@ -124,37 +111,110 @@ macro class Tree implements LibraryTypesMacro, LibraryDefinitionMacro, ClassDecl
           builder.name = 'visitor';
         }),
       );
-
-      builder.body = code_builder.Block((builder) async {
-        for (final field in fields) {
-          // final visitable = false;
-          // if (visitable) {
-          //   final name = code_builder.refer(field.identifier.name);
-          //   final nameProperty = field.type.isNullable ? name.nullSafeProperty : name.property;
-
-          //   builder.statements.add(
-          //     nameProperty('accept').call([code_builder.refer('visitor')]).statement,
-          //   );
-          // }
-          // if (property.iterable && property.visitable) {
-          //   final block = Block.of([
-          //     if (property.optional) Code('if (${property.name} case final ${property.name}Nodes?) {'),
-          //     Code('for (final node in ${property.optional ? '${property.name}Nodes' : property.name}) {'),
-          //     refer('node').property('visitChildren').call([refer('visitor')]).statement,
-          //     Code('}'),
-          //     if (property.optional) Code('}'),
-          //   ]);
-
-          //   builder.statements.add(block);
-          // } else if (property.visitable) {
-
-          // }
-        }
-      });
     });
 
-    final str = method.accept(code_builder.DartEmitter()).toString();
-    declarationBuilder.declareInType(DeclarationCode.fromString(str));
+    final visitChildrenMethodString = visitChildrenMethod.accept(code_builder.DartEmitter()).toString();
+    declarationBuilder.declareInType(DeclarationCode.fromString(visitChildrenMethodString));
+
+    final acceptMethod = code_builder.Method((builder) {
+      if (!clazz.isRoot) {
+        builder.annotations.add(code_builder.refer('override'));
+      }
+      
+      builder.returns = code_builder.refer('R?');
+      builder.name = 'accept';
+      builder.types.add(code_builder.refer('R'));
+
+      builder.requiredParameters.add(
+        code_builder.Parameter((builder) {
+          builder.type = _referWithR(visitorName);
+          builder.name = 'visitor';
+        }),
+      );
+
+      builder.lambda = true;
+
+      builder.body = code_builder //
+        .refer('visitor')
+        .property('visit${clazz.identifier.name}')
+        .call([code_builder.refer('this')])
+        .statement;
+    });
+
+    final acceptMethodString = acceptMethod.accept(code_builder.DartEmitter()).toString();
+    declarationBuilder.declareInType(DeclarationCode.fromString(acceptMethodString));
+  }
+  
+  @override
+  FutureOr<void> buildDefinitionForClass(ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
+    final methods = await builder.methodsOf(clazz);
+
+    final visitChildrenMethod = methods.singleWhereOrNull((method) => method.identifier.name == 'visitChildren');
+
+    if (visitChildrenMethod != null) {
+      final methodBuilder = await builder.buildMethod(visitChildrenMethod.identifier);
+      await VisitChildrenBuilder().buildDefinitionForMethod(visitChildrenMethod, methodBuilder);
+    }
+  }
+}
+
+final class VisitChildrenBuilder implements MethodDefinitionMacro {
+  @override
+  FutureOr<void> buildDefinitionForMethod(MethodDeclaration method, FunctionDefinitionBuilder builder) async {
+    final root = await method.library.getRoot(builder);
+    final clazz = await builder.typeDeclarationOf(method.definingType);
+    final fields = await builder.fieldsOf(clazz);
+
+      final statements = <code_builder.Code>[];
+      
+      for (final field in fields) {
+        final visitable = await field.visitable(root.identifier, builder);
+
+        if (visitable) {
+          final name = code_builder.refer(field.identifier.name);
+          final nameProperty = field.type.isNullable ? name.nullSafeProperty : name.property;
+
+          statements.add(
+            nameProperty('accept').call([code_builder.refer('visitor')]).statement, 
+          );
+        }
+      }
+
+      final body = code_builder.Block.of(statements);
+      final bodyString = body.accept(code_builder.DartEmitter()).toString();
+      builder.augment(
+        FunctionBodyCode.fromParts([
+          '{',
+          bodyString,
+          '}',
+        ]),
+      );
+  }
+}
+
+final class AcceptMethodBuilder implements MethodDefinitionMacro {
+  const AcceptMethodBuilder(this.visitorName);
+
+  final String visitorName;
+
+  @override
+  FutureOr<void> buildDefinitionForMethod(MethodDeclaration method, FunctionDefinitionBuilder builder) async {
+    final clazz = await builder.typeDeclarationOf(method.definingType);
+
+      final statements = <code_builder.Code>[];
+      statements.add(
+        code_builder.refer('visitor').call([code_builder.refer('visit${clazz.identifier.name}')]).statement, 
+      );
+
+      final body = code_builder.Block.of(statements);
+      final bodyString = body.accept(code_builder.DartEmitter()).toString();
+      builder.augment(
+        FunctionBodyCode.fromParts([
+          '{',
+          bodyString,
+          '}',
+        ]),
+      );
   }
 }
 
@@ -184,14 +244,21 @@ extension on Annotatable {
   }
 }
 
+extension on Library {
+  Future<TypeDeclaration> getRoot(DeclarationPhaseIntrospector introspector) async {
+    final types = await introspector.typesOf(this);
+    return types.singleWhere((type) => type.isRoot);
+  }
+}
+
 extension on FieldDeclaration {
   Future<bool> visitable(Identifier rootIdentifier, DeclarationPhaseIntrospector inspector) async {
     final rooty = NamedTypeAnnotationCode(name: rootIdentifier);
 
-    final _ = await inspector.resolve(type.code);
-    final __ = await inspector.resolve(rooty.code);
+    final a = await inspector.resolve(type.code);
+    final b = await inspector.resolve(rooty.code);
 
-    return await _.isSubtypeOf(__);
+    return await a.isSubtypeOf(b);
   }
   // bool get visitable {
   //   for (final metadatum in metadata) {

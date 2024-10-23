@@ -5,6 +5,7 @@ import 'package:pinto/lexer.dart';
 import 'package:pinto/syntactic_entity.dart';
 
 import 'tree_generator_macro.dart';
+import 'types_of_test.dart';
 
 const tree = Tree('Ast');
 
@@ -15,10 +16,6 @@ sealed class AstNode implements SyntacticEntity {
 
   @override
   int get length => end - offset;
-
-  void doa() {
-    AstVisitor a;
-  }
 }
 
 @Tree('Ast')
