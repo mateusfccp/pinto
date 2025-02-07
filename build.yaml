@@ -1,0 +1,15 @@
+# Read about `build.yaml` at https://pub.dev/packages/build_config
+targets:
+  $default:
+    builders:
+      source_gen|combining_builder: {}
+      pinto|ast_generator:
+        generate_for:
+        - lib/src/ast/ast.dart
+
+builders:
+  ast_generator:
+    import: "tool/ast_builder.dart"
+    builder_factories: ["astBuilder"]
+    build_extensions: {".dart": ["ast.g.part"]}
+    build_to: cache

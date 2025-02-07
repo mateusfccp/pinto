@@ -174,7 +174,9 @@ final class TreeGenerator {
     useNullSafetySyntax: true,
   );
 
-  final _dartFormatter = DartFormatter();
+  final _dartFormatter = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  );
 
   final _nodeBuilders = <NodeBuilder>[];
 
