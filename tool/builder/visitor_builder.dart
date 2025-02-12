@@ -80,7 +80,7 @@ Class _simpleVisitorFromElement(InterfaceElement element) {
     builder.abstract = true;
     builder.modifier = ClassModifier.base;
     builder.types.add(refer('R'));
-    builder.implements.add(refer('${element.name}Visitor'));
+    builder.implements.add(referWithR('${element.name}Visitor'));
 
     element.descend((child) {
       if (child is InterfaceElement && child.isLeaf && child.isVisitable) {
@@ -111,7 +111,7 @@ Class _generalizingVisitorFromElement(InterfaceElement interface) {
     builder.abstract = true;
     builder.modifier = ClassModifier.base;
     builder.types.add(refer('R'));
-    builder.implements.add(refer('${interface.name}Visitor'));
+    builder.implements.add(referWithR('${interface.name}Visitor'));
 
     interface.descend((child) {
       if (child is InterfaceElement && child.isVisitable) {

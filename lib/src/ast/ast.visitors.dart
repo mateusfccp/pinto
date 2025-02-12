@@ -30,7 +30,7 @@ abstract interface class AstNodeVisitor<R> {
   R? visitLetDeclaration(LetDeclaration node);
 }
 
-abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
+abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
   @override
   R? visitTopTypeIdentifier(TopTypeIdentifier node) => null;
 
@@ -92,7 +92,7 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
   R? visitLetDeclaration(LetDeclaration node) => null;
 }
 
-abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor {
+abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitAstNode(AstNode node) {
     node.visitChildren(this);
     return null;
