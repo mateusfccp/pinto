@@ -6,16 +6,16 @@ import 'package:collection/collection.dart';
 import 'package:pinto/annotations.dart';
 import 'package:source_gen/source_gen.dart';
 
-Builder astBuilder(BuilderOptions options) {
+Builder treeBuilder(BuilderOptions options) {
   return SharedPartBuilder(
-    [AstGenerator()],
-    'ast',
+    [TreeGenerator()],
+    'tree',
   );
 }
 
 final _emitter = DartEmitter();
 
-final class AstGenerator extends GeneratorForAnnotation<TreeNode> {
+final class TreeGenerator extends GeneratorForAnnotation<TreeNode> {
   @override
   generateForAnnotatedElement(
     Element element,
@@ -232,7 +232,7 @@ extension on InterfaceElement {
           }
         }
 
-        // The superclass is not annotated with `AstNode`
+        // The superclass is not annotated with `TreeNode`
         break;
       } else {
         // Current is `Object`

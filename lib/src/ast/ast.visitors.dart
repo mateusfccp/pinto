@@ -1,3 +1,10 @@
+// dart format width=80
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+// **************************************************************************
+// VisitorGenerator
+// **************************************************************************
+
 import 'ast.dart';
 
 abstract interface class AstNodeVisitor<R> {

@@ -3,13 +3,22 @@ targets:
   $default:
     builders:
       source_gen|combining_builder: {}
-      pinto|ast_generator:
+      pinto|tree_generator:
+        generate_for:
+        - lib/src/ast/ast.dart
+      pinto|visitor_generator:
         generate_for:
         - lib/src/ast/ast.dart
 
 builders:
-  ast_generator:
-    import: "tool/ast_builder.dart"
-    builder_factories: ["astBuilder"]
-    build_extensions: {".dart": ["ast.g.part"]}
+  tree_generator:
+    import: "tool/builder/tree_builder.dart"
+    builder_factories: ["treeBuilder"]
+    build_extensions: {".dart": ["tree.g.part"]}
     build_to: cache
+
+  visitor_generator:
+    import: "tool/builder/visitor_builder.dart"
+    builder_factories: ["visitorBuilder"]
+    build_extensions: {".dart": ["visitors.dart"]}
+    build_to: source
