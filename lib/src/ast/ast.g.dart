@@ -7,26 +7,23 @@ part of 'ast.dart';
 // **************************************************************************
 
 base mixin _AstNode {
-  get _length => (this as AstNode).length;
+  int get _length => (this as AstNode).length;
   @override
   String toString() => 'AstNode(length: $_length)';
 }
 
 base mixin _TypeIdentifier {
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'TypeIdentifier';
 }
 
 base mixin _TopTypeIdentifier {
-  get _verum => (this as TopTypeIdentifier).verum;
-  get _offset => (this as TopTypeIdentifier).offset;
-  get _end => (this as TopTypeIdentifier).end;
-  @override
+  Token get _verum => (this as TopTypeIdentifier).verum;
+  int get _offset => (this as TopTypeIdentifier).offset;
+  int get _end => (this as TopTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitTopTypeIdentifier((this as TopTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -34,13 +31,11 @@ base mixin _TopTypeIdentifier {
 }
 
 base mixin _BottomTypeIdentifier {
-  get _falsum => (this as BottomTypeIdentifier).falsum;
-  get _offset => (this as BottomTypeIdentifier).offset;
-  get _end => (this as BottomTypeIdentifier).end;
-  @override
+  Token get _falsum => (this as BottomTypeIdentifier).falsum;
+  int get _offset => (this as BottomTypeIdentifier).offset;
+  int get _end => (this as BottomTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitBottomTypeIdentifier((this as BottomTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -48,15 +43,13 @@ base mixin _BottomTypeIdentifier {
 }
 
 base mixin _ListTypeIdentifier {
-  get _leftBracket => (this as ListTypeIdentifier).leftBracket;
-  get _identifier => (this as ListTypeIdentifier).identifier;
-  get _rightBracket => (this as ListTypeIdentifier).rightBracket;
-  get _offset => (this as ListTypeIdentifier).offset;
-  get _end => (this as ListTypeIdentifier).end;
-  @override
+  Token get _leftBracket => (this as ListTypeIdentifier).leftBracket;
+  TypeIdentifier get _identifier => (this as ListTypeIdentifier).identifier;
+  Token get _rightBracket => (this as ListTypeIdentifier).rightBracket;
+  int get _offset => (this as ListTypeIdentifier).offset;
+  int get _end => (this as ListTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitListTypeIdentifier((this as ListTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _identifier.accept(visitor);
   }
@@ -67,15 +60,13 @@ base mixin _ListTypeIdentifier {
 }
 
 base mixin _SetTypeIdentifier {
-  get _leftBrace => (this as SetTypeIdentifier).leftBrace;
-  get _identifier => (this as SetTypeIdentifier).identifier;
-  get _rightBrace => (this as SetTypeIdentifier).rightBrace;
-  get _offset => (this as SetTypeIdentifier).offset;
-  get _end => (this as SetTypeIdentifier).end;
-  @override
+  Token get _leftBrace => (this as SetTypeIdentifier).leftBrace;
+  TypeIdentifier get _identifier => (this as SetTypeIdentifier).identifier;
+  Token get _rightBrace => (this as SetTypeIdentifier).rightBrace;
+  int get _offset => (this as SetTypeIdentifier).offset;
+  int get _end => (this as SetTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitSetTypeIdentifier((this as SetTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _identifier.accept(visitor);
   }
@@ -86,17 +77,15 @@ base mixin _SetTypeIdentifier {
 }
 
 base mixin _MapTypeIdentifier {
-  get _leftBrace => (this as MapTypeIdentifier).leftBrace;
-  get _key => (this as MapTypeIdentifier).key;
-  get _colon => (this as MapTypeIdentifier).colon;
-  get _value => (this as MapTypeIdentifier).value;
-  get _rightBrace => (this as MapTypeIdentifier).rightBrace;
-  get _offset => (this as MapTypeIdentifier).offset;
-  get _end => (this as MapTypeIdentifier).end;
-  @override
+  Token get _leftBrace => (this as MapTypeIdentifier).leftBrace;
+  TypeIdentifier get _key => (this as MapTypeIdentifier).key;
+  Token get _colon => (this as MapTypeIdentifier).colon;
+  TypeIdentifier get _value => (this as MapTypeIdentifier).value;
+  Token get _rightBrace => (this as MapTypeIdentifier).rightBrace;
+  int get _offset => (this as MapTypeIdentifier).offset;
+  int get _end => (this as MapTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitMapTypeIdentifier((this as MapTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _key.accept(visitor);
     _value.accept(visitor);
@@ -108,16 +97,17 @@ base mixin _MapTypeIdentifier {
 }
 
 base mixin _IdentifiedTypeIdentifier {
-  get _identifier => (this as IdentifiedTypeIdentifier).identifier;
-  get _leftParenthesis => (this as IdentifiedTypeIdentifier).leftParenthesis;
-  get _arguments => (this as IdentifiedTypeIdentifier).arguments;
-  get _rightParenthesis => (this as IdentifiedTypeIdentifier).rightParenthesis;
-  get _offset => (this as IdentifiedTypeIdentifier).offset;
-  get _end => (this as IdentifiedTypeIdentifier).end;
-  @override
+  Token get _identifier => (this as IdentifiedTypeIdentifier).identifier;
+  Token? get _leftParenthesis =>
+      (this as IdentifiedTypeIdentifier).leftParenthesis;
+  SyntacticEntityList<TypeIdentifier>? get _arguments =>
+      (this as IdentifiedTypeIdentifier).arguments;
+  Token? get _rightParenthesis =>
+      (this as IdentifiedTypeIdentifier).rightParenthesis;
+  int get _offset => (this as IdentifiedTypeIdentifier).offset;
+  int get _end => (this as IdentifiedTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitIdentifiedTypeIdentifier((this as IdentifiedTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -125,14 +115,12 @@ base mixin _IdentifiedTypeIdentifier {
 }
 
 base mixin _OptionTypeIdentifier {
-  get _identifier => (this as OptionTypeIdentifier).identifier;
-  get _eroteme => (this as OptionTypeIdentifier).eroteme;
-  get _offset => (this as OptionTypeIdentifier).offset;
-  get _end => (this as OptionTypeIdentifier).end;
-  @override
+  TypeIdentifier get _identifier => (this as OptionTypeIdentifier).identifier;
+  Token get _eroteme => (this as OptionTypeIdentifier).eroteme;
+  int get _offset => (this as OptionTypeIdentifier).offset;
+  int get _end => (this as OptionTypeIdentifier).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitOptionTypeIdentifier((this as OptionTypeIdentifier));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _identifier.accept(visitor);
   }
@@ -143,21 +131,19 @@ base mixin _OptionTypeIdentifier {
 }
 
 base mixin _Node {
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'Node';
 }
 
 base mixin _TypeVariantParameterNode {
-  get _typeIdentifier => (this as TypeVariantParameterNode).typeIdentifier;
-  get _name => (this as TypeVariantParameterNode).name;
-  get _offset => (this as TypeVariantParameterNode).offset;
-  get _end => (this as TypeVariantParameterNode).end;
-  @override
+  TypeIdentifier get _typeIdentifier =>
+      (this as TypeVariantParameterNode).typeIdentifier;
+  Token get _name => (this as TypeVariantParameterNode).name;
+  int get _offset => (this as TypeVariantParameterNode).offset;
+  int get _end => (this as TypeVariantParameterNode).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitTypeVariantParameterNode((this as TypeVariantParameterNode));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _typeIdentifier.accept(visitor);
   }
@@ -168,14 +154,13 @@ base mixin _TypeVariantParameterNode {
 }
 
 base mixin _TypeVariantNode {
-  get _name => (this as TypeVariantNode).name;
-  get _parameters => (this as TypeVariantNode).parameters;
-  get _offset => (this as TypeVariantNode).offset;
-  get _end => (this as TypeVariantNode).end;
-  @override
+  Token get _name => (this as TypeVariantNode).name;
+  SyntacticEntityList<TypeVariantParameterNode> get _parameters =>
+      (this as TypeVariantNode).parameters;
+  int get _offset => (this as TypeVariantNode).offset;
+  int get _end => (this as TypeVariantNode).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitTypeVariantNode((this as TypeVariantNode));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -183,20 +168,17 @@ base mixin _TypeVariantNode {
 }
 
 base mixin _Expression {
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'Expression';
 }
 
 base mixin _IdentifierExpression {
-  get _identifier => (this as IdentifierExpression).identifier;
-  get _offset => (this as IdentifierExpression).offset;
-  get _end => (this as IdentifierExpression).end;
-  @override
+  Token get _identifier => (this as IdentifierExpression).identifier;
+  int get _offset => (this as IdentifierExpression).offset;
+  int get _end => (this as IdentifierExpression).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitIdentifierExpression((this as IdentifierExpression));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -204,15 +186,13 @@ base mixin _IdentifierExpression {
 }
 
 base mixin _InvocationExpression {
-  get _identifierExpression =>
+  IdentifierExpression get _identifierExpression =>
       (this as InvocationExpression).identifierExpression;
-  get _argument => (this as InvocationExpression).argument;
-  get _offset => (this as InvocationExpression).offset;
-  get _end => (this as InvocationExpression).end;
-  @override
+  Expression get _argument => (this as InvocationExpression).argument;
+  int get _offset => (this as InvocationExpression).offset;
+  int get _end => (this as InvocationExpression).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitInvocationExpression((this as InvocationExpression));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _identifierExpression.accept(visitor);
     _argument.accept(visitor);
@@ -224,16 +204,14 @@ base mixin _InvocationExpression {
 }
 
 base mixin _LetExpression {
-  get _identifier => (this as LetExpression).identifier;
-  get _equals => (this as LetExpression).equals;
-  get _binding => (this as LetExpression).binding;
-  get _result => (this as LetExpression).result;
-  get _offset => (this as LetExpression).offset;
-  get _end => (this as LetExpression).end;
-  @override
+  Token get _identifier => (this as LetExpression).identifier;
+  Token get _equals => (this as LetExpression).equals;
+  Expression get _binding => (this as LetExpression).binding;
+  Expression get _result => (this as LetExpression).result;
+  int get _offset => (this as LetExpression).offset;
+  int get _end => (this as LetExpression).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitLetExpression((this as LetExpression));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _binding.accept(visitor);
     _result.accept(visitor);
@@ -245,10 +223,9 @@ base mixin _LetExpression {
 }
 
 base mixin _Literal {
-  get _literal => (this as Literal).literal;
-  get _offset => (this as Literal).offset;
-  get _end => (this as Literal).end;
-  @override
+  Token get _literal => (this as Literal).literal;
+  int get _offset => (this as Literal).offset;
+  int get _end => (this as Literal).end;
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -256,77 +233,64 @@ base mixin _Literal {
 }
 
 base mixin _BooleanLiteral {
-  get _literal => (this as BooleanLiteral).literal;
-  @override
+  Token get _literal => (this as BooleanLiteral).literal;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitBooleanLiteral((this as BooleanLiteral));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'BooleanLiteral(literal: $_literal)';
 }
 
 base mixin _UnitLiteral {
-  get _literal => (this as UnitLiteral).literal;
-  @override
+  Token get _literal => (this as UnitLiteral).literal;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitUnitLiteral((this as UnitLiteral));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'UnitLiteral(literal: $_literal)';
 }
 
 base mixin _StringLiteral {
-  get _literal => (this as StringLiteral).literal;
-  @override
+  Token get _literal => (this as StringLiteral).literal;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitStringLiteral((this as StringLiteral));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'StringLiteral(literal: $_literal)';
 }
 
 base mixin _IntegerLiteral {
-  get _literal => (this as IntegerLiteral).literal;
-  @override
+  Token get _literal => (this as IntegerLiteral).literal;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitIntegerLiteral((this as IntegerLiteral));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'IntegerLiteral(literal: $_literal)';
 }
 
 base mixin _DoubleLiteral {
-  get _literal => (this as DoubleLiteral).literal;
-  @override
+  Token get _literal => (this as DoubleLiteral).literal;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitDoubleLiteral((this as DoubleLiteral));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'DoubleLiteral(literal: $_literal)';
 }
 
 base mixin _Declaration {
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() => 'Declaration';
 }
 
 base mixin _ImportDeclaration {
-  get _keyword => (this as ImportDeclaration).keyword;
-  get _type => (this as ImportDeclaration).type;
-  get _identifier => (this as ImportDeclaration).identifier;
-  get _offset => (this as ImportDeclaration).offset;
-  get _end => (this as ImportDeclaration).end;
-  @override
+  Token get _keyword => (this as ImportDeclaration).keyword;
+  ImportType get _type => (this as ImportDeclaration).type;
+  Token get _identifier => (this as ImportDeclaration).identifier;
+  int get _offset => (this as ImportDeclaration).offset;
+  int get _end => (this as ImportDeclaration).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitImportDeclaration((this as ImportDeclaration));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -334,19 +298,19 @@ base mixin _ImportDeclaration {
 }
 
 base mixin _TypeDefinition {
-  get _keyword => (this as TypeDefinition).keyword;
-  get _name => (this as TypeDefinition).name;
-  get _leftParenthesis => (this as TypeDefinition).leftParenthesis;
-  get _parameters => (this as TypeDefinition).parameters;
-  get _rightParenthesis => (this as TypeDefinition).rightParenthesis;
-  get _equals => (this as TypeDefinition).equals;
-  get _variants => (this as TypeDefinition).variants;
-  get _offset => (this as TypeDefinition).offset;
-  get _end => (this as TypeDefinition).end;
-  @override
+  Token get _keyword => (this as TypeDefinition).keyword;
+  Token get _name => (this as TypeDefinition).name;
+  Token? get _leftParenthesis => (this as TypeDefinition).leftParenthesis;
+  SyntacticEntityList<IdentifiedTypeIdentifier>? get _parameters =>
+      (this as TypeDefinition).parameters;
+  Token? get _rightParenthesis => (this as TypeDefinition).rightParenthesis;
+  Token get _equals => (this as TypeDefinition).equals;
+  SyntacticEntityList<TypeVariantNode> get _variants =>
+      (this as TypeDefinition).variants;
+  int get _offset => (this as TypeDefinition).offset;
+  int get _end => (this as TypeDefinition).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitTypeDefinition((this as TypeDefinition));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
   String toString() =>
@@ -354,17 +318,15 @@ base mixin _TypeDefinition {
 }
 
 base mixin _LetDeclaration {
-  get _keyword => (this as LetDeclaration).keyword;
-  get _identifier => (this as LetDeclaration).identifier;
-  get _parameter => (this as LetDeclaration).parameter;
-  get _equals => (this as LetDeclaration).equals;
-  get _body => (this as LetDeclaration).body;
-  get _offset => (this as LetDeclaration).offset;
-  get _end => (this as LetDeclaration).end;
-  @override
+  Token get _keyword => (this as LetDeclaration).keyword;
+  Token get _identifier => (this as LetDeclaration).identifier;
+  Token? get _parameter => (this as LetDeclaration).parameter;
+  Token get _equals => (this as LetDeclaration).equals;
+  Expression get _body => (this as LetDeclaration).body;
+  int get _offset => (this as LetDeclaration).offset;
+  int get _end => (this as LetDeclaration).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitLetDeclaration((this as LetDeclaration));
-  @override
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
     _body.accept(visitor);
   }

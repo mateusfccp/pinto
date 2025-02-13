@@ -27,12 +27,13 @@ final class VisitorGenerator extends GeneratorForAnnotation<TreeNode> {
 
     if (classElement.isPrivate) {
       throw InvalidGenerationSourceError(
-        'The class ${classElement.name} is private. AST nodes must be public.',
+        'The class ${classElement.name} is private. Tree nodes must be public.',
         element: classElement,
       );
     }
 
     if (classElement.isRoot) {
+      print('Class ${classElement.name} is the root of a tree.');
       final inputLibrary = await buildStep.inputLibrary;
       final fileName = inputLibrary.source.shortName;
 

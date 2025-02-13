@@ -6,11 +6,11 @@ targets:
       pinto|tree_generator:
         generate_for:
         - lib/src/ast/ast.dart
-        # - lib/src/semantic/element.dart
+        - lib/src/semantic/element.dart
       pinto|visitor_generator:
         generate_for:
         - lib/src/ast/ast.dart
-        # - lib/src/semantic/element.dart
+        - lib/src/semantic/element.dart
 
 builders:
   tree_generator:

@@ -164,13 +164,8 @@ final class OptionTypeIdentifier extends TypeIdentifier with _OptionTypeIdentifi
 }
 
 @TreeNode()
-sealed class Node extends AstNode {
+sealed class Node extends AstNode with _Node {
   const Node();
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'Node';
 }
 
 @TreeNode()

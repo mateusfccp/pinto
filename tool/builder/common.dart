@@ -4,6 +4,8 @@ import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:source_gen/source_gen.dart';
 
+@pragma('vm:prefer-inline')
+/// Returns a [TypeReference] to [symbol] with type parameter `R`.
 TypeReference referWithR(String symbol) {
   return TypeReference((builder) {
     builder.symbol = symbol;
@@ -12,6 +14,44 @@ TypeReference referWithR(String symbol) {
 }
 
 extension FieldElementExtension on FieldElement {
+  bool get isIterableOfNullable {
+    if (type.isIterable) {
+      final iterableType = type as InterfaceType;
+      final typeArguments = iterableType.typeArguments;
+
+      assert(
+        typeArguments.length == 1,
+        'Expected one type argument, found ${typeArguments.length}.',
+      );
+
+      return typeArguments.single.isNullable;
+    }
+
+    return false;
+  }
+
+    bool get isIterableOfVisitable {
+    if (type.isIterable) {
+      final iterableType = type as InterfaceType;
+      final typeArguments = iterableType.typeArguments;
+
+      assert(
+        typeArguments.length == 1,
+        'Expected one type argument, found ${typeArguments.length}.',
+      );
+
+      final typeArgument = typeArguments.single;
+
+      if (typeArgument.element case InterfaceElement interfaceElement) {
+        return interfaceElement.isVisitable;
+      }
+    }
+
+    return false;
+  }
+
+  bool get isNullable => type.isNullable;
+    
   bool get isVisitable {
     if (type.element case final InterfaceElement element) {
       return element.isVisitable;
@@ -114,13 +154,34 @@ extension InterfaceElementExtension on InterfaceElement {
   }
 }
 
-extension DartTypeExtension on DartType {
+extension on DartType {
   bool get isIterable {
-    // For now this is a simple check. We may need to improve it later.
-    return isDartCoreList || isDartCoreIterable || isDartCoreSet;
+    // First check for `Iterable` and its subtypes from `dart:core`.
+    if (isDartCoreList || isDartCoreIterable || isDartCoreSet) {
+      return true;
+    }
+
+    // Now check if the type is a subtype of any of the above types.
+    if (element is InterfaceType) {
+      final interface = element as InterfaceType;
+
+      for (final type in interface.allSupertypes) {
+        if (type.isIterable) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   bool get isNullable {
-    return element!.library!.typeSystem.isNullable(this);
+    final typeSystem = element?.library?.typeSystem;
+
+    if (typeSystem == null) {
+      return false;
+    } else {
+      return typeSystem.isNullable(this);
+    }
   }
 }

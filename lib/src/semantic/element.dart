@@ -3,31 +3,31 @@ import 'package:pinto/lexer.dart';
 
 import 'package.dart';
 import 'type.dart';
-import 'visitors.dart';
+import 'element.visitors.dart';
 
 part 'element.g.dart';
 
-sealed class Element {
+@TreeNode()
+sealed class Element with _Element {
   const Element();
 
   Element? get enclosingElement;
 
   R? accept<R>(ElementVisitor<R> visitor);
-  
+
   void visitChildren<R>(ElementVisitor<R> visitor);
 }
 
-abstract interface class TypedElement extends Element {
+abstract final class TypedElement extends Element {
   Type? get type;
 }
 
-abstract interface class TypeDefiningElement extends Element {
+abstract final class TypeDefiningElement extends Element {
   Type get definedType;
 }
 
 @TreeNode()
-final class TypeParameterElement extends Element with _TypeParameterElement
-    implements TypedElement, TypeDefiningElement {
+final class TypeParameterElement extends Element with _TypeParameterElement implements TypedElement, TypeDefiningElement {
   TypeParameterElement({required this.name});
 
   final String name;
@@ -132,7 +132,7 @@ final class TypeVariantElement extends Element with _TypeVariantElement {
 
   final String name;
 
-  final List<ParameterElement> parameters = [];
+  final parameters = <ParameterElement>[];
 
   @override
   late TypeDefinitionElement enclosingElement;
@@ -154,8 +154,7 @@ final class ImportElement extends DeclarationElement with _ImportElement {
 }
 
 @TreeNode()
-final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionDeclaration
-    implements TypedElement {
+final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionDeclaration implements TypedElement {
   LetFunctionDeclaration({
     required this.name,
     required this.parameter,
@@ -174,8 +173,7 @@ final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionD
 }
 
 @TreeNode()
-final class LetVariableDeclaration extends DeclarationElement with _LetVariableDeclaration
-    implements TypedElement {
+final class LetVariableDeclaration extends DeclarationElement with _LetVariableDeclaration implements TypedElement {
   LetVariableDeclaration({
     required this.name,
     this.type,
@@ -191,8 +189,7 @@ final class LetVariableDeclaration extends DeclarationElement with _LetVariableD
 }
 
 @TreeNode()
-final class ImportedSymbolSyntheticElement extends DeclarationElement with _DeclarationElement
-    implements TypedElement {
+final class ImportedSymbolSyntheticElement extends DeclarationElement with _ImportedSymbolSyntheticElement implements TypedElement {
   ImportedSymbolSyntheticElement({
     required this.name,
     required this.syntheticElement,
@@ -207,15 +204,14 @@ final class ImportedSymbolSyntheticElement extends DeclarationElement with _Decl
 }
 
 @TreeNode()
-final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitionElement
-    implements TypedElement, TypeDefiningElement {
+final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitionElement implements TypedElement, TypeDefiningElement {
   TypeDefinitionElement({required this.name});
 
   final String name;
 
-  final List<TypeParameterElement> parameters = [];
+  final parameters = <TypeParameterElement>[];
 
-  final List<TypeVariantElement> variants = [];
+  final variants = <TypeVariantElement>[];
 
   @override
   Type? type = TypeType();
@@ -228,9 +224,9 @@ final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitio
 final class ProgramElement extends Element with _ProgramElement {
   ProgramElement();
 
-  final List<ImportElement> imports = [];
+  final imports = <ImportElement>[];
 
-  final List<DeclarationElement> declarations = [];
+  final declarations = <DeclarationElement>[];
 
   @override
   late final Null enclosingElement = null;
