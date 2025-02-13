@@ -7,7 +7,7 @@ import 'element.visitors.dart';
 
 part 'element.g.dart';
 
-@TreeNode()
+@TreeRoot()
 sealed class Element with _Element {
   const Element();
 
@@ -26,7 +26,6 @@ abstract final class TypeDefiningElement extends Element {
   Type get definedType;
 }
 
-@TreeNode()
 final class TypeParameterElement extends Element with _TypeParameterElement implements TypedElement, TypeDefiningElement {
   TypeParameterElement({required this.name});
 
@@ -42,7 +41,6 @@ final class TypeParameterElement extends Element with _TypeParameterElement impl
   late Type definedType;
 }
 
-@TreeNode()
 final class ParameterElement extends Element with _ParameterElement implements TypedElement {
   ParameterElement({
     required this.name,
@@ -58,7 +56,6 @@ final class ParameterElement extends Element with _ParameterElement implements T
   late Element enclosingElement;
 }
 
-@TreeNode()
 sealed class ExpressionElement extends Element with _ExpressionElement implements TypedElement {
   ExpressionElement();
 
@@ -72,7 +69,6 @@ sealed class ExpressionElement extends Element with _ExpressionElement implement
   String toString() => 'ExpressionElement(enclosingElement: $enclosingElement)';
 }
 
-@TreeNode()
 final class InvocationElement extends ExpressionElement with _InvocationElement {
   InvocationElement({
     this.type,
@@ -92,7 +88,6 @@ final class InvocationElement extends ExpressionElement with _InvocationElement 
   final bool constant;
 }
 
-@TreeNode()
 final class IdentifierElement extends ExpressionElement with _IdentifierElement {
   IdentifierElement({
     required this.name,
@@ -109,7 +104,6 @@ final class IdentifierElement extends ExpressionElement with _IdentifierElement 
   final bool constant;
 }
 
-@TreeNode()
 final class LiteralElement extends ExpressionElement with _LiteralElement {
   LiteralElement({
     this.type,
@@ -126,7 +120,6 @@ final class LiteralElement extends ExpressionElement with _LiteralElement {
   final Object? constantValue;
 }
 
-@TreeNode()
 final class TypeVariantElement extends Element with _TypeVariantElement {
   TypeVariantElement({required this.name});
 
@@ -138,7 +131,6 @@ final class TypeVariantElement extends Element with _TypeVariantElement {
   late TypeDefinitionElement enclosingElement;
 }
 
-@TreeNode()
 sealed class DeclarationElement extends Element with _DeclarationElement {
   DeclarationElement();
 
@@ -146,14 +138,12 @@ sealed class DeclarationElement extends Element with _DeclarationElement {
   late ProgramElement enclosingElement;
 }
 
-@TreeNode()
 final class ImportElement extends DeclarationElement with _ImportElement {
   ImportElement({required this.package});
 
   final Package package;
 }
 
-@TreeNode()
 final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionDeclaration implements TypedElement {
   LetFunctionDeclaration({
     required this.name,
@@ -172,7 +162,6 @@ final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionD
   final ExpressionElement body;
 }
 
-@TreeNode()
 final class LetVariableDeclaration extends DeclarationElement with _LetVariableDeclaration implements TypedElement {
   LetVariableDeclaration({
     required this.name,
@@ -188,7 +177,6 @@ final class LetVariableDeclaration extends DeclarationElement with _LetVariableD
   final ExpressionElement body;
 }
 
-@TreeNode()
 final class ImportedSymbolSyntheticElement extends DeclarationElement with _ImportedSymbolSyntheticElement implements TypedElement {
   ImportedSymbolSyntheticElement({
     required this.name,
@@ -203,7 +191,6 @@ final class ImportedSymbolSyntheticElement extends DeclarationElement with _Impo
   Type get type => syntheticElement.type!;
 }
 
-@TreeNode()
 final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitionElement implements TypedElement, TypeDefiningElement {
   TypeDefinitionElement({required this.name});
 
@@ -220,7 +207,6 @@ final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitio
   late Type definedType;
 }
 
-@TreeNode()
 final class ProgramElement extends Element with _ProgramElement {
   ProgramElement();
 

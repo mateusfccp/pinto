@@ -15,7 +15,7 @@ Builder visitorBuilder(BuilderOptions options) {
 
 final _emitter = DartEmitter();
 
-final class VisitorGenerator extends GeneratorForAnnotation<TreeNode> {
+final class VisitorGenerator extends GeneratorForAnnotation<TreeRoot> {
   @override
   generateForAnnotatedElement(
     Element element,
@@ -130,7 +130,7 @@ Class _generalizingVisitorFromElement(InterfaceElement interface) {
             }),
           );
 
-          if (child.parent case final parent?) {
+          if (child.parentNode case final parent?) {
             builder.lambda = true;
             builder.body = refer('visit${parent.name}').call([refer('node')]).code;
           } else {

@@ -12,6 +12,20 @@ base mixin _Element {
   String toString() => 'Element(enclosingElement: $_enclosingElement)';
 }
 
+base mixin _TypedElement {
+  Type? get _type => (this as TypedElement).type;
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() => 'TypedElement(type: $_type)';
+}
+
+base mixin _TypeDefiningElement {
+  Type get _definedType => (this as TypeDefiningElement).definedType;
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() => 'TypeDefiningElement(definedType: $_definedType)';
+}
+
 base mixin _TypeParameterElement {
   String get _name => (this as TypeParameterElement).name;
   TypeDefinitionElement get _enclosingElement =>
@@ -177,7 +191,10 @@ base mixin _ImportedSymbolSyntheticElement {
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitImportedSymbolSyntheticElement(
           (this as ImportedSymbolSyntheticElement));
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    _syntheticElement.accept(visitor);
+  }
+
   @override
   String toString() =>
       'ImportedSymbolSyntheticElement(name: $_name, syntheticElement: $_syntheticElement, type: $_type)';

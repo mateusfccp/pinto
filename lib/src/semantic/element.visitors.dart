@@ -67,6 +67,10 @@ abstract base class GeneralizingElementVisitor<R> implements ElementVisitor<R> {
     return null;
   }
 
+  R? visitTypedElement(TypedElement node) => visitElement(node);
+
+  R? visitTypeDefiningElement(TypeDefiningElement node) => visitElement(node);
+
   @override
   R? visitTypeParameterElement(TypeParameterElement node) => visitElement(node);
 

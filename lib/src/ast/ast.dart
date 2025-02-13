@@ -5,8 +5,8 @@ import 'package:pinto/syntactic_entity.dart';
 
 part 'ast.g.dart';
 
-@TreeNode()
-sealed class AstNode with _AstNode implements SyntacticEntity  {
+@TreeRoot()
+sealed class AstNode with _AstNode implements SyntacticEntity {
   const AstNode();
 
   @override
@@ -17,12 +17,10 @@ sealed class AstNode with _AstNode implements SyntacticEntity  {
   void visitChildren<R>(AstNodeVisitor<R> visitor);
 }
 
-@TreeNode()
 sealed class TypeIdentifier extends AstNode with _TypeIdentifier {
   const TypeIdentifier();
 }
 
-@TreeNode()
 final class TopTypeIdentifier extends TypeIdentifier with _TopTypeIdentifier {
   const TopTypeIdentifier(this.verum);
 
@@ -35,7 +33,6 @@ final class TopTypeIdentifier extends TypeIdentifier with _TopTypeIdentifier {
   int get end => verum.end;
 }
 
-@TreeNode()
 final class BottomTypeIdentifier extends TypeIdentifier with _BottomTypeIdentifier {
   const BottomTypeIdentifier(this.falsum);
 
@@ -48,7 +45,6 @@ final class BottomTypeIdentifier extends TypeIdentifier with _BottomTypeIdentifi
   int get end => falsum.end;
 }
 
-@TreeNode()
 final class ListTypeIdentifier extends TypeIdentifier with _ListTypeIdentifier {
   const ListTypeIdentifier(
     this.leftBracket,
@@ -69,7 +65,6 @@ final class ListTypeIdentifier extends TypeIdentifier with _ListTypeIdentifier {
   int get end => rightBracket.end;
 }
 
-@TreeNode()
 final class SetTypeIdentifier extends TypeIdentifier with _SetTypeIdentifier {
   const SetTypeIdentifier(
     this.leftBrace,
@@ -90,7 +85,6 @@ final class SetTypeIdentifier extends TypeIdentifier with _SetTypeIdentifier {
   int get end => rightBrace.end;
 }
 
-@TreeNode()
 final class MapTypeIdentifier extends TypeIdentifier with _MapTypeIdentifier {
   const MapTypeIdentifier(
     this.leftBrace,
@@ -117,7 +111,6 @@ final class MapTypeIdentifier extends TypeIdentifier with _MapTypeIdentifier {
   int get end => rightBrace.end;
 }
 
-@TreeNode()
 final class IdentifiedTypeIdentifier extends TypeIdentifier with _IdentifiedTypeIdentifier {
   const IdentifiedTypeIdentifier(
     this.identifier,
@@ -138,14 +131,9 @@ final class IdentifiedTypeIdentifier extends TypeIdentifier with _IdentifiedType
   int get offset => identifier.offset;
 
   @override
-  int get end =>
-      rightParenthesis?.end ??
-      arguments?.end ??
-      leftParenthesis?.end ??
-      identifier.end;
+  int get end => rightParenthesis?.end ?? arguments?.end ?? leftParenthesis?.end ?? identifier.end;
 }
 
-@TreeNode()
 final class OptionTypeIdentifier extends TypeIdentifier with _OptionTypeIdentifier {
   const OptionTypeIdentifier(
     this.identifier,
@@ -163,12 +151,10 @@ final class OptionTypeIdentifier extends TypeIdentifier with _OptionTypeIdentifi
   int get end => eroteme.end;
 }
 
-@TreeNode()
 sealed class Node extends AstNode with _Node {
   const Node();
 }
 
-@TreeNode()
 final class TypeVariantParameterNode extends Node with _TypeVariantParameterNode {
   const TypeVariantParameterNode(
     this.typeIdentifier,
@@ -186,7 +172,6 @@ final class TypeVariantParameterNode extends Node with _TypeVariantParameterNode
   int get end => name.end;
 }
 
-@TreeNode()
 final class TypeVariantNode extends Node with _TypeVariantNode {
   const TypeVariantNode(
     this.name,
@@ -204,12 +189,10 @@ final class TypeVariantNode extends Node with _TypeVariantNode {
   int get end => parameters.end;
 }
 
-@TreeNode()
 sealed class Expression extends AstNode with _Expression {
   const Expression();
 }
 
-@TreeNode()
 final class IdentifierExpression extends Expression with _IdentifierExpression {
   const IdentifierExpression(this.identifier);
 
@@ -220,9 +203,8 @@ final class IdentifierExpression extends Expression with _IdentifierExpression {
 
   @override
   int get end => identifier.end;
- }
+}
 
-@TreeNode()
 final class InvocationExpression extends Expression with _InvocationExpression {
   const InvocationExpression(
     this.identifierExpression,
@@ -240,7 +222,6 @@ final class InvocationExpression extends Expression with _InvocationExpression {
   int get end => argument.end;
 }
 
-@TreeNode()
 final class LetExpression extends Expression with _LetExpression {
   const LetExpression(
     this.identifier,
@@ -264,7 +245,6 @@ final class LetExpression extends Expression with _LetExpression {
   int get end => result.end;
 }
 
-@TreeNode()
 sealed class Literal extends Expression with _Literal {
   const Literal();
 
@@ -277,7 +257,6 @@ sealed class Literal extends Expression with _Literal {
   int get end => literal.end;
 }
 
-@TreeNode()
 final class BooleanLiteral extends Literal with _BooleanLiteral {
   const BooleanLiteral(this.literal);
 
@@ -285,7 +264,6 @@ final class BooleanLiteral extends Literal with _BooleanLiteral {
   final Token literal;
 }
 
-@TreeNode()
 final class UnitLiteral extends Literal with _UnitLiteral {
   const UnitLiteral(this.literal);
 
@@ -293,7 +271,6 @@ final class UnitLiteral extends Literal with _UnitLiteral {
   final Token literal;
 }
 
-@TreeNode()
 final class StringLiteral extends Literal with _StringLiteral {
   const StringLiteral(this.literal);
 
@@ -301,7 +278,6 @@ final class StringLiteral extends Literal with _StringLiteral {
   final Token literal;
 }
 
-@TreeNode()
 final class IntegerLiteral extends Literal with _IntegerLiteral {
   const IntegerLiteral(this.literal);
 
@@ -309,7 +285,6 @@ final class IntegerLiteral extends Literal with _IntegerLiteral {
   final Token literal;
 }
 
-@TreeNode()
 final class DoubleLiteral extends Literal with _DoubleLiteral {
   const DoubleLiteral(this.literal);
 
@@ -317,12 +292,10 @@ final class DoubleLiteral extends Literal with _DoubleLiteral {
   final Token literal;
 }
 
-@TreeNode()
 sealed class Declaration extends AstNode with _Declaration {
   const Declaration();
 }
 
-@TreeNode()
 final class ImportDeclaration extends Declaration with _ImportDeclaration {
   const ImportDeclaration(
     this.keyword,
@@ -343,7 +316,6 @@ final class ImportDeclaration extends Declaration with _ImportDeclaration {
   int get end => identifier.end;
 }
 
-@TreeNode()
 final class TypeDefinition extends Declaration with _TypeDefinition {
   const TypeDefinition(
     this.keyword,
@@ -376,7 +348,6 @@ final class TypeDefinition extends Declaration with _TypeDefinition {
   int get end => variants.end;
 }
 
-@TreeNode()
 final class LetDeclaration extends Declaration with _LetDeclaration {
   const LetDeclaration(
     this.keyword,

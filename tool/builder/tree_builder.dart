@@ -15,7 +15,7 @@ Builder treeBuilder(BuilderOptions options) {
 
 final _emitter = DartEmitter();
 
-final class TreeGenerator extends GeneratorForAnnotation<TreeNode> {
+final class TreeGenerator extends GeneratorForAnnotation<TreeRoot> {
   @override
   generateForAnnotatedElement(
     Element element,
@@ -32,48 +32,63 @@ final class TreeGenerator extends GeneratorForAnnotation<TreeNode> {
       );
     }
 
-    final mixin = Mixin(
-      (builder) {
-        builder.base = true;
-        builder.name = element.privateName;
+    final units = [
+      _emitter.visitMixin(_mixinForElement(classElement)).toString(),
+    ];
 
-        // Generate fields without definitions in the main class.
-        for (final field in element.fields) {
-          builder.methods.add(
-            Method((builder) {
-              builder.returns = refer(field.type.toString());
-              builder.type = MethodType.getter;
-              builder.name = '_${field.name}';
-              builder.body = refer('this').asA(refer(element.name)).property(field.name).code;
-            }),
-          );
-        }
+    classElement.descend((node) {
+      assert(node is InterfaceElement);
+      final element = node as InterfaceElement;
 
-        if (element.isVisitable) {
-          if (element.isLeaf) {
-            builder.methods.add(
-              _acceptMethod(classElement),
-            );
-          }
+      units.add(
+        _emitter.visitMixin(_mixinForElement(element)).toString(),
+      );
+    });
 
-          if (!element.isRoot) {
-            builder.methods.add(
-              _visitChildrenMethod(classElement),
-            );
-          }
-        }
-
-        builder.methods.add(
-          _toStringMethod(classElement),
-        );
-      },
-    );
-
-    return _emitter.visitMixin(mixin).toString();
+    return units;
   }
 }
 
-Method _acceptMethod(ClassElement element) {
+Mixin _mixinForElement(InterfaceElement element) {
+  return Mixin(
+    (builder) {
+      builder.base = true;
+      builder.name = element.privateName;
+
+      // Generate fields without definitions in the main class.
+      for (final field in element.fields) {
+        builder.methods.add(
+          Method((builder) {
+            builder.returns = refer(field.type.toString());
+            builder.type = MethodType.getter;
+            builder.name = '_${field.name}';
+            builder.body = refer('this').asA(refer(element.name)).property(field.name).code;
+          }),
+        );
+      }
+
+      if (element.isVisitable) {
+        if (element.isLeaf) {
+          builder.methods.add(
+            _acceptMethod(element),
+          );
+        }
+
+        if (!element.isRoot) {
+          builder.methods.add(
+            _visitChildrenMethod(element),
+          );
+        }
+      }
+
+      builder.methods.add(
+        _toStringMethod(element),
+      );
+    },
+  );
+}
+
+Method _acceptMethod(InterfaceElement element) {
   return Method((builder) {
     builder.returns = refer('R?');
     builder.name = 'accept';
@@ -93,7 +108,7 @@ Method _acceptMethod(ClassElement element) {
   });
 }
 
-Method _visitChildrenMethod(ClassElement element) {
+Method _visitChildrenMethod(InterfaceElement element) {
   return Method((builder) {
     builder.returns = refer('void');
     builder.name = 'visitChildren';
@@ -137,7 +152,7 @@ Method _visitChildrenMethod(ClassElement element) {
   });
 }
 
-Method _toStringMethod(ClassElement element) {
+Method _toStringMethod(InterfaceElement element) {
   return Method((builder) {
     builder.annotations.add(refer('override'));
     builder.returns = refer('String');

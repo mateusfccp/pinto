@@ -2,10 +2,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
-import 'package:source_gen/source_gen.dart';
 
-@pragma('vm:prefer-inline')
 /// Returns a [TypeReference] to [symbol] with type parameter `R`.
+@pragma('vm:prefer-inline')
 TypeReference referWithR(String symbol) {
   return TypeReference((builder) {
     builder.symbol = symbol;
@@ -30,7 +29,7 @@ extension FieldElementExtension on FieldElement {
     return false;
   }
 
-    bool get isIterableOfVisitable {
+  bool get isIterableOfVisitable {
     if (type.isIterable) {
       final iterableType = type as InterfaceType;
       final typeArguments = iterableType.typeArguments;
@@ -51,7 +50,7 @@ extension FieldElementExtension on FieldElement {
   }
 
   bool get isNullable => type.isNullable;
-    
+
   bool get isVisitable {
     if (type.element case final InterfaceElement element) {
       return element.isVisitable;
@@ -69,7 +68,7 @@ extension InterfaceElementExtension on InterfaceElement {
       element.descend(visitor);
     }
   }
-  
+
   /// Whether this class is a leaf node in the AST tree.
   bool get isLeaf {
     final classesInLibrary = library.units.expand((unit) => unit.classes);
@@ -84,30 +83,18 @@ extension InterfaceElementExtension on InterfaceElement {
   }
 
   bool get isNode {
-    return nodeAnnotation != null;
+    return nodeRootAnnotation != null || (supertype?.element.isNode ?? false);
   }
 
   /// Whether this class is the root of AST tree.
   bool get isRoot => root == this;
 
   /// Whether this class is a visitable node.
-  bool get isVisitable {
-    final nodeAnnotation = metadata.firstWhereOrNull(
-      (element) => element.element?.enclosingElement3?.name == 'TreeNode',
-    );
+  bool get isVisitable => isNode;
 
-    if (nodeAnnotation != null) {
-      final computedValue = nodeAnnotation.computeConstantValue();
-      final reader = ConstantReader(computedValue);
-      return reader.read('visitable').boolValue;
-    } else {
-      return false;
-    }
-  }
-
-  ElementAnnotation? get nodeAnnotation {
+  ElementAnnotation? get nodeRootAnnotation {
     return metadata.firstWhereOrNull(
-      (element) => element.element?.enclosingElement3?.name == 'TreeNode',
+      (element) => element.element?.enclosingElement3?.name == 'TreeRoot',
     );
   }
 
@@ -116,34 +103,28 @@ extension InterfaceElementExtension on InterfaceElement {
 
     return [
       for (final interface in classesInLibrary)
-        if (interface.nodeAnnotation != null && interface.supertype?.element == this) interface,
+        if (interface.isNode && interface.supertype?.element == this) interface,
     ];
   }
 
-  InterfaceElement? get parent {
-    if (supertype case final supertype?) {
-      final metadata = supertype.element.metadata;
-
-      for (final metadatum in metadata) {
-        if (metadatum.element?.enclosingElement3?.name == 'TreeNode') {
-          return supertype.element;
-        }
-      }
+  InterfaceElement? get parentNode {
+    if (supertype case final supertype? when supertype.element.isNode) {
+      return supertype.element;
+    } else {
+      return null;
     }
-
-    return null;
   }
 
   /// Returns the private name of the class.
   String get privateName => '_$name';
 
-  /// Returns the root of the AST tree.
+  /// Returns the root of the tree.
   InterfaceElement get root {
     var current = this;
 
     // TODO(mateusfccp): use while patterns when available.
     while (true) {
-      if (current.parent case final InterfaceElement parent) {
+      if (current.parentNode case final InterfaceElement parent) {
         current = parent;
       } else {
         break;
