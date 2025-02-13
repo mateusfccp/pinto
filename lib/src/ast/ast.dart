@@ -1,29 +1,27 @@
-import 'package:pinto/ast.dart';
+import 'package:pinto/annotations.dart';
+import 'package:pinto/ast.dart' hide Node;
 import 'package:pinto/lexer.dart';
 import 'package:pinto/syntactic_entity.dart';
 
-sealed class AstNode implements SyntacticEntity {
+part 'ast.g.dart';
+
+@TreeRoot()
+sealed class AstNode with _AstNode implements SyntacticEntity {
   const AstNode();
 
   @override
   int get length => end - offset;
 
   R? accept<R>(AstNodeVisitor<R> visitor);
+
   void visitChildren<R>(AstNodeVisitor<R> visitor);
-  @override
-  String toString() => 'AstNode';
 }
 
-sealed class TypeIdentifier extends AstNode {
+sealed class TypeIdentifier extends AstNode with _TypeIdentifier {
   const TypeIdentifier();
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'TypeIdentifier';
 }
 
-final class TopTypeIdentifier extends TypeIdentifier {
+final class TopTypeIdentifier extends TypeIdentifier with _TopTypeIdentifier {
   const TopTypeIdentifier(this.verum);
 
   final Token verum;
@@ -33,18 +31,9 @@ final class TopTypeIdentifier extends TypeIdentifier {
 
   @override
   int get end => verum.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitTopTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'TopTypeIdentifier(verum: $verum)';
 }
 
-final class BottomTypeIdentifier extends TypeIdentifier {
+final class BottomTypeIdentifier extends TypeIdentifier with _BottomTypeIdentifier {
   const BottomTypeIdentifier(this.falsum);
 
   final Token falsum;
@@ -54,18 +43,9 @@ final class BottomTypeIdentifier extends TypeIdentifier {
 
   @override
   int get end => falsum.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitBottomTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'BottomTypeIdentifier(falsum: $falsum)';
 }
 
-final class ListTypeIdentifier extends TypeIdentifier {
+final class ListTypeIdentifier extends TypeIdentifier with _ListTypeIdentifier {
   const ListTypeIdentifier(
     this.leftBracket,
     this.identifier,
@@ -83,22 +63,9 @@ final class ListTypeIdentifier extends TypeIdentifier {
 
   @override
   int get end => rightBracket.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitListTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    identifier.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'ListTypeIdentifier(leftBracket: $leftBracket, identifier: $identifier, rightBracket: $rightBracket)';
 }
 
-final class SetTypeIdentifier extends TypeIdentifier {
+final class SetTypeIdentifier extends TypeIdentifier with _SetTypeIdentifier {
   const SetTypeIdentifier(
     this.leftBrace,
     this.identifier,
@@ -116,22 +83,9 @@ final class SetTypeIdentifier extends TypeIdentifier {
 
   @override
   int get end => rightBrace.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitSetTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    identifier.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'SetTypeIdentifier(leftBrace: $leftBrace, identifier: $identifier, rightBrace: $rightBrace)';
 }
 
-final class MapTypeIdentifier extends TypeIdentifier {
+final class MapTypeIdentifier extends TypeIdentifier with _MapTypeIdentifier {
   const MapTypeIdentifier(
     this.leftBrace,
     this.key,
@@ -155,23 +109,9 @@ final class MapTypeIdentifier extends TypeIdentifier {
 
   @override
   int get end => rightBrace.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitMapTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    key.accept(visitor);
-    value.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'MapTypeIdentifier(leftBrace: $leftBrace, key: $key, colon: $colon, value: $value, rightBrace: $rightBrace)';
 }
 
-final class IdentifiedTypeIdentifier extends TypeIdentifier {
+final class IdentifiedTypeIdentifier extends TypeIdentifier with _IdentifiedTypeIdentifier {
   const IdentifiedTypeIdentifier(
     this.identifier,
     this.leftParenthesis,
@@ -191,31 +131,10 @@ final class IdentifiedTypeIdentifier extends TypeIdentifier {
   int get offset => identifier.offset;
 
   @override
-  int get end =>
-      rightParenthesis?.end ??
-      arguments?.end ??
-      leftParenthesis?.end ??
-      identifier.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitIdentifiedTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    if (arguments case final argumentsNodes?) {
-      for (final node in argumentsNodes) {
-        node.visitChildren(visitor);
-      }
-    }
-  }
-
-  @override
-  String toString() =>
-      'IdentifiedTypeIdentifier(identifier: $identifier, leftParenthesis: $leftParenthesis, arguments: $arguments, rightParenthesis: $rightParenthesis)';
+  int get end => rightParenthesis?.end ?? arguments?.end ?? leftParenthesis?.end ?? identifier.end;
 }
 
-final class OptionTypeIdentifier extends TypeIdentifier {
+final class OptionTypeIdentifier extends TypeIdentifier with _OptionTypeIdentifier {
   const OptionTypeIdentifier(
     this.identifier,
     this.eroteme,
@@ -230,31 +149,13 @@ final class OptionTypeIdentifier extends TypeIdentifier {
 
   @override
   int get end => eroteme.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitOptionTypeIdentifier(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    identifier.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'OptionTypeIdentifier(identifier: $identifier, eroteme: $eroteme)';
 }
 
-sealed class Node extends AstNode {
+sealed class Node extends AstNode with _Node {
   const Node();
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'Node';
 }
 
-final class TypeVariantParameterNode extends Node {
+final class TypeVariantParameterNode extends Node with _TypeVariantParameterNode {
   const TypeVariantParameterNode(
     this.typeIdentifier,
     this.name,
@@ -269,22 +170,9 @@ final class TypeVariantParameterNode extends Node {
 
   @override
   int get end => name.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitTypeVariantParameterNode(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    typeIdentifier.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'TypeVariantParameterNode(typeIdentifier: $typeIdentifier, name: $name)';
 }
 
-final class TypeVariantNode extends Node {
+final class TypeVariantNode extends Node with _TypeVariantNode {
   const TypeVariantNode(
     this.name,
     this.parameters,
@@ -299,31 +187,13 @@ final class TypeVariantNode extends Node {
 
   @override
   int get end => parameters.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitTypeVariantNode(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    for (final node in parameters) {
-      node.visitChildren(visitor);
-    }
-  }
-
-  @override
-  String toString() => 'TypeVariantNode(name: $name, parameters: $parameters)';
 }
 
-sealed class Expression extends AstNode {
+sealed class Expression extends AstNode with _Expression {
   const Expression();
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'Expression';
 }
 
-final class IdentifierExpression extends Expression {
+final class IdentifierExpression extends Expression with _IdentifierExpression {
   const IdentifierExpression(this.identifier);
 
   final Token identifier;
@@ -333,18 +203,9 @@ final class IdentifierExpression extends Expression {
 
   @override
   int get end => identifier.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitIdentifierExpression(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'IdentifierExpression(identifier: $identifier)';
 }
 
-final class InvocationExpression extends Expression {
+final class InvocationExpression extends Expression with _InvocationExpression {
   const InvocationExpression(
     this.identifierExpression,
     this.argument,
@@ -359,23 +220,9 @@ final class InvocationExpression extends Expression {
 
   @override
   int get end => argument.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitInvocationExpression(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    identifierExpression.accept(visitor);
-    argument.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'InvocationExpression(identifierExpression: $identifierExpression, argument: $argument)';
 }
 
-final class LetExpression extends Expression {
+final class LetExpression extends Expression with _LetExpression {
   const LetExpression(
     this.identifier,
     this.equals,
@@ -396,146 +243,60 @@ final class LetExpression extends Expression {
 
   @override
   int get end => result.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitLetExpression(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    binding.accept(visitor);
-    result.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'LetExpression(identifier: $identifier, equals: $equals, binding: $binding, result: $result)';
 }
 
-sealed class Literal extends Expression {
+sealed class Literal extends Expression with _Literal {
   const Literal();
 
   Token get literal;
+
   @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  int get offset => literal.offset;
+
   @override
-  String toString() => 'Literal';
+  int get end => literal.end;
 }
 
-final class BooleanLiteral extends Literal {
+final class BooleanLiteral extends Literal with _BooleanLiteral {
   const BooleanLiteral(this.literal);
 
   @override
   final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitBooleanLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'BooleanLiteral(literal: $literal)';
 }
 
-final class UnitLiteral extends Literal {
+final class UnitLiteral extends Literal with _UnitLiteral {
   const UnitLiteral(this.literal);
 
   @override
   final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitUnitLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'UnitLiteral(literal: $literal)';
 }
 
-final class StringLiteral extends Literal {
+final class StringLiteral extends Literal with _StringLiteral {
   const StringLiteral(this.literal);
 
   @override
   final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitStringLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'StringLiteral(literal: $literal)';
 }
 
-final class IntegerLiteral extends Literal {
+final class IntegerLiteral extends Literal with _IntegerLiteral {
   const IntegerLiteral(this.literal);
 
   @override
   final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitIntegerLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'IntegerLiteral(literal: $literal)';
 }
 
-final class DoubleLiteral extends Literal {
+final class DoubleLiteral extends Literal with _DoubleLiteral {
   const DoubleLiteral(this.literal);
 
   @override
   final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitDoubleLiteral(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'DoubleLiteral(literal: $literal)';
 }
 
-sealed class Declaration extends AstNode {
+sealed class Declaration extends AstNode with _Declaration {
   const Declaration();
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'Declaration';
 }
 
-final class ImportDeclaration extends Declaration {
+final class ImportDeclaration extends Declaration with _ImportDeclaration {
   const ImportDeclaration(
     this.keyword,
     this.type,
@@ -553,19 +314,9 @@ final class ImportDeclaration extends Declaration {
 
   @override
   int get end => identifier.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitImportDeclaration(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'ImportDeclaration(keyword: $keyword, type: $type, identifier: $identifier)';
 }
 
-final class TypeDefinition extends Declaration {
+final class TypeDefinition extends Declaration with _TypeDefinition {
   const TypeDefinition(
     this.keyword,
     this.name,
@@ -595,28 +346,9 @@ final class TypeDefinition extends Declaration {
 
   @override
   int get end => variants.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitTypeDefinition(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    if (parameters case final parametersNodes?) {
-      for (final node in parametersNodes) {
-        node.visitChildren(visitor);
-      }
-    }
-    for (final node in variants) {
-      node.visitChildren(visitor);
-    }
-  }
-
-  @override
-  String toString() =>
-      'TypeDefinition(keyword: $keyword, name: $name, leftParenthesis: $leftParenthesis, parameters: $parameters, rightParenthesis: $rightParenthesis, equals: $equals, variants: $variants)';
 }
 
-final class LetDeclaration extends Declaration {
+final class LetDeclaration extends Declaration with _LetDeclaration {
   const LetDeclaration(
     this.keyword,
     this.identifier,
@@ -640,16 +372,4 @@ final class LetDeclaration extends Declaration {
 
   @override
   int get end => body.end;
-
-  @override
-  R? accept<R>(AstNodeVisitor<R> visitor) => visitor.visitLetDeclaration(this);
-
-  @override
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    body.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'LetDeclaration(keyword: $keyword, identifier: $identifier, parameter: $parameter, equals: $equals, body: $body)';
 }

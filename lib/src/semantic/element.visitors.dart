@@ -1,3 +1,10 @@
+// dart format width=80
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+// **************************************************************************
+// VisitorGenerator
+// **************************************************************************
+
 import 'element.dart';
 
 abstract interface class ElementVisitor<R> {
@@ -15,7 +22,7 @@ abstract interface class ElementVisitor<R> {
   R? visitProgramElement(ProgramElement node);
 }
 
-abstract base class SimpleElementVisitor<R> implements ElementVisitor {
+abstract base class SimpleElementVisitor<R> implements ElementVisitor<R> {
   @override
   R? visitTypeParameterElement(TypeParameterElement node) => null;
 
@@ -54,11 +61,15 @@ abstract base class SimpleElementVisitor<R> implements ElementVisitor {
   R? visitProgramElement(ProgramElement node) => null;
 }
 
-abstract base class GeneralizingElementVisitor<R> implements ElementVisitor {
+abstract base class GeneralizingElementVisitor<R> implements ElementVisitor<R> {
   R? visitElement(Element node) {
     node.visitChildren(this);
     return null;
   }
+
+  R? visitTypedElement(TypedElement node) => visitElement(node);
+
+  R? visitTypeDefiningElement(TypeDefiningElement node) => visitElement(node);
 
   @override
   R? visitTypeParameterElement(TypeParameterElement node) => visitElement(node);

@@ -1,0 +1,25 @@
+targets:
+  $default:
+    builders:
+      source_gen|combining_builder: {}
+      pinto|tree_generator:
+        generate_for:
+        - lib/src/ast/ast.dart
+        - lib/src/semantic/element.dart
+      pinto|visitor_generator:
+        generate_for:
+        - lib/src/ast/ast.dart
+        - lib/src/semantic/element.dart
+
+builders:
+  tree_generator:
+    import: "tool/builder/tree_builder.dart"
+    builder_factories: ["treeBuilder"]
+    build_extensions: {".dart": ["tree.g.part"]}
+    build_to: cache
+
+  visitor_generator:
+    import: "tool/builder/visitor_builder.dart"
+    builder_factories: ["visitorBuilder"]
+    build_extensions: {".dart": ["visitors.dart"]}
+    build_to: source

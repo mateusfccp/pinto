@@ -1,33 +1,32 @@
+import 'package:pinto/annotations.dart';
 import 'package:pinto/lexer.dart';
 
 import 'package.dart';
 import 'type.dart';
-import 'visitors.dart';
+import 'element.visitors.dart';
 
-sealed class Element {
+part 'element.g.dart';
+
+@TreeRoot()
+sealed class Element with _Element {
   const Element();
 
   Element? get enclosingElement;
+
   R? accept<R>(ElementVisitor<R> visitor);
+
   void visitChildren<R>(ElementVisitor<R> visitor);
-  @override
-  String toString() => 'Element';
 }
 
-abstract interface class TypedElement extends Element {
+abstract final class TypedElement extends Element {
   Type? get type;
-  @override
-  String toString() => 'TypedElement';
 }
 
-abstract interface class TypeDefiningElement extends Element {
+abstract final class TypeDefiningElement extends Element {
   Type get definedType;
-  @override
-  String toString() => 'TypeDefiningElement';
 }
 
-final class TypeParameterElement extends Element
-    implements TypedElement, TypeDefiningElement {
+final class TypeParameterElement extends Element with _TypeParameterElement implements TypedElement, TypeDefiningElement {
   TypeParameterElement({required this.name});
 
   final String name;
@@ -40,19 +39,9 @@ final class TypeParameterElement extends Element
 
   @override
   late Type definedType;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitTypeParameterElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'TypeParameterElement(name: $name, enclosingElement: $enclosingElement, type: $type, definedType: $definedType)';
 }
 
-final class ParameterElement extends Element implements TypedElement {
+final class ParameterElement extends Element with _ParameterElement implements TypedElement {
   ParameterElement({
     required this.name,
     this.type,
@@ -65,19 +54,9 @@ final class ParameterElement extends Element implements TypedElement {
 
   @override
   late Element enclosingElement;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitParameterElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'ParameterElement(name: $name, type: $type, enclosingElement: $enclosingElement)';
 }
 
-sealed class ExpressionElement extends Element implements TypedElement {
+sealed class ExpressionElement extends Element with _ExpressionElement implements TypedElement {
   ExpressionElement();
 
   @override
@@ -90,7 +69,7 @@ sealed class ExpressionElement extends Element implements TypedElement {
   String toString() => 'ExpressionElement(enclosingElement: $enclosingElement)';
 }
 
-final class InvocationElement extends ExpressionElement {
+final class InvocationElement extends ExpressionElement with _InvocationElement {
   InvocationElement({
     this.type,
     required this.identifier,
@@ -107,23 +86,9 @@ final class InvocationElement extends ExpressionElement {
 
   @override
   final bool constant;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitInvocationElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    identifier.accept(visitor);
-    argument.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'InvocationElement(type: $type, identifier: $identifier, argument: $argument, constant: $constant, enclosingElement: $enclosingElement)';
 }
 
-final class IdentifierElement extends ExpressionElement {
+final class IdentifierElement extends ExpressionElement with _IdentifierElement {
   IdentifierElement({
     required this.name,
     this.type,
@@ -137,19 +102,9 @@ final class IdentifierElement extends ExpressionElement {
 
   @override
   final bool constant;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitIdentifierElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'IdentifierElement(name: $name, type: $type, constant: $constant, enclosingElement: $enclosingElement)';
 }
 
-final class LiteralElement extends ExpressionElement {
+final class LiteralElement extends ExpressionElement with _LiteralElement {
   LiteralElement({
     this.type,
     required this.constant,
@@ -163,73 +118,33 @@ final class LiteralElement extends ExpressionElement {
   final bool constant;
 
   final Object? constantValue;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) => visitor.visitLiteralElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'LiteralElement(type: $type, constant: $constant, constantValue: $constantValue, enclosingElement: $enclosingElement)';
 }
 
-final class TypeVariantElement extends Element {
+final class TypeVariantElement extends Element with _TypeVariantElement {
   TypeVariantElement({required this.name});
 
   final String name;
 
-  final List<ParameterElement> parameters = [];
+  final parameters = <ParameterElement>[];
 
   @override
   late TypeDefinitionElement enclosingElement;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitTypeVariantElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    for (final node in parameters) {
-      node.visitChildren(visitor);
-    }
-  }
-
-  @override
-  String toString() =>
-      'TypeVariantElement(name: $name, parameters: $parameters, enclosingElement: $enclosingElement)';
 }
 
-sealed class DeclarationElement extends Element {
+sealed class DeclarationElement extends Element with _DeclarationElement {
   DeclarationElement();
 
   @override
   late ProgramElement enclosingElement;
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'DeclarationElement(enclosingElement: $enclosingElement)';
 }
 
-final class ImportElement extends DeclarationElement {
+final class ImportElement extends DeclarationElement with _ImportElement {
   ImportElement({required this.package});
 
   final Package package;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) => visitor.visitImportElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'ImportElement(package: $package, enclosingElement: $enclosingElement)';
 }
 
-final class LetFunctionDeclaration extends DeclarationElement
-    implements TypedElement {
+final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionDeclaration implements TypedElement {
   LetFunctionDeclaration({
     required this.name,
     required this.parameter,
@@ -245,23 +160,9 @@ final class LetFunctionDeclaration extends DeclarationElement
   FunctionType type;
 
   final ExpressionElement body;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitLetFunctionDeclaration(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    body.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'LetFunctionDeclaration(name: $name, parameter: $parameter, type: $type, body: $body, enclosingElement: $enclosingElement)';
 }
 
-final class LetVariableDeclaration extends DeclarationElement
-    implements TypedElement {
+final class LetVariableDeclaration extends DeclarationElement with _LetVariableDeclaration implements TypedElement {
   LetVariableDeclaration({
     required this.name,
     this.type,
@@ -274,23 +175,9 @@ final class LetVariableDeclaration extends DeclarationElement
   Type? type;
 
   final ExpressionElement body;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitLetVariableDeclaration(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    body.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'LetVariableDeclaration(name: $name, type: $type, body: $body, enclosingElement: $enclosingElement)';
 }
 
-final class ImportedSymbolSyntheticElement extends DeclarationElement
-    implements TypedElement {
+final class ImportedSymbolSyntheticElement extends DeclarationElement with _ImportedSymbolSyntheticElement implements TypedElement {
   ImportedSymbolSyntheticElement({
     required this.name,
     required this.syntheticElement,
@@ -302,80 +189,31 @@ final class ImportedSymbolSyntheticElement extends DeclarationElement
 
   @override
   Type get type => syntheticElement.type!;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitImportedSymbolSyntheticElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    syntheticElement.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'ImportedSymbolSyntheticElement(name: $name, syntheticElement: $syntheticElement, enclosingElement: $enclosingElement)';
 }
 
-final class TypeDefinitionElement extends DeclarationElement
-    implements TypedElement, TypeDefiningElement {
+final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitionElement implements TypedElement, TypeDefiningElement {
   TypeDefinitionElement({required this.name});
 
   final String name;
 
-  final List<TypeParameterElement> parameters = [];
+  final parameters = <TypeParameterElement>[];
 
-  final List<TypeVariantElement> variants = [];
+  final variants = <TypeVariantElement>[];
 
   @override
   Type? type = TypeType();
 
   @override
   late Type definedType;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitTypeDefinitionElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    for (final node in parameters) {
-      node.visitChildren(visitor);
-    }
-    for (final node in variants) {
-      node.visitChildren(visitor);
-    }
-  }
-
-  @override
-  String toString() =>
-      'TypeDefinitionElement(name: $name, parameters: $parameters, variants: $variants, type: $type, definedType: $definedType, enclosingElement: $enclosingElement)';
 }
 
-final class ProgramElement extends Element {
+final class ProgramElement extends Element with _ProgramElement {
   ProgramElement();
 
-  final List<ImportElement> imports = [];
+  final imports = <ImportElement>[];
 
-  final List<DeclarationElement> declarations = [];
+  final declarations = <DeclarationElement>[];
 
   @override
   late final Null enclosingElement = null;
-
-  @override
-  R? accept<R>(ElementVisitor<R> visitor) => visitor.visitProgramElement(this);
-
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    for (final node in imports) {
-      node.visitChildren(visitor);
-    }
-    for (final node in declarations) {
-      node.visitChildren(visitor);
-    }
-  }
-
-  @override
-  String toString() =>
-      'ProgramElement(imports: $imports, declarations: $declarations, enclosingElement: $enclosingElement)';
 }
