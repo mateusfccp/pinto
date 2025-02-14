@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 
 import 'ast/ast.dart';
-import 'ast/visitors.dart';
+import 'ast/ast.visitors.dart';
 
 /// A syntactic entity in a source.
 ///

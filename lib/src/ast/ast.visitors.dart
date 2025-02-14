@@ -1,3 +1,10 @@
+// dart format width=80
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+// **************************************************************************
+// VisitorGenerator
+// **************************************************************************
+
 import 'ast.dart';
 
 abstract interface class AstNodeVisitor<R> {
@@ -17,9 +24,10 @@ abstract interface class AstNodeVisitor<R> {
   R? visitInvocationExpression(InvocationExpression node);
   R? visitLetExpression(LetExpression node);
   R? visitBooleanLiteral(BooleanLiteral node);
-  R? visitDoubleLiteral(DoubleLiteral node);
-  R? visitIntegerLiteral(IntegerLiteral node);
+  R? visitUnitLiteral(UnitLiteral node);
   R? visitStringLiteral(StringLiteral node);
+  R? visitIntegerLiteral(IntegerLiteral node);
+  R? visitDoubleLiteral(DoubleLiteral node);
   R? visitStructLiteral(StructLiteral node);
   R? visitSymbolLiteral(SymbolLiteral node);
   R? visitImportDeclaration(ImportDeclaration node);
@@ -27,7 +35,7 @@ abstract interface class AstNodeVisitor<R> {
   R? visitLetDeclaration(LetDeclaration node);
 }
 
-abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
+abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
   @override
   R? visitTopTypeIdentifier(TopTypeIdentifier node) => null;
 
@@ -77,13 +85,16 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
   R? visitBooleanLiteral(BooleanLiteral node) => null;
 
   @override
-  R? visitDoubleLiteral(DoubleLiteral node) => null;
+  R? visitUnitLiteral(UnitLiteral node) => null;
+
+  @override
+  R? visitStringLiteral(StringLiteral node) => null;
 
   @override
   R? visitIntegerLiteral(IntegerLiteral node) => null;
 
   @override
-  R? visitStringLiteral(StringLiteral node) => null;
+  R? visitDoubleLiteral(DoubleLiteral node) => null;
 
   @override
   R? visitStructLiteral(StructLiteral node) => null;
@@ -101,7 +112,7 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor {
   R? visitLetDeclaration(LetDeclaration node) => null;
 }
 
-abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor {
+abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitAstNode(AstNode node) {
     node.visitChildren(this);
     return null;
@@ -178,13 +189,16 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor {
   R? visitBooleanLiteral(BooleanLiteral node) => visitLiteral(node);
 
   @override
-  R? visitDoubleLiteral(DoubleLiteral node) => visitLiteral(node);
+  R? visitUnitLiteral(UnitLiteral node) => visitLiteral(node);
+
+  @override
+  R? visitStringLiteral(StringLiteral node) => visitLiteral(node);
 
   @override
   R? visitIntegerLiteral(IntegerLiteral node) => visitLiteral(node);
 
   @override
-  R? visitStringLiteral(StringLiteral node) => visitLiteral(node);
+  R? visitDoubleLiteral(DoubleLiteral node) => visitLiteral(node);
 
   @override
   R? visitStructLiteral(StructLiteral node) => visitLiteral(node);
