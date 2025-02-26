@@ -109,6 +109,11 @@ final class PolymorphicType implements Type {
 
   final List<Type> arguments;
 
+  bool get optional {
+    // TODO(mateusfccp): Also check source and arguments
+    return name == 'Optional';
+  }
+
   @override
   Element? element;
 

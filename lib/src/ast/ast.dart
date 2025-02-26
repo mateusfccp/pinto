@@ -112,12 +112,19 @@ final class MapTypeIdentifier extends TypeIdentifier with _MapTypeIdentifier {
 }
 
 final class IdentifiedTypeIdentifier extends TypeIdentifier with _IdentifiedTypeIdentifier {
+  /// A type identifier with arguments.
   const IdentifiedTypeIdentifier(
     this.identifier,
-    this.leftParenthesis,
-    this.arguments,
-    this.rightParenthesis,
+    Token this.leftParenthesis,
+    SyntacticEntityList<TypeIdentifier> this.arguments,
+    Token this.rightParenthesis,
   );
+
+  /// A type identifier with no arguments.
+  const IdentifiedTypeIdentifier.raw(this.identifier)
+      : leftParenthesis = null,
+        arguments = null,
+        rightParenthesis = null;
 
   final Token identifier;
 
@@ -296,18 +303,6 @@ sealed class Literal extends Expression with _Literal {
 
 final class BooleanLiteral extends Literal with _BooleanLiteral {
   const BooleanLiteral(this.literal);
-
-  final Token literal;
-
-  @override
-  int get offset => literal.offset;
-
-  @override
-  int get end => literal.end;
-}
-
-final class UnitLiteral extends Literal with _UnitLiteral {
-  const UnitLiteral(this.literal);
 
   final Token literal;
 

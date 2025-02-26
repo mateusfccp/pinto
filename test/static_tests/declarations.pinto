@@ -11,11 +11,12 @@ let properLet = ()
 let properLet = ()
 //  ^^^^^^^^^ identifier_already_defined
 
-let improperFunction _ _ = 10
-//                     ^ expected_equality_sign_after_identifier
+let improperFunction () _ = 10
+//                      ^ expected_equality_sign_after_identifier
 
 // It would be nice detecting this as an error, but as we don't have declaration
 // terminators we can only rely on declaration keywords to synchronize
+// TODO(mateusfccp): Improve error recovery (#20).
    10
 
 let properLet = ()
@@ -27,9 +28,9 @@ type Option = A + B
 //   ^^^^^^ identifier_already_defined
 
 type Improper() = Improper
-//           ^^ expected_equality_sign_after_identifier
-// TODO(mateusfccp): Improve this error to handle bot possibilities elegantly
+//            ^ expected_identifier
 
 type Improper = Improper1(int) + Improper2(String)
 //                           ^ expected_identifier_after_identifier
-// TODO(mateusfccp): We should synchronize this somewhow so Improper2 also emits an error
+// TODO(mateusfccp): We should synchronize this somewhow so that Improper2 also
+// emits an error (#20).

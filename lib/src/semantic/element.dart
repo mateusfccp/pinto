@@ -41,8 +41,6 @@ final class TypeParameterElement extends Element with _TypeParameterElement impl
 }
 
 final class StructMemberElement extends Element with _StructMemberElement {
-  StructMemberElement();
-
   late final String name;
 
   late final ExpressionElement value;
@@ -67,12 +65,10 @@ final class ParameterElement extends Element with _ParameterElement implements T
 }
 
 sealed class ExpressionElement extends Element with _ExpressionElement implements TypedElement {
-  ExpressionElement();
-
   @override
   late Element enclosingElement;
 
-  bool get constant;
+  bool get constant => constantValue != null;
 
   Object? get constantValue;
 }
@@ -82,7 +78,6 @@ final class InvocationElement extends ExpressionElement with _InvocationElement 
     this.type,
     required this.identifier,
     required this.argument,
-    required this.constant,
     required this.constantValue,
   });
 
@@ -94,9 +89,6 @@ final class InvocationElement extends ExpressionElement with _InvocationElement 
   final ExpressionElement argument;
 
   @override
-  final bool constant;
-
-  @override
   final Object? constantValue;
 }
 
@@ -104,7 +96,6 @@ final class IdentifierElement extends ExpressionElement with _IdentifierElement 
   IdentifierElement({
     required this.name,
     this.type,
-    required this.constant,
     required this.constantValue,
   });
 
@@ -112,9 +103,6 @@ final class IdentifierElement extends ExpressionElement with _IdentifierElement 
 
   @override
   Type? type;
-
-  @override
-  final bool constant;
 
   @override
   final Object? constantValue;
@@ -129,22 +117,14 @@ final class SingletonLiteralElement extends LiteralElement with _SingletonLitera
   Type? type;
 
   @override
-  late final bool constant;
-
-  @override
   late final Object? constantValue;
 }
 
 final class StructLiteralElement extends LiteralElement with _StructLiteralElement {
-  StructLiteralElement();
-
   @override
   late final StructType type;
 
   final List<StructMemberElement> members = [];
-
-  @override
-  late final bool constant;
 
   @override
   late final Object? constantValue;
@@ -162,8 +142,6 @@ final class TypeVariantElement extends Element with _TypeVariantElement {
 }
 
 sealed class DeclarationElement extends Element with _DeclarationElement {
-  DeclarationElement();
-
   @override
   late ProgramElement enclosingElement;
 }
@@ -240,8 +218,6 @@ final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitio
 }
 
 final class ProgramElement extends Element with _ProgramElement {
-  ProgramElement();
-
   final imports = <ImportElement>[];
 
   final declarations = <DeclarationElement>[];

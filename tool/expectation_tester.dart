@@ -13,7 +13,8 @@ import 'package:pinto/semantic.dart';
 
 const _marker = '^';
 
-// TODO(mateusfccp): Maybe optimizing it by merging it with [ErrorAnalyzer], so we don't have to read the same file twice
+// TODO(mateusfccp): Maybe optimizing it by merging it with [ErrorAnalyzer],
+// so we don't have to read the same file twice
 final class ExpectationsParser {
   ExpectationsParser(String path) {
     final file = File(path);

@@ -1,0 +1,13 @@
+let improperParameter (:message 10) = print (message)
+//                              ^^ invalid_parameter_type
+
+let improperParameter2 (10) = print (message)
+//                      ^^ invalid_parameter_type
+
+let singleNamedParameter (:message String) = print message
+
+let multipleNamedParameters (:ignored String, :message String) = print message
+
+let printMessage (:message String) = print (message)
+
+let main () = printMessage ("Hello, world!")

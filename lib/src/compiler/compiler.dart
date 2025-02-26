@@ -1,5 +1,7 @@
 import 'package:code_builder/code_builder.dart' hide ClassBuilder, FunctionType;
+import 'package:dart_style/dart_style.dart';
 import 'package:pinto/semantic.dart';
+import 'package:pinto/src/other/print_indented.dart';
 
 import 'class_builder.dart';
 
@@ -8,7 +10,8 @@ final class Compiler implements ElementVisitor<List<Spec>> {
 
   final ProgramElement programElement;
 
-  void writeToSink(StringSink sink) {
+  /// Writes the compiled program to the [sink].
+  void write(StringSink sink) {
     final emmiter = DartEmitter(
       orderDirectives: true,
       useNullSafetySyntax: true,
@@ -16,7 +19,14 @@ final class Compiler implements ElementVisitor<List<Spec>> {
 
     final [library] = programElement.accept(this) as List<Library>;
 
-    sink.write(library.accept(emmiter));
+    final formatter = DartFormatter(
+      languageVersion: DartFormatter.latestShortStyleLanguageVersion,
+    );
+
+    final buffer = StringBuffer(library.accept(emmiter));
+    final formattedSource = formatter.format(buffer.toString());
+
+    sink.write(formattedSource);
   }
 
   @override
@@ -26,9 +36,29 @@ final class Compiler implements ElementVisitor<List<Spec>> {
 
   @override
   List<Expression> visitInvocationElement(InvocationElement node) {
-    final parameter = node.argument.accept(this) as List<Expression>;
-    final call = refer(node.identifier.name).call(parameter);
-    return [call];
+    final argument = node.argument;
+    final call = refer(node.identifier.name);
+
+    final Expression expression;
+
+    switch (argument) {
+      case SingletonLiteralElement():
+        expression = call.call([literal(argument.constantValue)]);
+      case StructLiteralElement(:final members):
+        final namedArguments = {
+          for (final member in members) //
+            member.name: member.value.accept(this)?.single as Expression,
+        };
+
+        expression = call.call([], namedArguments);
+      case InvocationElement():
+        final invocation = argument.accept(this) as List<Expression>;
+        expression = call.call(invocation);
+      case IdentifierElement():
+        expression = call.call([refer(argument.name)]);
+    }
+
+    return [expression];
   }
 
   @override
@@ -67,16 +97,18 @@ final class Compiler implements ElementVisitor<List<Spec>> {
       builder.name = node.name;
 
       for (final member in node.parameter.members) {
-        builder.optionalParameters.add(Parameter((builder) {
-          builder.named = true;
+        builder.optionalParameters.add(
+          Parameter(
+            (builder) {
+              builder.named = true;
+              final type = member.value.constantValue as Type;
 
-          // TODO(mateusfccp): Make it required if non-null
-          builder.required = true;
-
-          // TODO(mateusfccp): We have to know what type TypeTyper refer to
-          builder.type = refer(_buildTypeName(TopType()));
-          builder.name = member.name;
-        }));
+              builder.required = type is! PolymorphicType || !type.optional;
+              builder.type = refer(_buildTypeName(type));
+              builder.name = member.name;
+            },
+          ),
+        );
       }
 
       builder.lambda = true;
@@ -147,10 +179,14 @@ final class Compiler implements ElementVisitor<List<Spec>> {
     final recordLiteral = literalRecord([], {});
 
     for (final StructMemberElement(:name, :value) in node.members) {
-      final valueExpression = value.accept(this) as Expression;
+      final valueExpression = value.accept(this) as List<Expression>;
 
       if (int.tryParse(name.substring(1)) case final index? when name[0] == r'$') {
-        recordLiteral.positionalFieldValues[index] = valueExpression;
+        assert(
+          recordLiteral.positionalFieldValues.length == index,
+          'Positional fields must be created in order.',
+        );
+        recordLiteral.positionalFieldValues.add(valueExpression);
       } else {
         recordLiteral.namedFieldValues[name] = valueExpression;
       }
@@ -280,6 +316,15 @@ String _buildStructTypeName(StructType type) {
   }
 
   return DartEmitter().visitLiteralRecordExpression(recordLiteral).toString();
+}
+
+Type? _inferExpressionType(ExpressionElement expression) {
+  return switch (expression) {
+    IdentifierElement(:final type) => type,
+    InvocationElement() => throw UnimplementedError(),
+    SingletonLiteralElement(:final type) => type,
+    StructLiteralElement(:final type) => type,
+  };
 }
 
 TypeReference _typeReferenceFromType(

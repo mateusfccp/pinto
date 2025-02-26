@@ -53,7 +53,7 @@
 <bool_literal> ::= "true" | "false"
 <double_literal>  ::= <integer_literal> "." <integer_literal>
 <integer_literal> ::= <digit> (<digit_separator>* <digit>+)*
-<struct_literal> ::= "(" (<symbol_literal>? <expression>? ",")* ")"
+<struct_literal> ::= "(" <struct_literal_member> ("," <struct_literal_member>?)* ")"
+<struct_literal_member> ::= (<symbol_literal>? <expression>?)
 <string_literal> ::= '"' + <string_character>* + '"'
 <symbol_literal> ::= ":" <identifier>
-<unit_literal> ::= "()"

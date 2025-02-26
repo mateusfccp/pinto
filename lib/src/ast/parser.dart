@@ -260,7 +260,9 @@ final class Parser {
 
       while (!_check(TokenType.rightParenthesis)) {
         members.add(_structMember());
-        _match(TokenType.comma);
+        final comma = _match(TokenType.comma);
+
+        if (!comma) break;
       }
     }
 
@@ -497,35 +499,36 @@ final class Parser {
         );
       }
     } else {
+      final IdentifiedTypeIdentifier literal;
+
       final identifier = _consumeExpecting(TokenType.identifier);
       final parameters = <TypeIdentifier>[];
 
-      final Token? leftParenthesis;
-      final Token? rightParenthesis;
-
       if (_match(TokenType.leftParenthesis)) {
-        leftParenthesis = _previous;
+        final leftParenthesis = _previous;
+
         parameters.add(_typeIdentifier());
 
         while (_match(TokenType.comma)) {
           parameters.add(_typeIdentifier());
         }
 
-        rightParenthesis = _consumeAfter(
+        final rightParenthesis = _consumeAfter(
           type: TokenType.rightParenthesis,
           after: TokenType.identifier, // TODO(mateusfccp): Fix this
         );
-      } else {
-        leftParenthesis = null;
-        rightParenthesis = null;
-      }
 
-      final literal = IdentifiedTypeIdentifier(
-        identifier,
-        leftParenthesis,
-        SyntacticEntityList(parameters),
-        rightParenthesis,
-      );
+        literal = IdentifiedTypeIdentifier(
+          identifier,
+          leftParenthesis,
+          SyntacticEntityList(parameters),
+          rightParenthesis,
+        );
+      } else {
+        literal = IdentifiedTypeIdentifier.raw(
+          identifier,
+        );
+      }
 
       if (_match(TokenType.eroteme)) {
         return OptionTypeIdentifier(literal, _previous);
@@ -537,11 +540,6 @@ final class Parser {
 
   IdentifiedTypeIdentifier _typeParameterLiteral() {
     final identifier = _consumeExpecting(TokenType.identifier);
-    return IdentifiedTypeIdentifier(
-      identifier,
-      null,
-      null,
-      null,
-    );
+    return IdentifiedTypeIdentifier.raw(identifier);
   }
 }

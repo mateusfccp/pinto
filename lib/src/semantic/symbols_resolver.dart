@@ -56,16 +56,14 @@ final class SymbolsResolver {
 
     switch (element) {
       case dart.FunctionTypedElement():
-        final functionType = _dartTypeToPintoType(element.type) as FunctionType;
+        final functionType = _dartFunctionTypeToPintoFunctionType(element.type);
 
         final body = SingletonLiteralElement()
-          ..constant = true
           ..constantValue = null;
 
         syntheticElement = LetFunctionDeclaration(
           name: element.name!,
           parameter: StructLiteralElement()
-            ..constant = false
             ..constantValue = null
             ..type = functionType.parameterType,
         )
@@ -97,7 +95,6 @@ final class SymbolsResolver {
         syntheticElement = typeDefinition;
       case dart.TopLevelVariableElement():
         final body = SingletonLiteralElement()
-          ..constant = true
           ..constantValue = null;
 
         syntheticElement = LetVariableDeclaration(
@@ -108,7 +105,6 @@ final class SymbolsResolver {
         final body = IdentifierElement(
           name: aliasedElement.name!,
           type: _dartTypeToPintoType(element.aliasedType),
-          constant: false,
           constantValue: null,
         );
         
@@ -167,23 +163,7 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
         name: type.element.declaration.name,
       );
     case dart.FunctionType():
-      final typeMembers = <String, Type>{};
-
-      int index = 0;
-      for (final parameter in type.parameters) {
-        final type = _dartTypeToPintoType(parameter.type);
-
-        if (parameter.isPositional) {
-          typeMembers['\$${index++}'] = type;
-        } else {
-          typeMembers[parameter.name] = type;
-        }
-      }
-
-      return FunctionType(
-        parameterType: StructType(members: typeMembers),
-        returnType: _dartTypeToPintoType(type.returnType),
-      );
+      return _dartFunctionTypeToPintoFunctionType(type);
     case dart.ParameterizedType():
       if (type.isDartCoreBool) {
         return const BooleanType();
@@ -217,6 +197,27 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
       throw UnimplementedError("We still don't support importing the type ${type.getDisplayString()} to pint°");
   }
 }
+
+FunctionType _dartFunctionTypeToPintoFunctionType(dart.FunctionType type) {
+  final typeMembers = <String, Type>{};
+
+  int index = 0;
+  for (final parameter in type.parameters) {
+    final type = _dartTypeToPintoType(parameter.type);
+
+    if (parameter.isPositional) {
+      typeMembers['\$${index++}'] = type;
+    } else {
+      typeMembers[parameter.name] = type;
+    }
+  }
+
+  return FunctionType(
+    parameterType: StructType(members: typeMembers),
+    returnType: _dartTypeToPintoType(type.returnType),
+  );
+}
+
 
 final class _SymbolResolvingException implements Exception {
   _SymbolResolvingException(this.package);

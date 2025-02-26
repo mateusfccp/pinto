@@ -185,6 +185,26 @@ final class ImportedPackageNotAvailableError implements ResolveError {
   String get code => 'imported_package_not_available';
 }
 
+/// An error that indicates that the type of a parameter is invalid.
+///
+/// A parameter should be a [TypeType] or a [PolymorphicType] that resolves to
+/// a [TypeType].
+final class InvalidParameterType implements ResolveError {
+  const InvalidParameterType({
+    required this.syntacticEntity,
+    required this.parameterType,
+  });
+
+  @override
+  final SyntacticEntity syntacticEntity;
+
+  /// The type of the parameter.
+  final Type parameterType;
+
+  @override
+  String get code => 'invalid_parameter_type';
+}
+
 final class NotAFunctionError implements ResolveError {
   const NotAFunctionError({
     required this.syntacticEntity,

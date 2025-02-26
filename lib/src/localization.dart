@@ -20,7 +20,7 @@ String messageFromError(PintoError error, String source) {
     NumberEndingWithSeparatorError() => numberEndingWithSeparatorError(),
     UnexpectedCharacterError() => unexpectedCharacterError(fragment),
     UnterminatedStringError() => unterminatedStringError(),
-    
+
     // Parse errors
     ExpectedError error => expectError('${error.expectation}', fragment),
     ExpectedAfterError error => expectAfterError('${error.expectation}', '${error.after}', fragment),
@@ -28,8 +28,9 @@ String messageFromError(PintoError error, String source) {
     MisplacedImport error => misplacedImportError('${error.syntacticEntity}'),
 
     // Resolve errors
-    ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
     IdentifierAlreadyDefinedError() => identifierAlreadyDefinedError(fragment),
+    ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
+    InvalidParameterType() => invalidParameterType(fragment),
     NotAFunctionError() => notAFunctionError(fragment),
     SymbolNotInScopeError() => symbolNotInScopeError(fragment),
     TypeParameterAlreadyDefinedError() => typeParameterAlreadyDefinedError(fragment),
@@ -132,6 +133,16 @@ String importedPackageNotAvailableError(String import) {
     args: [import],
     desc: 'The error describing that the package that is being imported does '
         'exist or was not fetched by `pub get`',
+  );
+}
+
+String invalidParameterType(String identifier) {
+  return Intl.message(
+    "'$identifier' does not resolve to a type.",
+    name: 'invalidParameterTypeMessage',
+    args: [identifier],
+    desc: 'The error describing that the expression used as a parameter type'
+        'does not resolve to a type.',
   );
 }
 

@@ -293,18 +293,6 @@ base mixin _BooleanLiteral {
       'BooleanLiteral(literal: $_literal, offset: $_offset, end: $_end)';
 }
 
-base mixin _UnitLiteral {
-  Token get _literal => (this as UnitLiteral).literal;
-  int get _offset => (this as UnitLiteral).offset;
-  int get _end => (this as UnitLiteral).end;
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitUnitLiteral((this as UnitLiteral));
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'UnitLiteral(literal: $_literal, offset: $_offset, end: $_end)';
-}
-
 base mixin _StringLiteral {
   Token get _literal => (this as StringLiteral).literal;
   int get _offset => (this as StringLiteral).offset;

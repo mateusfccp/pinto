@@ -6,5 +6,5 @@ let printName (:name String) = print returnString ()
 
 let main (:args String) = print printName "name"
 
-// let unterminatedString = "string
+let unterminatedString = "string
 //                              ^ unterminated_string

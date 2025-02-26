@@ -92,7 +92,6 @@ base mixin _InvocationElement {
   Type? get _type => (this as InvocationElement).type;
   IdentifierElement get _identifier => (this as InvocationElement).identifier;
   ExpressionElement get _argument => (this as InvocationElement).argument;
-  bool get _constant => (this as InvocationElement).constant;
   Object? get _constantValue => (this as InvocationElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitInvocationElement((this as InvocationElement));
@@ -103,20 +102,19 @@ base mixin _InvocationElement {
 
   @override
   String toString() =>
-      'InvocationElement(type: $_type, identifier: $_identifier, argument: $_argument, constant: $_constant, constantValue: $_constantValue)';
+      'InvocationElement(type: $_type, identifier: $_identifier, argument: $_argument, constantValue: $_constantValue)';
 }
 
 base mixin _IdentifierElement {
   String get _name => (this as IdentifierElement).name;
   Type? get _type => (this as IdentifierElement).type;
-  bool get _constant => (this as IdentifierElement).constant;
   Object? get _constantValue => (this as IdentifierElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitIdentifierElement((this as IdentifierElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'IdentifierElement(name: $_name, type: $_type, constant: $_constant, constantValue: $_constantValue)';
+      'IdentifierElement(name: $_name, type: $_type, constantValue: $_constantValue)';
 }
 
 base mixin _LiteralElement {
@@ -127,21 +125,19 @@ base mixin _LiteralElement {
 
 base mixin _SingletonLiteralElement {
   Type? get _type => (this as SingletonLiteralElement).type;
-  bool get _constant => (this as SingletonLiteralElement).constant;
   Object? get _constantValue => (this as SingletonLiteralElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitSingletonLiteralElement((this as SingletonLiteralElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'SingletonLiteralElement(type: $_type, constant: $_constant, constantValue: $_constantValue)';
+      'SingletonLiteralElement(type: $_type, constantValue: $_constantValue)';
 }
 
 base mixin _StructLiteralElement {
   StructType get _type => (this as StructLiteralElement).type;
   List<StructMemberElement> get _members =>
       (this as StructLiteralElement).members;
-  bool get _constant => (this as StructLiteralElement).constant;
   Object? get _constantValue => (this as StructLiteralElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitStructLiteralElement((this as StructLiteralElement));
@@ -153,7 +149,7 @@ base mixin _StructLiteralElement {
 
   @override
   String toString() =>
-      'StructLiteralElement(type: $_type, members: $_members, constant: $_constant, constantValue: $_constantValue)';
+      'StructLiteralElement(type: $_type, members: $_members, constantValue: $_constantValue)';
 }
 
 base mixin _TypeVariantElement {

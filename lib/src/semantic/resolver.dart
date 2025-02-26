@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/lexer.dart';
+import 'package:pinto/src/other/print_indented.dart';
 
 import 'element.dart';
 import 'environment.dart';
@@ -109,16 +110,12 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
   @override
   Future<Element> visitBooleanLiteral(BooleanLiteral node) async {
-    return SingletonLiteralElement(type: const BooleanType())
-      ..constant = true
-      ..constantValue = node.literal.type == TokenType.trueKeyword ? true : false;
+    return SingletonLiteralElement(type: const BooleanType())..constantValue = node.literal.type == TokenType.trueKeyword ? true : false;
   }
 
   @override
   Future<Element> visitDoubleLiteral(DoubleLiteral node) async {
-    return SingletonLiteralElement(type: const DoubleType())
-      ..constant = true
-      ..constantValue = double.parse(_removeSeparators(node.literal.lexeme));
+    return SingletonLiteralElement(type: const DoubleType())..constantValue = double.parse(_removeSeparators(node.literal.lexeme));
   }
 
   @override
@@ -138,14 +135,13 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       throw SymbolNotInScopeError(node.identifier);
     }
 
-    final bool constant;
     final Object? constantValue;
 
     if (definition is LetVariableDeclaration) {
-      constant = definition.body.constant;
       constantValue = definition.body.constantValue;
+    } else if (definition case ImportedSymbolSyntheticElement(syntheticElement: TypeDefinitionElement typeDefinitionElement)) {
+      constantValue = typeDefinitionElement.definedType;
     } else {
-      constant = false;
       constantValue = null;
     }
 
@@ -153,7 +149,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
     return IdentifierElement(
       name: node.identifier.lexeme,
-      constant: constant,
       constantValue: constantValue,
       type: definition.type,
     );
@@ -168,7 +163,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       identifier: identifier,
       argument: argument,
       // TODO(mateusfccp): It will be potentially constant when we have macros
-      constant: false,
       constantValue: null,
     );
 
@@ -181,6 +175,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       // Check if the argument type matches the parameter type
       return invocationElement;
     } else {
+      throw StateError('Debug');
       throw NotAFunctionError(
         syntacticEntity: node.identifierExpression,
         calledType: identifier.type!,
@@ -200,9 +195,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
   @override
   Future<Element> visitIntegerLiteral(IntegerLiteral node) async {
-    return SingletonLiteralElement(type: const IntegerType())
-      ..constant = true
-      ..constantValue = int.parse(_removeSeparators(node.literal.lexeme));
+    return SingletonLiteralElement(type: const IntegerType())..constantValue = int.parse(_removeSeparators(node.literal.lexeme));
   }
 
   @override
@@ -212,9 +205,26 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     }
 
     final LetDeclarationElement declaration;
-
     if (node.parameter case final parameter?) {
       final parameterElement = await parameter.accept(this) as StructLiteralElement;
+
+      for (int index = 0; index < parameterElement.members.length; index++) {
+        final memberElement = parameterElement.members[index];
+        if (memberElement.value.type is! TypeType) {
+          final member = parameter.members![index];
+
+          final syntacticEntity = switch (member) {
+            NamelessStructMember() => member.value,
+            FullStructMember() => member.value,
+            ValuelessStructMember() => member.name,
+          };
+
+          throw InvalidParameterType(
+            syntacticEntity: syntacticEntity,
+            parameterType: memberElement.value.type!,
+          );
+        }
+      }
 
       declaration = LetFunctionDeclaration(
         name: node.identifier.lexeme,
@@ -267,9 +277,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   @override
   Future<Element> visitStringLiteral(StringLiteral node) async {
     // TODO(mateusfccp): Once we have string literals with interpolation, we should only consider them const if all the internal expressions are const
-    return SingletonLiteralElement(type: const StringType())
-      ..constant = true
-      ..constantValue = node.literal.lexeme.substring(1, node.literal.lexeme.length - 1);
+    return SingletonLiteralElement(type: const StringType())..constantValue = node.literal.lexeme.substring(1, node.literal.lexeme.length - 1);
   }
 
   @override
@@ -315,7 +323,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       }
     }
 
-    element.constant = constantValue != null;
     element.constantValue = constantValue;
     element.type = StructType(members: typeMembers);
 
@@ -324,9 +331,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
 
   @override
   Future<LiteralElement> visitSymbolLiteral(SymbolLiteral node) async {
-    return SingletonLiteralElement(type: SymbolType())
-      ..constant = true
-      ..constantValue = node.literal.lexeme.substring(1);
+    return SingletonLiteralElement(type: SymbolType())..constantValue = node.literal.lexeme.substring(1);
   }
 
   @override
