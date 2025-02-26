@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../../tool/program_tester.dart';
+import '../../tool/test_program.dart';
 
 Future<void> main() async {
     await testProgram(
