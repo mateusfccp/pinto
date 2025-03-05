@@ -12,7 +12,7 @@ import 'package:pinto/semantic.dart';
 import 'package:pinto/compiler.dart';
 import 'package:test/test.dart';
 
-/// Tests a pint° [source]
+/// Creates a test case with the given [description] and [body] to test [source].
 Future<void> testProgram(
   String description,
   String source,

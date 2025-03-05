@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import '../tool/expectation_tester.dart';
 
 void main() async {
-  final directory = Directory('test/static_tests');
+  final directory = Directory('test/static');
 
   await for (final file in directory.list()) {
     if (file is File && extension(file.path) == '.pinto') {

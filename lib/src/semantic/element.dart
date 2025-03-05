@@ -34,7 +34,7 @@ final class TypeParameterElement extends Element with _TypeParameterElement impl
   late TypeDefinitionElement enclosingElement;
 
   @override
-  Type? type = TypeType();
+  Type? get type => TypeType(definedType);
 
   @override
   late Type definedType;
@@ -130,6 +130,18 @@ final class StructLiteralElement extends LiteralElement with _StructLiteralEleme
   late final Object? constantValue;
 }
 
+final class TypeLiteralElement extends LiteralElement with _TypeLiteralElement {
+  TypeLiteralElement({required Type referenceType}) : _referenceType = referenceType;
+
+  final Type _referenceType;
+
+  @override
+  Type get type => TypeType(_referenceType);
+
+  @override
+  Object? get constantValue => _referenceType;
+}
+
 final class TypeVariantElement extends Element with _TypeVariantElement {
   TypeVariantElement({required this.name});
 
@@ -211,7 +223,7 @@ final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitio
   final variants = <TypeVariantElement>[];
 
   @override
-  Type? type = TypeType();
+  Type? get type => TypeType(definedType);
 
   @override
   late Type definedType;

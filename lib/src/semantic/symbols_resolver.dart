@@ -172,19 +172,10 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
       } else if (type.isDartCoreNull) {
         return StructType.unit;
       } else if (type.isDartCoreType) {
-        return const TypeType();
+        return const TypeType.self();
       } else if (type.element case final dart.InterfaceElement element) {
-        final Package source;
-
-        if (element.library.isInSdk) {
-          source = DartSdkPackage(name: element.library.name); // TODO(mateusfccp): Check if we should remove `dart.` or not
-        } else {
-          source = ExternalPackage(name: element.library.name);
-        }
-
         return PolymorphicType(
           name: element.name,
-          source: source,
           arguments: [
             for (final typeParameter in element.typeParameters) //
               TypeParameterType(name: typeParameter.name),
@@ -199,16 +190,16 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
 }
 
 FunctionType _dartFunctionTypeToPintoFunctionType(dart.FunctionType type) {
-  final typeMembers = <String, Type>{};
+  final typeMembers = <String, TypeType>{};
 
   int index = 0;
   for (final parameter in type.parameters) {
     final type = _dartTypeToPintoType(parameter.type);
 
     if (parameter.isPositional) {
-      typeMembers['\$${index++}'] = type;
+      typeMembers['\$${index++}'] = TypeType(type);
     } else {
-      typeMembers[parameter.name] = type;
+      typeMembers[parameter.name] = TypeType(type);
     }
   }
 

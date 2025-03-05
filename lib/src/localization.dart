@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:pinto/error.dart';
+import 'package:pinto/semantic.dart';
 
 String messageFromError(PintoError error, String source) {
   final offset = switch (error) {
@@ -30,7 +31,9 @@ String messageFromError(PintoError error, String source) {
     // Resolve errors
     IdentifierAlreadyDefinedError() => identifierAlreadyDefinedError(fragment),
     ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
-    InvalidParameterType() => invalidParameterType(fragment),
+    InvalidArgumentTypeError(:final expectedType, :final argumentType) => invalidArgumentTypeError(expectedType, argumentType),
+    InvalidParameterTypeError() => invalidParameterTypeError(fragment),
+    InvalidTypeParameterError() => invalidTypeParameterError(fragment),
     NotAFunctionError() => notAFunctionError(fragment),
     SymbolNotInScopeError() => symbolNotInScopeError(fragment),
     TypeParameterAlreadyDefinedError() => typeParameterAlreadyDefinedError(fragment),
@@ -136,13 +139,35 @@ String importedPackageNotAvailableError(String import) {
   );
 }
 
-String invalidParameterType(String identifier) {
+String invalidArgumentTypeError(Type expected, Type argument) {
+  return Intl.message(
+    "The argument has not the expected type for the parameter. "
+    "Expected $expected, but found $argument.",
+    name: 'invalidArgumentTypeErrorMessage',
+    args: [expected, argument],
+    desc: 'The error describing that the expression used as a argument does'
+        'not have the expected type.',
+  );
+}
+
+String invalidParameterTypeError(String identifier) {
   return Intl.message(
     "'$identifier' does not resolve to a type.",
-    name: 'invalidParameterTypeMessage',
+    name: 'invalidParameterTypeErrorMessage',
     args: [identifier],
     desc: 'The error describing that the expression used as a parameter type'
         'does not resolve to a type.',
+  );
+}
+
+String invalidTypeParameterError(String parameterType) {
+  return Intl.message(
+    "'' is not a valid type parameter. "
+    'Type parameters should be a full struct with a name and a identifier.',
+    name: 'invalidTypeParameterErrorMessage',
+    args: [parameterType],
+    desc: 'The error describing that the expression used as a type parameter'
+        'does not have the expected structure.',
   );
 }
 

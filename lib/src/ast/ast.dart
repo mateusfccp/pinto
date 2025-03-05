@@ -17,7 +17,7 @@ sealed class AstNode with _AstNode implements SyntacticEntity {
   void visitChildren<R>(AstNodeVisitor<R> visitor);
 }
 
-sealed class TypeIdentifier extends AstNode with _TypeIdentifier {
+sealed class TypeIdentifier extends Expression with _TypeIdentifier {
   const TypeIdentifier();
 }
 
@@ -111,35 +111,37 @@ final class MapTypeIdentifier extends TypeIdentifier with _MapTypeIdentifier {
   int get end => rightBrace.end;
 }
 
-final class IdentifiedTypeIdentifier extends TypeIdentifier with _IdentifiedTypeIdentifier {
-  /// A type identifier with arguments.
-  const IdentifiedTypeIdentifier(
-    this.identifier,
-    Token this.leftParenthesis,
-    SyntacticEntityList<TypeIdentifier> this.arguments,
-    Token this.rightParenthesis,
-  );
+// final class IdentifiedTypeIdentifier extends TypeIdentifier with _IdentifiedTypeIdentifier {
+//   /// A type identifier with arguments.
+//   const IdentifiedTypeIdentifier(
+//     this.identifier,
+//     Token this.leftParenthesis,
+//     SyntacticEntityList<TypeIdentifier> this.arguments,
+//     Token this.rightParenthesis,
+//   );
 
-  /// A type identifier with no arguments.
-  const IdentifiedTypeIdentifier.raw(this.identifier)
-      : leftParenthesis = null,
-        arguments = null,
-        rightParenthesis = null;
+//   /// A type identifier with no arguments.
+//   const IdentifiedTypeIdentifier.raw(this.identifier)
+//       : leftParenthesis = null,
+//         arguments = null,
+//         rightParenthesis = null;
 
-  final Token identifier;
+//   final Token identifier;
 
-  final Token? leftParenthesis;
+//   final Token? leftParenthesis;
 
-  final SyntacticEntityList<TypeIdentifier>? arguments;
+//   final SyntacticEntityList<TypeIdentifier>? arguments;
 
-  final Token? rightParenthesis;
+//   final Token? rightParenthesis;
 
-  @override
-  int get offset => identifier.offset;
+//   bool get raw => arguments == null;
 
-  @override
-  int get end => rightParenthesis?.end ?? arguments?.end ?? leftParenthesis?.end ?? identifier.end;
-}
+//   @override
+//   int get offset => identifier.offset;
+
+//   @override
+//   int get end => rightParenthesis?.end ?? arguments?.end ?? leftParenthesis?.end ?? identifier.end;
+// }
 
 final class OptionTypeIdentifier extends TypeIdentifier with _OptionTypeIdentifier {
   const OptionTypeIdentifier(
@@ -207,23 +209,6 @@ final class FullStructMember extends StructMember with _FullStructMember {
   int get end => value.end;
 }
 
-final class TypeVariantParameterNode extends Node with _TypeVariantParameterNode {
-  const TypeVariantParameterNode(
-    this.typeIdentifier,
-    this.name,
-  );
-
-  final TypeIdentifier typeIdentifier;
-
-  final Token name;
-
-  @override
-  int get offset => typeIdentifier.offset;
-
-  @override
-  int get end => name.end;
-}
-
 final class TypeVariantNode extends Node with _TypeVariantNode {
   const TypeVariantNode(
     this.name,
@@ -232,20 +217,20 @@ final class TypeVariantNode extends Node with _TypeVariantNode {
 
   final Token name;
 
-  final SyntacticEntityList<TypeVariantParameterNode> parameters;
+  final StructLiteral? parameters;
 
   @override
   int get offset => name.offset;
 
   @override
-  int get end => parameters.end;
+  int get end => parameters?.end ?? name.end;
 }
 
 sealed class Expression extends AstNode with _Expression {
   const Expression();
 }
 
-final class IdentifierExpression extends Expression with _IdentifierExpression {
+final class IdentifierExpression extends TypeIdentifier with _IdentifierExpression {
   const IdentifierExpression(this.identifier);
 
   final Token identifier;
@@ -257,44 +242,21 @@ final class IdentifierExpression extends Expression with _IdentifierExpression {
   int get end => identifier.end;
 }
 
-final class InvocationExpression extends Expression with _InvocationExpression {
+final class InvocationExpression extends TypeIdentifier with _InvocationExpression {
   const InvocationExpression(
-    this.identifierExpression,
+    this.identifier,
     this.argument,
   );
 
-  final IdentifierExpression identifierExpression;
+  final IdentifierExpression identifier;
 
   final Expression argument;
-
-  @override
-  int get offset => identifierExpression.offset;
-
-  @override
-  int get end => argument.end;
-}
-
-final class LetExpression extends Expression with _LetExpression {
-  const LetExpression(
-    this.identifier,
-    this.equals,
-    this.binding,
-    this.result,
-  );
-
-  final Token identifier;
-
-  final Token equals;
-
-  final Expression binding;
-
-  final Expression result;
 
   @override
   int get offset => identifier.offset;
 
   @override
-  int get end => result.end;
+  int get end => argument.end;
 }
 
 sealed class Literal extends Expression with _Literal {
@@ -358,7 +320,7 @@ final class StructLiteral extends Literal with _StructLiteral {
 
   final Token leftParenthesis;
 
-  final SyntacticEntityList<StructMember>? members;
+  final SyntacticEntityList<StructMember> members;
 
   final Token rightParenthesis;
 
@@ -422,7 +384,7 @@ final class TypeDefinition extends Declaration with _TypeDefinition {
 
   final Token? leftParenthesis;
 
-  final SyntacticEntityList<IdentifiedTypeIdentifier>? parameters;
+  final SyntacticEntityList<IdentifierExpression>? parameters;
 
   final Token? rightParenthesis;
 

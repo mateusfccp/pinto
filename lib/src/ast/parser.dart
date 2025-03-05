@@ -11,6 +11,8 @@ const _expressionTokens = [
   TokenType.identifier,
   TokenType.integerLiteral,
   TokenType.leftParenthesis,
+  TokenType.leftBrace,
+  TokenType.leftBracket,
   // TokenType.letKeyword,
   TokenType.stringLiteral,
   TokenType.symbolLiteral,
@@ -213,7 +215,7 @@ final class Parser {
         case TokenType.falseKeyword:
           return BooleanLiteral(_previous);
         case TokenType.identifier:
-          return _identifier();
+          return _identifierOrInvocation();
         case TokenType.integerLiteral:
           return IntegerLiteral(_previous);
         case TokenType.leftParenthesis:
@@ -224,6 +226,12 @@ final class Parser {
           return _symbolLiteral();
         case TokenType.trueKeyword:
           return BooleanLiteral(_previous);
+        case TokenType.leftBrace:
+        case TokenType.leftBracket:
+        case TokenType.verum:
+        case TokenType.falsum:
+          _current--; // TODO(mateusfccp): We should not rewind the parser.
+          return _typeIdentifier();
         default:
           // TODO(mateusfccp): We may exhaustively check this case by using a sealed class for tokens instead of enums
           throw StateError('This branch should be unreachable.');
@@ -236,8 +244,13 @@ final class Parser {
     }
   }
 
-  Expression _identifier() {
-    final identifier = IdentifierExpression(_previous);
+  IdentifierExpression _identifier() {
+    assert(_previous.type == TokenType.identifier);
+    return IdentifierExpression(_previous);
+  }
+
+  Expression _identifierOrInvocation() {
+    final identifier = _identifier();
     if (_checkExpressionToken()) {
       return InvocationExpression(
         identifier,
@@ -251,19 +264,13 @@ final class Parser {
   StructLiteral _structLiteral() {
     final leftParenthesis = _previous;
 
-    final SyntacticEntityList<StructMember>? members;
+    final members = SyntacticEntityList<StructMember>();
 
-    if (_check(TokenType.rightParenthesis)) {
-      members = null;
-    } else {
-      members = SyntacticEntityList();
+    while (!_check(TokenType.rightParenthesis)) {
+      members.add(_structMember());
+      final comma = _match(TokenType.comma);
 
-      while (!_check(TokenType.rightParenthesis)) {
-        members.add(_structMember());
-        final comma = _match(TokenType.comma);
-
-        if (!comma) break;
-      }
+      if (!comma) break;
     }
 
     final rightParenthesis = _consumeExpecting(TokenType.rightParenthesis);
@@ -280,9 +287,11 @@ final class Parser {
       final name = _symbolLiteral();
 
       if (_checkExpressionToken()) {
+        final expression = _expression();
+
         return FullStructMember(
           name,
-          _expression(),
+          expression,
         );
       } else {
         return ValuelessStructMember(name);
@@ -342,7 +351,7 @@ final class Parser {
       after: TokenType.typeKeyword,
     );
 
-    final typeParameters = <IdentifiedTypeIdentifier>[];
+    final typeParameters = <IdentifierExpression>[];
 
     final Token? leftParenthesis;
     final Token? rightParenthesis;
@@ -350,9 +359,11 @@ final class Parser {
     if (_match(TokenType.leftParenthesis)) {
       leftParenthesis = _previous;
 
-      final firstTypeParameter = _typeParameterLiteral();
+      final firstTypeParameter = _consumeExpecting(TokenType.identifier);
 
-      typeParameters.add(firstTypeParameter);
+      typeParameters.add(
+        IdentifierExpression(firstTypeParameter),
+      );
 
       while (!_check(TokenType.rightParenthesis)) {
         _consumeAfter(
@@ -361,9 +372,11 @@ final class Parser {
           description: 'type parameter',
         );
 
-        final typeParameter = _typeParameterLiteral();
+        final typeParameter = _consumeExpecting(TokenType.identifier);
 
-        typeParameters.add(typeParameter);
+        typeParameters.add(
+          IdentifierExpression(typeParameter),
+        );
       }
 
       rightParenthesis = _consumeAfter(
@@ -401,47 +414,23 @@ final class Parser {
     );
   }
 
-  TypeVariantNode _typeVariant(bool isFirstDefinition) {
+  TypeVariantNode _typeVariant(bool isFirstVariation) {
     final name = _consumeAfter(
       type: TokenType.identifier,
-      after: isFirstDefinition //
+      after: isFirstVariation //
           ? TokenType.equalitySign
           : TokenType.plusSign,
     );
 
-    final parameters = <TypeVariantParameterNode>[];
+    final StructLiteral? parameters;
 
     if (_match(TokenType.leftParenthesis)) {
-      parameters.add(_typeVariationParameter());
-
-      while (_match(TokenType.comma)) {
-        if (_match(TokenType.rightParenthesis)) break;
-
-        parameters.add(_typeVariationParameter());
-      }
-
-      _consumeAfter(
-        type: TokenType.rightParenthesis,
-        after: TokenType.identifier,
-      );
+      parameters = _structLiteral();
+    } else {
+      parameters = null;
     }
 
-    return TypeVariantNode(
-      name,
-      SyntacticEntityList(parameters),
-    );
-  }
-
-  TypeVariantParameterNode _typeVariationParameter() {
-    final type = _typeIdentifier();
-
-    final name = _consumeAfter(
-      type: TokenType.identifier,
-      after: TokenType.identifier,
-      description: 'parameter type',
-    );
-
-    return TypeVariantParameterNode(type, name);
+    return TypeVariantNode(name, parameters);
   }
 
   TypeIdentifier _typeIdentifier() {
@@ -499,47 +488,20 @@ final class Parser {
         );
       }
     } else {
-      final IdentifiedTypeIdentifier literal;
+      final expression = _expression();
 
-      final identifier = _consumeExpecting(TokenType.identifier);
-      final parameters = <TypeIdentifier>[];
-
-      if (_match(TokenType.leftParenthesis)) {
-        final leftParenthesis = _previous;
-
-        parameters.add(_typeIdentifier());
-
-        while (_match(TokenType.comma)) {
-          parameters.add(_typeIdentifier());
-        }
-
-        final rightParenthesis = _consumeAfter(
-          type: TokenType.rightParenthesis,
-          after: TokenType.identifier, // TODO(mateusfccp): Fix this
-        );
-
-        literal = IdentifiedTypeIdentifier(
-          identifier,
-          leftParenthesis,
-          SyntacticEntityList(parameters),
-          rightParenthesis,
-        );
-      } else {
-        literal = IdentifiedTypeIdentifier.raw(
-          identifier,
+      if (expression is! TypeIdentifier) {
+        throw ExpectedError(
+          syntacticEntity: expression,
+          expectation: ExpectationType.typeIdentifier(),
         );
       }
 
       if (_match(TokenType.eroteme)) {
-        return OptionTypeIdentifier(literal, _previous);
+        return OptionTypeIdentifier(expression, _previous);
       } else {
-        return literal;
+        return expression;
       }
     }
-  }
-
-  IdentifiedTypeIdentifier _typeParameterLiteral() {
-    final identifier = _consumeExpecting(TokenType.identifier);
-    return IdentifiedTypeIdentifier.raw(identifier);
   }
 }

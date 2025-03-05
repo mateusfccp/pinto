@@ -1,7 +1,6 @@
 import 'package:code_builder/code_builder.dart' hide ClassBuilder, FunctionType;
 import 'package:dart_style/dart_style.dart';
 import 'package:pinto/semantic.dart';
-import 'package:pinto/src/other/print_indented.dart';
 
 import 'class_builder.dart';
 
@@ -37,25 +36,27 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   @override
   List<Expression> visitInvocationElement(InvocationElement node) {
     final argument = node.argument;
-    final call = refer(node.identifier.name);
+    final identifier = refer(node.identifier.name);
 
     final Expression expression;
 
     switch (argument) {
       case SingletonLiteralElement():
-        expression = call.call([literal(argument.constantValue)]);
+        expression = identifier.call([literal(argument.constantValue)]);
       case StructLiteralElement(:final members):
         final namedArguments = {
           for (final member in members) //
             member.name: member.value.accept(this)?.single as Expression,
         };
 
-        expression = call.call([], namedArguments);
+        expression = identifier.call([], namedArguments);
       case InvocationElement():
         final invocation = argument.accept(this) as List<Expression>;
-        expression = call.call(invocation);
+        expression = identifier.call(invocation);
       case IdentifierElement():
-        expression = call.call([refer(argument.name)]);
+        expression = identifier.call([refer(argument.name)]);
+      case TypeLiteralElement():
+        expression = argument.accept(this)?.single as Expression;
     }
 
     return [expression];
@@ -101,10 +102,26 @@ final class Compiler implements ElementVisitor<List<Spec>> {
           Parameter(
             (builder) {
               builder.named = true;
-              final type = member.value.constantValue as Type;
+              final Type type;
 
-              builder.required = type is! PolymorphicType || !type.optional;
-              builder.type = refer(_buildTypeName(type));
+              if (member.value case TypeLiteralElement literal) {
+                type = literal.type;
+              } else if (member.value case IdentifierElement identifier) {
+                type = identifier.constantValue as Type;
+              } else {
+                // This shouldn't happen because the resolver should have already validated the type
+                throw 'Unreachable';
+              }
+
+              if (type case PolymorphicType(option: true)) {
+                builder.required = false;
+              } else {
+                builder.required = true;
+              }
+
+              final res = member.value.accept(this);
+
+              builder.type = res?.single as Reference;
               builder.name = member.name;
             },
           ),
@@ -229,6 +246,11 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   }
 
   @override
+  List<TypeReference> visitTypeLiteralElement(TypeLiteralElement node) {
+    return [_typeReferenceFromType(node.type)];
+  }
+
+  @override
   List<Reference> visitTypeParameterElement(TypeParameterElement node) {
     return [_typeReferenceFromType(node.definedType)];
   }
@@ -316,15 +338,6 @@ String _buildStructTypeName(StructType type) {
   }
 
   return DartEmitter().visitLiteralRecordExpression(recordLiteral).toString();
-}
-
-Type? _inferExpressionType(ExpressionElement expression) {
-  return switch (expression) {
-    IdentifierElement(:final type) => type,
-    InvocationElement() => throw UnimplementedError(),
-    SingletonLiteralElement(:final type) => type,
-    StructLiteralElement(:final type) => type,
-  };
 }
 
 TypeReference _typeReferenceFromType(

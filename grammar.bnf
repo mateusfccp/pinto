@@ -17,8 +17,7 @@
                            | <let_variable_declaration>
 
 <type_definition> ::= "type" <identifier> ( "(" <named_type_literal> ( "," <named_type_literal> )* ")" )? "=" <type_variation> ( "+" <type_variation> )*
-<type_variant> ::= <identifier> ( "(" <type_variant_parameter> ( "," <type_variant_parameter> )* ")" )?
-<type_variant_parameter> ::= <type_literal> <identifier>
+<type_variant> ::= <identifier> <struct_literal>?
 
 <let_function_declaration> ::= "let" <identifier> <struct_literal> "=" <expression>
 <let_variable_declaration> ::= "let" <identifier> "=" <expression>
@@ -28,16 +27,16 @@
 		 | <list_type_literal>
                  | <set_type_literal>
 		 | <map_type_literal>
-		 | <named_type_literal>
 		 | <option_type_literal>
+		 | <identifier>
 
 <top_type_literal> ::= "⊤"
 <bottom_type_literal> ::= "⊥"
 <list_type_literal> ::= "[" <type_literal> "]"
 <set_type_literal> ::= "{" <type_literal> "}"
 <map_type_literal> ::= "{" <type_literal> ":" <type_literal> "}"
-<identified_type_literal> ::= <identifier> ( "(" <type_literal> ( "," <type_literal> )* ")" )?
 <option_type_literal> ::= <type_literal> "?"
+<invocation> ::= <identifier> <expression>
 
 <digit_separator> ::= "_"
 <string_character> ::= ~( '"' | '\n' | '\r')
@@ -48,6 +47,7 @@
 	       | <struct_literal>
 	       | <symbol_literal>
 	       | <unit_literal>
+	       | <invocation>
 	       | <identifier>
 
 <bool_literal> ::= "true" | "false"

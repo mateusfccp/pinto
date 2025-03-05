@@ -4,7 +4,7 @@ let returnString () = "string"
 
 let printName (:name String) = print returnString ()
 
-let main (:args String) = print printName "name"
+let main (:args String) = print printName (:name "name")
 
 let unterminatedString = "string
 //                              ^ unterminated_string
