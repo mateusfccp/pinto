@@ -23,7 +23,7 @@ jobs:
         run: dart pub get
 
       - name: Verify formatting
-        run: find . -name *.dart -not -name *.g.dart -not -name *.freezed.dart -not -name *.visitors.dart -exec dart format --line-length=200 --output=none --set-exit-if-changed {} \;
+        run: find . -name *.dart -not -name *.g.dart -not -name *.freezed.dart -not -name *.visitors.dart -print0 | xargs -0 dart format --line-length=200 --output=none --set-exit-if-changed
 
       - name: Analyze project source
         run: dart analyze --fatal-infos
