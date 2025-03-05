@@ -11,8 +11,7 @@ import 'package.dart';
 import 'symbols_resolver.dart';
 import 'type.dart';
 
-final class Resolver extends
-SimpleAstNodeVisitor<Future<Element>> {
+final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   Resolver({
     required this.program,
     required this.symbolsResolver,
