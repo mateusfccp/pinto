@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/lexer.dart';
-import 'package:pinto/src/other/print_indented.dart';
 
 import 'element.dart';
 import 'environment.dart';
@@ -12,7 +11,8 @@ import 'package.dart';
 import 'symbols_resolver.dart';
 import 'type.dart';
 
-final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
+final class Resolver extends
+SimpleAstNodeVisitor<Future<Element>> {
   Resolver({
     required this.program,
     required this.symbolsResolver,
