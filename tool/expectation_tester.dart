@@ -6,41 +6,63 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/src/dart/sdk/sdk.dart';
 import 'package:analyzer/src/util/sdk.dart';
+import 'package:matcher/src/interfaces.dart';
+import 'package:matcher/src/pretty_print.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/lexer.dart';
 import 'package:pinto/semantic.dart';
+import 'package:quiver/collection.dart';
+import 'package:test/test.dart';
 
 const _marker = '^';
 
-// TODO(mateusfccp): Maybe optimizing it by merging it with [ErrorAnalyzer],
-// so we don't have to read the same file twice
-final class ExpectationsParser {
-  ExpectationsParser(String path) {
-    final file = File(path);
-    final stream = file.openRead();
-    final stringStream = _utf8Decoder.bind(stream);
-    _linesStream = _lineSplitter.bind(stringStream);
+/// A static tester for pint° files.
+///
+/// [StaticTester] reads a file and provides a stream of [expectations] and
+/// [errors].
+final class StaticTester {
+  /// Creates a static tester for the file at [path].
+  StaticTester(String path) {
+    _file = File(path);
+    _fileContent = _file.readAsStringSync();
+    _errorHandler.addListener(_processError);
+
+    _buildExpectations();
+    _analyze();
   }
 
-  final _utf8Decoder = Utf8Decoder();
-  final _lineSplitter = LineSplitter();
-  late final Stream<String> _linesStream;
+  late final File _file;
+  late final String _fileContent;
 
-  Stream<ErrorEmission> getExpectations() async* {
+  final _resourceProvider = PhysicalResourceProvider.INSTANCE;
+  final _errorHandler = ErrorHandler();
+  final _expectationsController = StreamController<ErrorEmission>();
+  final _errorsController = StreamController<ErrorEmission>();
+
+  /// The expectations of the file.
+  Stream<ErrorEmission> get expectations => _expectationsController.stream;
+
+  /// The errors of the file.
+  Stream<ErrorEmission> get errors => _errorsController.stream;
+
+  void _buildExpectations() {
+    final lines = LineSplitter.split(_fileContent);
     var currentLineOffset = 0;
     var lastAnalyzedLineOffset = currentLineOffset;
 
-    await for (final line in _linesStream) {
+    for (final line in lines) {
       final expectation = _processLine(lastAnalyzedLineOffset, line);
       if (expectation == null) {
         lastAnalyzedLineOffset = currentLineOffset;
       } else {
-        yield expectation;
+        _expectationsController.add(expectation);
       }
 
       currentLineOffset = currentLineOffset + line.length + 1; // + 1 for line break
     }
+
+    _expectationsController.close();
   }
 
   ErrorEmission? _processLine(int lineStartOffset, String line) {
@@ -56,27 +78,10 @@ final class ExpectationsParser {
       return null;
     }
   }
-}
 
-final class ErrorAnalyzer {
-  ErrorAnalyzer(String path) {
-    _file = File(path);
-
-    _errorHandler.addListener(_processError);
-  }
-
-  final _resourceProvider = PhysicalResourceProvider.INSTANCE;
-  final _errorHandler = ErrorHandler();
-  final _controller = StreamController<ErrorEmission>();
-  late final File _file;
-
-  Stream<ErrorEmission> get errors => _controller.stream;
-
-  Future<void> analyze() async {
-    final content = await _file.readAsString();
-
+  Future<void> _analyze() async {
     final lexer = Lexer(
-      source: content,
+      source: _fileContent,
       errorHandler: _errorHandler,
     );
 
@@ -112,7 +117,7 @@ final class ErrorAnalyzer {
     );
 
     await resolver.resolve();
-    _controller.close();
+    _errorsController.close();
   }
 
   void _processError(PintoError error) {
@@ -127,21 +132,46 @@ final class ErrorAnalyzer {
       end: end,
     );
 
-    _controller.add(expectation);
+    _errorsController.add(expectation);
   }
 }
 
 final _lineRegex = RegExp('\\s*//\\s*\\$_marker+(?:\\s+(([A-Za-z_\$][A-Za-z_\$0-9]*)+))?');
 
-sealed class ErrorEmission {}
+/// An error emitted by the parser or resolver.
+sealed class ErrorEmission implements Comparable<ErrorEmission> {
+  const ErrorEmission();
 
-final class Any implements ErrorEmission {
+  /// The offset where the error begins.
+  int get begin;
+
+  /// The offset where the error ends.
+  int get end;
+
+  @override
+  int compareTo(ErrorEmission other) {
+    final beginComparison = begin.compareTo(other.begin);
+
+    if (beginComparison != 0) {
+      return beginComparison;
+    } else {
+      return end.compareTo(other.end);
+    }
+  }
+}
+
+/// An error that matches any emitted error.
+final class Any extends ErrorEmission {
+  /// Creates an error that matches any emitted error.
   const Any({
     required this.begin,
     required this.end,
   });
 
+  @override
   final int begin;
+
+  @override
   final int end;
 
   @override
@@ -162,7 +192,9 @@ final class Any implements ErrorEmission {
   int get hashCode => Object.hash(begin, end);
 }
 
-final class Specific implements ErrorEmission {
+/// An error that matches an emitted error with the given [code].
+final class Specific extends ErrorEmission {
+  /// Creates a specific error with the given [code].
   const Specific({
     required this.code,
     required this.begin,
@@ -170,7 +202,11 @@ final class Specific implements ErrorEmission {
   });
 
   final String code;
+
+  @override
   final int begin;
+
+  @override
   final int end;
 
   @override
@@ -189,4 +225,75 @@ final class Specific implements ErrorEmission {
 
   @override
   int get hashCode => Object.hash(code, begin, end);
+
+  @override
+  int compareTo(ErrorEmission other) {
+    final offsetComparison = super.compareTo(other);
+
+    if (offsetComparison != 0) {
+      return offsetComparison;
+    } else {
+      return switch (other) {
+        Any() => code.compareTo('any'),
+        Specific() => code.compareTo(other.code),
+      };
+    }
+  }
+}
+
+/// A matcher that matches if two sets are equal.
+///
+/// It gives detailed information about the differences between the sets.
+Matcher sameEmissions(Set<ErrorEmission> expected) => _SetMatcherWithDifferenceDescription(expected);
+
+final class _SetMatcherWithDifferenceDescription extends Matcher {
+  const _SetMatcherWithDifferenceDescription(this.expected);
+
+  final Set<ErrorEmission> expected;
+
+  @override
+  Description describe(Description description) {
+    return description..add(prettyPrint(expected));
+  }
+
+  @override
+  Description describeMismatch(item, Description mismatchDescription, Map matchState, bool verbose) {
+    if (item is Set<ErrorEmission>) {
+      final missingExpectations = expected.difference(item);
+      final unexpectedErrors = item.difference(expected);
+
+      // final buffer = StringBuffer('The static tester did not match the expectations and errors.\n\n');
+      mismatchDescription.add('The static tester did not match the expectations and errors.\n');
+
+      if (missingExpectations.isNotEmpty) {
+        mismatchDescription.add('\nThe following expectations were not emitted:');
+
+        for (final expectation in missingExpectations) {
+          mismatchDescription.add('\n• $expectation');
+        }
+
+        mismatchDescription.add('\n');
+      }
+
+      if (unexpectedErrors.isNotEmpty) {
+        mismatchDescription.add('\nThe following errors were emitted but should not have been:');
+
+        for (final error in unexpectedErrors) {
+          mismatchDescription.add('\n• $error');
+        }
+      }
+    } else {
+      mismatchDescription.add('The matched item "$item" is not a Set<ErrorEmission>.');
+    }
+    return mismatchDescription;
+  }
+
+  @override
+  bool matches(Object? item, Map matchState) {
+    if (item is Set<ErrorEmission>) {
+      return setsEqual(item, expected);
+    } else {
+      return false;
+    }
+  }
 }
