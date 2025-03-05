@@ -299,7 +299,7 @@ extension SubtypeExtension on Type {
     other = flattened(other);
 
     return switch ((self, other)) {
-      (BottomType(), _) || (_, TopType())  => true,
+      (BottomType(), _) || (_, TopType()) => true,
       _ => self == other,
     };
   }

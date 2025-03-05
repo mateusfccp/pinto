@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import '../../tool/test_program.dart';
 
 Future<void> main() async {
-    await testProgram(
+  await testProgram(
     'Function call with single pseudo-positional arguments',
     '''
 let createMessage () = "Hello, world!"
@@ -18,7 +18,7 @@ let main () = printMessage (:ignored "ignores", :message createMessage ())
       );
     },
   );
-  
+
   await testProgram(
     'Function call with single named argument',
     '''

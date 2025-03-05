@@ -58,8 +58,7 @@ final class SymbolsResolver {
       case dart.FunctionTypedElement():
         final functionType = _dartFunctionTypeToPintoFunctionType(element.type);
 
-        final body = SingletonLiteralElement()
-          ..constantValue = null;
+        final body = SingletonLiteralElement()..constantValue = null;
 
         syntheticElement = LetFunctionDeclaration(
           name: element.name!,
@@ -94,8 +93,7 @@ final class SymbolsResolver {
 
         syntheticElement = typeDefinition;
       case dart.TopLevelVariableElement():
-        final body = SingletonLiteralElement()
-          ..constantValue = null;
+        final body = SingletonLiteralElement()..constantValue = null;
 
         syntheticElement = LetVariableDeclaration(
           name: element.name,
@@ -107,7 +105,7 @@ final class SymbolsResolver {
           type: _dartTypeToPintoType(element.aliasedType),
           constantValue: null,
         );
-        
+
         syntheticElement = LetVariableDeclaration(name: element.name)..body = body;
       default:
         // throw UnimplementedError('No conversion implemented from ${element.runtimeType} to a pint° element.');
@@ -208,7 +206,6 @@ FunctionType _dartFunctionTypeToPintoFunctionType(dart.FunctionType type) {
     returnType: _dartTypeToPintoType(type.returnType),
   );
 }
-
 
 final class _SymbolResolvingException implements Exception {
   _SymbolResolvingException(this.package);

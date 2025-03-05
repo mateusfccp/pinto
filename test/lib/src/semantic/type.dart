@@ -16,7 +16,7 @@ void main() {
     expect(top < type, isFalse);
     expect(top < unit, isFalse);
   });
-  
+
   test('The bottom type is the subtype of all types', () {
     expect(bottom < top, isTrue);
     expect(bottom < bottom, isTrue);
