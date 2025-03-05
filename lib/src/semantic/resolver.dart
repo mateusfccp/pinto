@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/lexer.dart';
-import 'package:pinto/src/other/print_indented.dart';
 
 import 'element.dart';
 import 'environment.dart';
