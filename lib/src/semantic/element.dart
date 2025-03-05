@@ -1,5 +1,4 @@
 import 'package:pinto/annotations.dart';
-import 'package:pinto/lexer.dart';
 
 import 'package.dart';
 import 'type.dart';
@@ -35,10 +34,19 @@ final class TypeParameterElement extends Element with _TypeParameterElement impl
   late TypeDefinitionElement enclosingElement;
 
   @override
-  Type? type = TypeType();
+  Type? get type => TypeType(definedType);
 
   @override
   late Type definedType;
+}
+
+final class StructMemberElement extends Element with _StructMemberElement {
+  late final String name;
+
+  late final ExpressionElement value;
+
+  @override
+  late LiteralElement enclosingElement;
 }
 
 final class ParameterElement extends Element with _ParameterElement implements TypedElement {
@@ -57,16 +65,12 @@ final class ParameterElement extends Element with _ParameterElement implements T
 }
 
 sealed class ExpressionElement extends Element with _ExpressionElement implements TypedElement {
-  ExpressionElement();
-
   @override
   late Element enclosingElement;
 
-  bool get constant;
-  @override
-  void visitChildren<R>(ElementVisitor<R> visitor) {}
-  @override
-  String toString() => 'ExpressionElement(enclosingElement: $enclosingElement)';
+  bool get constant => constantValue != null;
+
+  Object? get constantValue;
 }
 
 final class InvocationElement extends ExpressionElement with _InvocationElement {
@@ -74,7 +78,7 @@ final class InvocationElement extends ExpressionElement with _InvocationElement 
     this.type,
     required this.identifier,
     required this.argument,
-    required this.constant,
+    required this.constantValue,
   });
 
   @override
@@ -85,14 +89,14 @@ final class InvocationElement extends ExpressionElement with _InvocationElement 
   final ExpressionElement argument;
 
   @override
-  final bool constant;
+  final Object? constantValue;
 }
 
 final class IdentifierElement extends ExpressionElement with _IdentifierElement {
   IdentifierElement({
     required this.name,
     this.type,
-    required this.constant,
+    required this.constantValue,
   });
 
   final String name;
@@ -101,23 +105,41 @@ final class IdentifierElement extends ExpressionElement with _IdentifierElement 
   Type? type;
 
   @override
-  final bool constant;
+  final Object? constantValue;
 }
 
-final class LiteralElement extends ExpressionElement with _LiteralElement {
-  LiteralElement({
-    this.type,
-    required this.constant,
-    required this.constantValue,
-  });
+sealed class LiteralElement extends ExpressionElement with _LiteralElement {}
+
+final class SingletonLiteralElement extends LiteralElement with _SingletonLiteralElement {
+  SingletonLiteralElement({this.type});
 
   @override
   Type? type;
 
   @override
-  final bool constant;
+  late final Object? constantValue;
+}
 
-  final Object? constantValue;
+final class StructLiteralElement extends LiteralElement with _StructLiteralElement {
+  @override
+  late final StructType type;
+
+  final List<StructMemberElement> members = [];
+
+  @override
+  late final Object? constantValue;
+}
+
+final class TypeLiteralElement extends LiteralElement with _TypeLiteralElement {
+  TypeLiteralElement({required Type referenceType}) : _referenceType = referenceType;
+
+  final Type _referenceType;
+
+  @override
+  Type get type => TypeType(_referenceType);
+
+  @override
+  Object? get constantValue => _referenceType;
 }
 
 final class TypeVariantElement extends Element with _TypeVariantElement {
@@ -132,8 +154,6 @@ final class TypeVariantElement extends Element with _TypeVariantElement {
 }
 
 sealed class DeclarationElement extends Element with _DeclarationElement {
-  DeclarationElement();
-
   @override
   late ProgramElement enclosingElement;
 }
@@ -144,37 +164,39 @@ final class ImportElement extends DeclarationElement with _ImportElement {
   final Package package;
 }
 
-final class LetFunctionDeclaration extends DeclarationElement with _LetFunctionDeclaration implements TypedElement {
-  LetFunctionDeclaration({
-    required this.name,
-    required this.parameter,
-    required this.type,
-    required this.body,
-  });
+sealed class LetDeclarationElement extends DeclarationElement with _LetDeclarationElement implements TypedElement {
+  LetDeclarationElement({required this.name});
 
   final String name;
 
-  final Token parameter;
+  late final ExpressionElement body;
 
   @override
-  FunctionType type;
-
-  final ExpressionElement body;
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    body.accept(visitor);
+  }
 }
 
-final class LetVariableDeclaration extends DeclarationElement with _LetVariableDeclaration implements TypedElement {
-  LetVariableDeclaration({
-    required this.name,
-    this.type,
-    required this.body,
+final class LetFunctionDeclaration extends LetDeclarationElement with _LetFunctionDeclaration {
+  LetFunctionDeclaration({
+    required super.name,
+    required this.parameter,
   });
 
-  final String name;
+  final StructLiteralElement parameter;
+
+  @override
+  late FunctionType type;
+}
+
+final class LetVariableDeclaration extends LetDeclarationElement with _LetVariableDeclaration {
+  LetVariableDeclaration({
+    required super.name,
+    this.type,
+  });
 
   @override
   Type? type;
-
-  final ExpressionElement body;
 }
 
 final class ImportedSymbolSyntheticElement extends DeclarationElement with _ImportedSymbolSyntheticElement implements TypedElement {
@@ -201,15 +223,13 @@ final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitio
   final variants = <TypeVariantElement>[];
 
   @override
-  Type? type = TypeType();
+  Type? get type => TypeType(definedType);
 
   @override
   late Type definedType;
 }
 
 final class ProgramElement extends Element with _ProgramElement {
-  ProgramElement();
-
   final imports = <ImportElement>[];
 
   final declarations = <DeclarationElement>[];

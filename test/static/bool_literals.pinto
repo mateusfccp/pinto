@@ -2,4 +2,4 @@ let f = false
 
 let t = true
 
-let returnBool _ = t
+let returnBool () = t

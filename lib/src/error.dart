@@ -19,6 +19,16 @@ sealed class LexingError implements PintoError {
   int get offset;
 }
 
+final class InvalidIdentifierStart implements LexingError {
+  const InvalidIdentifierStart({required this.offset});
+
+  @override
+  final int offset;
+
+  @override
+  String get code => 'invalid_identifier_start';
+}
+
 final class NumberEndingWithSeparatorError implements LexingError {
   const NumberEndingWithSeparatorError({required this.offset});
 
@@ -105,6 +115,8 @@ sealed class ExpectationType with _$ExpectationType {
 
   const factory ExpectationType.expression({Expression? expression}) = ExpressionExpectation;
 
+  const factory ExpectationType.typeIdentifier() = TypeIdentifierExpectation;
+
   const factory ExpectationType.oneOf({required List<ExpectationType> expectations}) = OneOfExpectation;
 
   const factory ExpectationType.token({
@@ -121,6 +133,7 @@ sealed class ExpectationType with _$ExpectationType {
       ExpressionExpectation() => 'expression',
       OneOfExpectation(:final expectations) => expectations.map((expectation) => expectation.code).join('_or_'),
       TokenExpectation(:final token) => token.code,
+      TypeIdentifierExpectation() => 'type_identifier',
     };
   }
 
@@ -134,6 +147,7 @@ sealed class ExpectationType with _$ExpectationType {
       ExpressionExpectation() => 'an expression',
       OneOfExpectation(:final expectations) => "${expectations.length > 1 ? 'one of ' : ''}${expectations.join(', ')}",
       TokenExpectation(:final description, :final token) => description ?? "'$token'",
+      TypeIdentifierExpectation() => 'a type identifier',
     };
   }
 }
@@ -173,6 +187,71 @@ final class ImportedPackageNotAvailableError implements ResolveError {
 
   @override
   String get code => 'imported_package_not_available';
+}
+
+/// An error that indicates that the passed argument is invalid.
+final class InvalidArgumentTypeError implements ResolveError {
+  const InvalidArgumentTypeError({
+    required this.syntacticEntity,
+    required this.expectedType,
+    required this.argumentType,
+  });
+
+  @override
+  final SyntacticEntity syntacticEntity;
+
+  /// The expected type of the argument.
+  final Type expectedType;
+
+  /// The type of the provided argument.
+  final Type argumentType;
+
+  @override
+  String get code => 'invalid_argument_type';
+}
+
+/// An error that indicates that the type of a parameter is invalid.
+///
+/// A parameter should be a [TypeType] or a [PolymorphicType] that resolves to
+/// a [TypeType].
+final class InvalidParameterTypeError implements ResolveError {
+  const InvalidParameterTypeError({
+    required this.syntacticEntity,
+    required this.parameterType,
+  });
+
+  @override
+  final SyntacticEntity syntacticEntity;
+
+  /// The type of the parameter.
+  final Type parameterType;
+
+  @override
+  String get code => 'invalid_parameter_type';
+}
+
+/// An error that indicates that the type parameter not valid.
+///
+/// A type parameter should be a full struct with a name and a identifier.
+///
+/// Example:
+///
+/// ```pinto
+/// type Person = Person(:name String, :age int) // Valid
+/// type Person = Person(:name String, :age) // Invalid, missing type
+/// type Person = Person(:name String, int) // Invalid, missing name
+/// type Person = Person(:name String, :age 10) // Invalid, unexpected value
+/// ```
+final class InvalidTypeParameterError implements ResolveError {
+  const InvalidTypeParameterError({
+    required this.syntacticEntity,
+  });
+
+  @override
+  final SyntacticEntity syntacticEntity;
+
+  @override
+  String get code => 'invalid_type_parameter';
 }
 
 final class NotAFunctionError implements ResolveError {

@@ -150,20 +150,22 @@ enum TokenType {
 
   /// The string literal.
   ///
-  /// String literals are still subspecified. Currently, they will just be "something"
+  /// String literals are still underspecified. Currently, they will just be "something".
   stringLiteral,
+
+  /// The symbol literal.
+  ///
+  /// It follows the following grammar:
+  /// ```ebnf
+  /// <symbol_literal> ::= ":" <identifier>
+  /// ```
+  symbolLiteral,
 
   /// The `true` keyword token.
   trueKeyword,
 
   /// The `type` keyword token.
   typeKeyword,
-
-  /// The unit literal.
-  ///
-  /// It's represented by the lexeme `()`.
-  // TODO(mateusfccp): Maybe this will be unified with the record/struct literal
-  unitLiteral,
 
   /// The verum token (`⊤`).
   verum;
@@ -194,9 +196,9 @@ enum TokenType {
       rightParenthesis => 'right_parenthesis',
       slash => 'slash',
       stringLiteral => 'string_literal',
+      symbolLiteral => 'symbol_literal',
       trueKeyword => 'true',
       typeKeyword => 'type',
-      unitLiteral => 'unit',
       verum => 'top_type',
     };
   }
@@ -228,9 +230,9 @@ enum TokenType {
       rightParenthesis => ')',
       slash => '/',
       stringLiteral => 'string literal',
+      symbolLiteral => 'symbol literal',
       trueKeyword => 'true',
       typeKeyword => 'type',
-      unitLiteral => '()',
       verum => '⊤',
     };
   }

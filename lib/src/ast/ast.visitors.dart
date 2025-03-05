@@ -8,29 +8,42 @@
 import 'ast.dart';
 
 abstract interface class AstNodeVisitor<R> {
+  R? visitNamelessStructMember(NamelessStructMember node);
+  R? visitValuelessStructMember(ValuelessStructMember node);
+  R? visitFullStructMember(FullStructMember node);
+  R? visitTypeVariantNode(TypeVariantNode node);
   R? visitTopTypeIdentifier(TopTypeIdentifier node);
   R? visitBottomTypeIdentifier(BottomTypeIdentifier node);
   R? visitListTypeIdentifier(ListTypeIdentifier node);
   R? visitSetTypeIdentifier(SetTypeIdentifier node);
   R? visitMapTypeIdentifier(MapTypeIdentifier node);
-  R? visitIdentifiedTypeIdentifier(IdentifiedTypeIdentifier node);
   R? visitOptionTypeIdentifier(OptionTypeIdentifier node);
-  R? visitTypeVariantParameterNode(TypeVariantParameterNode node);
-  R? visitTypeVariantNode(TypeVariantNode node);
   R? visitIdentifierExpression(IdentifierExpression node);
   R? visitInvocationExpression(InvocationExpression node);
-  R? visitLetExpression(LetExpression node);
   R? visitBooleanLiteral(BooleanLiteral node);
-  R? visitUnitLiteral(UnitLiteral node);
   R? visitStringLiteral(StringLiteral node);
   R? visitIntegerLiteral(IntegerLiteral node);
   R? visitDoubleLiteral(DoubleLiteral node);
+  R? visitStructLiteral(StructLiteral node);
+  R? visitSymbolLiteral(SymbolLiteral node);
   R? visitImportDeclaration(ImportDeclaration node);
   R? visitTypeDefinition(TypeDefinition node);
   R? visitLetDeclaration(LetDeclaration node);
 }
 
 abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
+  @override
+  R? visitNamelessStructMember(NamelessStructMember node) => null;
+
+  @override
+  R? visitValuelessStructMember(ValuelessStructMember node) => null;
+
+  @override
+  R? visitFullStructMember(FullStructMember node) => null;
+
+  @override
+  R? visitTypeVariantNode(TypeVariantNode node) => null;
+
   @override
   R? visitTopTypeIdentifier(TopTypeIdentifier node) => null;
 
@@ -47,16 +60,7 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitMapTypeIdentifier(MapTypeIdentifier node) => null;
 
   @override
-  R? visitIdentifiedTypeIdentifier(IdentifiedTypeIdentifier node) => null;
-
-  @override
   R? visitOptionTypeIdentifier(OptionTypeIdentifier node) => null;
-
-  @override
-  R? visitTypeVariantParameterNode(TypeVariantParameterNode node) => null;
-
-  @override
-  R? visitTypeVariantNode(TypeVariantNode node) => null;
 
   @override
   R? visitIdentifierExpression(IdentifierExpression node) => null;
@@ -65,13 +69,7 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
   R? visitInvocationExpression(InvocationExpression node) => null;
 
   @override
-  R? visitLetExpression(LetExpression node) => null;
-
-  @override
   R? visitBooleanLiteral(BooleanLiteral node) => null;
-
-  @override
-  R? visitUnitLiteral(UnitLiteral node) => null;
 
   @override
   R? visitStringLiteral(StringLiteral node) => null;
@@ -81,6 +79,12 @@ abstract base class SimpleAstNodeVisitor<R> implements AstNodeVisitor<R> {
 
   @override
   R? visitDoubleLiteral(DoubleLiteral node) => null;
+
+  @override
+  R? visitStructLiteral(StructLiteral node) => null;
+
+  @override
+  R? visitSymbolLiteral(SymbolLiteral node) => null;
 
   @override
   R? visitImportDeclaration(ImportDeclaration node) => null;
@@ -98,7 +102,27 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
     return null;
   }
 
-  R? visitTypeIdentifier(TypeIdentifier node) => visitAstNode(node);
+  R? visitNode(Node node) => visitAstNode(node);
+
+  R? visitStructMember(StructMember node) => visitNode(node);
+
+  @override
+  R? visitNamelessStructMember(NamelessStructMember node) =>
+      visitStructMember(node);
+
+  @override
+  R? visitValuelessStructMember(ValuelessStructMember node) =>
+      visitStructMember(node);
+
+  @override
+  R? visitFullStructMember(FullStructMember node) => visitStructMember(node);
+
+  @override
+  R? visitTypeVariantNode(TypeVariantNode node) => visitNode(node);
+
+  R? visitExpression(Expression node) => visitAstNode(node);
+
+  R? visitTypeIdentifier(TypeIdentifier node) => visitExpression(node);
 
   @override
   R? visitTopTypeIdentifier(TopTypeIdentifier node) =>
@@ -121,42 +145,21 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
       visitTypeIdentifier(node);
 
   @override
-  R? visitIdentifiedTypeIdentifier(IdentifiedTypeIdentifier node) =>
-      visitTypeIdentifier(node);
-
-  @override
   R? visitOptionTypeIdentifier(OptionTypeIdentifier node) =>
       visitTypeIdentifier(node);
 
-  R? visitNode(Node node) => visitAstNode(node);
-
-  @override
-  R? visitTypeVariantParameterNode(TypeVariantParameterNode node) =>
-      visitNode(node);
-
-  @override
-  R? visitTypeVariantNode(TypeVariantNode node) => visitNode(node);
-
-  R? visitExpression(Expression node) => visitAstNode(node);
-
   @override
   R? visitIdentifierExpression(IdentifierExpression node) =>
-      visitExpression(node);
+      visitTypeIdentifier(node);
 
   @override
   R? visitInvocationExpression(InvocationExpression node) =>
-      visitExpression(node);
-
-  @override
-  R? visitLetExpression(LetExpression node) => visitExpression(node);
+      visitTypeIdentifier(node);
 
   R? visitLiteral(Literal node) => visitExpression(node);
 
   @override
   R? visitBooleanLiteral(BooleanLiteral node) => visitLiteral(node);
-
-  @override
-  R? visitUnitLiteral(UnitLiteral node) => visitLiteral(node);
 
   @override
   R? visitStringLiteral(StringLiteral node) => visitLiteral(node);
@@ -166,6 +169,12 @@ abstract base class GeneralizingAstNodeVisitor<R> implements AstNodeVisitor<R> {
 
   @override
   R? visitDoubleLiteral(DoubleLiteral node) => visitLiteral(node);
+
+  @override
+  R? visitStructLiteral(StructLiteral node) => visitLiteral(node);
+
+  @override
+  R? visitSymbolLiteral(SymbolLiteral node) => visitLiteral(node);
 
   R? visitDeclaration(Declaration node) => visitAstNode(node);
 

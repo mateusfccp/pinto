@@ -33,7 +33,6 @@ final class VisitorGenerator extends GeneratorForAnnotation<TreeRoot> {
     }
 
     if (classElement.isRoot) {
-      print('Class ${classElement.name} is the root of a tree.');
       final inputLibrary = await buildStep.inputLibrary;
       final fileName = inputLibrary.source.shortName;
 

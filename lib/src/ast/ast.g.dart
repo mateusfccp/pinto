@@ -12,6 +12,87 @@ base mixin _AstNode {
   String toString() => 'AstNode(length: $_length)';
 }
 
+base mixin _Node {
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'Node';
+}
+
+base mixin _StructMember {
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'StructMember';
+}
+
+base mixin _NamelessStructMember {
+  Expression get _value => (this as NamelessStructMember).value;
+  int get _offset => (this as NamelessStructMember).offset;
+  int get _end => (this as NamelessStructMember).end;
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitNamelessStructMember((this as NamelessStructMember));
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    _value.accept(visitor);
+  }
+
+  @override
+  String toString() =>
+      'NamelessStructMember(value: $_value, offset: $_offset, end: $_end)';
+}
+
+base mixin _ValuelessStructMember {
+  SymbolLiteral get _name => (this as ValuelessStructMember).name;
+  int get _offset => (this as ValuelessStructMember).offset;
+  int get _end => (this as ValuelessStructMember).end;
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitValuelessStructMember((this as ValuelessStructMember));
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    _name.accept(visitor);
+  }
+
+  @override
+  String toString() =>
+      'ValuelessStructMember(name: $_name, offset: $_offset, end: $_end)';
+}
+
+base mixin _FullStructMember {
+  SymbolLiteral get _name => (this as FullStructMember).name;
+  Expression get _value => (this as FullStructMember).value;
+  int get _offset => (this as FullStructMember).offset;
+  int get _end => (this as FullStructMember).end;
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitFullStructMember((this as FullStructMember));
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    _name.accept(visitor);
+    _value.accept(visitor);
+  }
+
+  @override
+  String toString() =>
+      'FullStructMember(name: $_name, value: $_value, offset: $_offset, end: $_end)';
+}
+
+base mixin _TypeVariantNode {
+  Token get _name => (this as TypeVariantNode).name;
+  StructLiteral? get _parameters => (this as TypeVariantNode).parameters;
+  int get _offset => (this as TypeVariantNode).offset;
+  int get _end => (this as TypeVariantNode).end;
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitTypeVariantNode((this as TypeVariantNode));
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    _parameters?.accept(visitor);
+  }
+
+  @override
+  String toString() =>
+      'TypeVariantNode(name: $_name, parameters: $_parameters, offset: $_offset, end: $_end)';
+}
+
+base mixin _Expression {
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() => 'Expression';
+}
+
 base mixin _TypeIdentifier {
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
@@ -96,24 +177,6 @@ base mixin _MapTypeIdentifier {
       'MapTypeIdentifier(leftBrace: $_leftBrace, key: $_key, colon: $_colon, value: $_value, rightBrace: $_rightBrace, offset: $_offset, end: $_end)';
 }
 
-base mixin _IdentifiedTypeIdentifier {
-  Token get _identifier => (this as IdentifiedTypeIdentifier).identifier;
-  Token? get _leftParenthesis =>
-      (this as IdentifiedTypeIdentifier).leftParenthesis;
-  SyntacticEntityList<TypeIdentifier>? get _arguments =>
-      (this as IdentifiedTypeIdentifier).arguments;
-  Token? get _rightParenthesis =>
-      (this as IdentifiedTypeIdentifier).rightParenthesis;
-  int get _offset => (this as IdentifiedTypeIdentifier).offset;
-  int get _end => (this as IdentifiedTypeIdentifier).end;
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitIdentifiedTypeIdentifier((this as IdentifiedTypeIdentifier));
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'IdentifiedTypeIdentifier(identifier: $_identifier, leftParenthesis: $_leftParenthesis, arguments: $_arguments, rightParenthesis: $_rightParenthesis, offset: $_offset, end: $_end)';
-}
-
 base mixin _OptionTypeIdentifier {
   TypeIdentifier get _identifier => (this as OptionTypeIdentifier).identifier;
   Token get _eroteme => (this as OptionTypeIdentifier).eroteme;
@@ -130,49 +193,6 @@ base mixin _OptionTypeIdentifier {
       'OptionTypeIdentifier(identifier: $_identifier, eroteme: $_eroteme, offset: $_offset, end: $_end)';
 }
 
-base mixin _Node {
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'Node';
-}
-
-base mixin _TypeVariantParameterNode {
-  TypeIdentifier get _typeIdentifier =>
-      (this as TypeVariantParameterNode).typeIdentifier;
-  Token get _name => (this as TypeVariantParameterNode).name;
-  int get _offset => (this as TypeVariantParameterNode).offset;
-  int get _end => (this as TypeVariantParameterNode).end;
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitTypeVariantParameterNode((this as TypeVariantParameterNode));
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    _typeIdentifier.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'TypeVariantParameterNode(typeIdentifier: $_typeIdentifier, name: $_name, offset: $_offset, end: $_end)';
-}
-
-base mixin _TypeVariantNode {
-  Token get _name => (this as TypeVariantNode).name;
-  SyntacticEntityList<TypeVariantParameterNode> get _parameters =>
-      (this as TypeVariantNode).parameters;
-  int get _offset => (this as TypeVariantNode).offset;
-  int get _end => (this as TypeVariantNode).end;
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitTypeVariantNode((this as TypeVariantNode));
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() =>
-      'TypeVariantNode(name: $_name, parameters: $_parameters, offset: $_offset, end: $_end)';
-}
-
-base mixin _Expression {
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'Expression';
-}
-
 base mixin _IdentifierExpression {
   Token get _identifier => (this as IdentifierExpression).identifier;
   int get _offset => (this as IdentifierExpression).offset;
@@ -186,95 +206,102 @@ base mixin _IdentifierExpression {
 }
 
 base mixin _InvocationExpression {
-  IdentifierExpression get _identifierExpression =>
-      (this as InvocationExpression).identifierExpression;
+  IdentifierExpression get _identifier =>
+      (this as InvocationExpression).identifier;
   Expression get _argument => (this as InvocationExpression).argument;
   int get _offset => (this as InvocationExpression).offset;
   int get _end => (this as InvocationExpression).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitInvocationExpression((this as InvocationExpression));
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    _identifierExpression.accept(visitor);
+    _identifier.accept(visitor);
     _argument.accept(visitor);
   }
 
   @override
   String toString() =>
-      'InvocationExpression(identifierExpression: $_identifierExpression, argument: $_argument, offset: $_offset, end: $_end)';
-}
-
-base mixin _LetExpression {
-  Token get _identifier => (this as LetExpression).identifier;
-  Token get _equals => (this as LetExpression).equals;
-  Expression get _binding => (this as LetExpression).binding;
-  Expression get _result => (this as LetExpression).result;
-  int get _offset => (this as LetExpression).offset;
-  int get _end => (this as LetExpression).end;
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitLetExpression((this as LetExpression));
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {
-    _binding.accept(visitor);
-    _result.accept(visitor);
-  }
-
-  @override
-  String toString() =>
-      'LetExpression(identifier: $_identifier, equals: $_equals, binding: $_binding, result: $_result, offset: $_offset, end: $_end)';
+      'InvocationExpression(identifier: $_identifier, argument: $_argument, offset: $_offset, end: $_end)';
 }
 
 base mixin _Literal {
-  Token get _literal => (this as Literal).literal;
-  int get _offset => (this as Literal).offset;
-  int get _end => (this as Literal).end;
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() =>
-      'Literal(literal: $_literal, offset: $_offset, end: $_end)';
+  String toString() => 'Literal';
 }
 
 base mixin _BooleanLiteral {
   Token get _literal => (this as BooleanLiteral).literal;
+  int get _offset => (this as BooleanLiteral).offset;
+  int get _end => (this as BooleanLiteral).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitBooleanLiteral((this as BooleanLiteral));
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() => 'BooleanLiteral(literal: $_literal)';
-}
-
-base mixin _UnitLiteral {
-  Token get _literal => (this as UnitLiteral).literal;
-  R? accept<R>(AstNodeVisitor<R> visitor) =>
-      visitor.visitUnitLiteral((this as UnitLiteral));
-  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
-  @override
-  String toString() => 'UnitLiteral(literal: $_literal)';
+  String toString() =>
+      'BooleanLiteral(literal: $_literal, offset: $_offset, end: $_end)';
 }
 
 base mixin _StringLiteral {
   Token get _literal => (this as StringLiteral).literal;
+  int get _offset => (this as StringLiteral).offset;
+  int get _end => (this as StringLiteral).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitStringLiteral((this as StringLiteral));
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() => 'StringLiteral(literal: $_literal)';
+  String toString() =>
+      'StringLiteral(literal: $_literal, offset: $_offset, end: $_end)';
 }
 
 base mixin _IntegerLiteral {
   Token get _literal => (this as IntegerLiteral).literal;
+  int get _offset => (this as IntegerLiteral).offset;
+  int get _end => (this as IntegerLiteral).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitIntegerLiteral((this as IntegerLiteral));
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() => 'IntegerLiteral(literal: $_literal)';
+  String toString() =>
+      'IntegerLiteral(literal: $_literal, offset: $_offset, end: $_end)';
 }
 
 base mixin _DoubleLiteral {
   Token get _literal => (this as DoubleLiteral).literal;
+  int get _offset => (this as DoubleLiteral).offset;
+  int get _end => (this as DoubleLiteral).end;
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitDoubleLiteral((this as DoubleLiteral));
   void visitChildren<R>(AstNodeVisitor<R> visitor) {}
   @override
-  String toString() => 'DoubleLiteral(literal: $_literal)';
+  String toString() =>
+      'DoubleLiteral(literal: $_literal, offset: $_offset, end: $_end)';
+}
+
+base mixin _StructLiteral {
+  Token get _leftParenthesis => (this as StructLiteral).leftParenthesis;
+  SyntacticEntityList<StructMember> get _members =>
+      (this as StructLiteral).members;
+  Token get _rightParenthesis => (this as StructLiteral).rightParenthesis;
+  int get _offset => (this as StructLiteral).offset;
+  int get _end => (this as StructLiteral).end;
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitStructLiteral((this as StructLiteral));
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'StructLiteral(leftParenthesis: $_leftParenthesis, members: $_members, rightParenthesis: $_rightParenthesis, offset: $_offset, end: $_end)';
+}
+
+base mixin _SymbolLiteral {
+  Token get _literal => (this as SymbolLiteral).literal;
+  int get _offset => (this as SymbolLiteral).offset;
+  int get _end => (this as SymbolLiteral).end;
+  R? accept<R>(AstNodeVisitor<R> visitor) =>
+      visitor.visitSymbolLiteral((this as SymbolLiteral));
+  void visitChildren<R>(AstNodeVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'SymbolLiteral(literal: $_literal, offset: $_offset, end: $_end)';
 }
 
 base mixin _Declaration {
@@ -301,7 +328,7 @@ base mixin _TypeDefinition {
   Token get _keyword => (this as TypeDefinition).keyword;
   Token get _name => (this as TypeDefinition).name;
   Token? get _leftParenthesis => (this as TypeDefinition).leftParenthesis;
-  SyntacticEntityList<IdentifiedTypeIdentifier>? get _parameters =>
+  SyntacticEntityList<IdentifierExpression>? get _parameters =>
       (this as TypeDefinition).parameters;
   Token? get _rightParenthesis => (this as TypeDefinition).rightParenthesis;
   Token get _equals => (this as TypeDefinition).equals;
@@ -320,7 +347,7 @@ base mixin _TypeDefinition {
 base mixin _LetDeclaration {
   Token get _keyword => (this as LetDeclaration).keyword;
   Token get _identifier => (this as LetDeclaration).identifier;
-  Token? get _parameter => (this as LetDeclaration).parameter;
+  StructLiteral? get _parameter => (this as LetDeclaration).parameter;
   Token get _equals => (this as LetDeclaration).equals;
   Expression get _body => (this as LetDeclaration).body;
   int get _offset => (this as LetDeclaration).offset;
@@ -328,6 +355,7 @@ base mixin _LetDeclaration {
   R? accept<R>(AstNodeVisitor<R> visitor) =>
       visitor.visitLetDeclaration((this as LetDeclaration));
   void visitChildren<R>(AstNodeVisitor<R> visitor) {
+    _parameter?.accept(visitor);
     _body.accept(visitor);
   }
 

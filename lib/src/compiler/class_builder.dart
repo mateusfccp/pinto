@@ -228,7 +228,6 @@ final class ClassBuilder {
 //     StringType() => 'String',
 //     TopType() => 'Object?',
 //     TypeType() => 'Type',
-//     UnitType() => 'Null',
 //   };
 // }
 

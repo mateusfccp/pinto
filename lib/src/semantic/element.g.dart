@@ -30,8 +30,8 @@ base mixin _TypeParameterElement {
   String get _name => (this as TypeParameterElement).name;
   TypeDefinitionElement get _enclosingElement =>
       (this as TypeParameterElement).enclosingElement;
-  Type? get _type => (this as TypeParameterElement).type;
   Type get _definedType => (this as TypeParameterElement).definedType;
+  Type? get _type => (this as TypeParameterElement).type;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitTypeParameterElement((this as TypeParameterElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {
@@ -40,7 +40,24 @@ base mixin _TypeParameterElement {
 
   @override
   String toString() =>
-      'TypeParameterElement(name: $_name, enclosingElement: $_enclosingElement, type: $_type, definedType: $_definedType)';
+      'TypeParameterElement(name: $_name, enclosingElement: $_enclosingElement, definedType: $_definedType, type: $_type)';
+}
+
+base mixin _StructMemberElement {
+  String get _name => (this as StructMemberElement).name;
+  ExpressionElement get _value => (this as StructMemberElement).value;
+  LiteralElement get _enclosingElement =>
+      (this as StructMemberElement).enclosingElement;
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitStructMemberElement((this as StructMemberElement));
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    _value.accept(visitor);
+    _enclosingElement.accept(visitor);
+  }
+
+  @override
+  String toString() =>
+      'StructMemberElement(name: $_name, value: $_value, enclosingElement: $_enclosingElement)';
 }
 
 base mixin _ParameterElement {
@@ -61,20 +78,21 @@ base mixin _ParameterElement {
 base mixin _ExpressionElement {
   Element get _enclosingElement => (this as ExpressionElement).enclosingElement;
   bool get _constant => (this as ExpressionElement).constant;
+  Object? get _constantValue => (this as ExpressionElement).constantValue;
   void visitChildren<R>(ElementVisitor<R> visitor) {
     _enclosingElement.accept(visitor);
   }
 
   @override
   String toString() =>
-      'ExpressionElement(enclosingElement: $_enclosingElement, constant: $_constant)';
+      'ExpressionElement(enclosingElement: $_enclosingElement, constant: $_constant, constantValue: $_constantValue)';
 }
 
 base mixin _InvocationElement {
   Type? get _type => (this as InvocationElement).type;
   IdentifierElement get _identifier => (this as InvocationElement).identifier;
   ExpressionElement get _argument => (this as InvocationElement).argument;
-  bool get _constant => (this as InvocationElement).constant;
+  Object? get _constantValue => (this as InvocationElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitInvocationElement((this as InvocationElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {
@@ -84,31 +102,66 @@ base mixin _InvocationElement {
 
   @override
   String toString() =>
-      'InvocationElement(type: $_type, identifier: $_identifier, argument: $_argument, constant: $_constant)';
+      'InvocationElement(type: $_type, identifier: $_identifier, argument: $_argument, constantValue: $_constantValue)';
 }
 
 base mixin _IdentifierElement {
   String get _name => (this as IdentifierElement).name;
   Type? get _type => (this as IdentifierElement).type;
-  bool get _constant => (this as IdentifierElement).constant;
+  Object? get _constantValue => (this as IdentifierElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitIdentifierElement((this as IdentifierElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'IdentifierElement(name: $_name, type: $_type, constant: $_constant)';
+      'IdentifierElement(name: $_name, type: $_type, constantValue: $_constantValue)';
 }
 
 base mixin _LiteralElement {
-  Type? get _type => (this as LiteralElement).type;
-  bool get _constant => (this as LiteralElement).constant;
-  Object? get _constantValue => (this as LiteralElement).constantValue;
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() => 'LiteralElement';
+}
+
+base mixin _SingletonLiteralElement {
+  Type? get _type => (this as SingletonLiteralElement).type;
+  Object? get _constantValue => (this as SingletonLiteralElement).constantValue;
   R? accept<R>(ElementVisitor<R> visitor) =>
-      visitor.visitLiteralElement((this as LiteralElement));
+      visitor.visitSingletonLiteralElement((this as SingletonLiteralElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
   String toString() =>
-      'LiteralElement(type: $_type, constant: $_constant, constantValue: $_constantValue)';
+      'SingletonLiteralElement(type: $_type, constantValue: $_constantValue)';
+}
+
+base mixin _StructLiteralElement {
+  StructType get _type => (this as StructLiteralElement).type;
+  List<StructMemberElement> get _members =>
+      (this as StructLiteralElement).members;
+  Object? get _constantValue => (this as StructLiteralElement).constantValue;
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitStructLiteralElement((this as StructLiteralElement));
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    for (final node in _members) {
+      node.visitChildren(visitor);
+    }
+  }
+
+  @override
+  String toString() =>
+      'StructLiteralElement(type: $_type, members: $_members, constantValue: $_constantValue)';
+}
+
+base mixin _TypeLiteralElement {
+  Type get __referenceType => (this as TypeLiteralElement)._referenceType;
+  Type get _type => (this as TypeLiteralElement).type;
+  Object? get _constantValue => (this as TypeLiteralElement).constantValue;
+  R? accept<R>(ElementVisitor<R> visitor) =>
+      visitor.visitTypeLiteralElement((this as TypeLiteralElement));
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
+  @override
+  String toString() =>
+      'TypeLiteralElement(_referenceType: $__referenceType, type: $_type, constantValue: $_constantValue)';
 }
 
 base mixin _TypeVariantElement {
@@ -152,35 +205,39 @@ base mixin _ImportElement {
   String toString() => 'ImportElement(package: $_package)';
 }
 
+base mixin _LetDeclarationElement {
+  String get _name => (this as LetDeclarationElement).name;
+  ExpressionElement get _body => (this as LetDeclarationElement).body;
+  void visitChildren<R>(ElementVisitor<R> visitor) {
+    _body.accept(visitor);
+  }
+
+  @override
+  String toString() => 'LetDeclarationElement(name: $_name, body: $_body)';
+}
+
 base mixin _LetFunctionDeclaration {
-  String get _name => (this as LetFunctionDeclaration).name;
-  Token get _parameter => (this as LetFunctionDeclaration).parameter;
+  StructLiteralElement get _parameter =>
+      (this as LetFunctionDeclaration).parameter;
   FunctionType get _type => (this as LetFunctionDeclaration).type;
-  ExpressionElement get _body => (this as LetFunctionDeclaration).body;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitLetFunctionDeclaration((this as LetFunctionDeclaration));
   void visitChildren<R>(ElementVisitor<R> visitor) {
-    _body.accept(visitor);
+    _parameter.accept(visitor);
   }
 
   @override
   String toString() =>
-      'LetFunctionDeclaration(name: $_name, parameter: $_parameter, type: $_type, body: $_body)';
+      'LetFunctionDeclaration(parameter: $_parameter, type: $_type)';
 }
 
 base mixin _LetVariableDeclaration {
-  String get _name => (this as LetVariableDeclaration).name;
   Type? get _type => (this as LetVariableDeclaration).type;
-  ExpressionElement get _body => (this as LetVariableDeclaration).body;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitLetVariableDeclaration((this as LetVariableDeclaration));
-  void visitChildren<R>(ElementVisitor<R> visitor) {
-    _body.accept(visitor);
-  }
-
+  void visitChildren<R>(ElementVisitor<R> visitor) {}
   @override
-  String toString() =>
-      'LetVariableDeclaration(name: $_name, type: $_type, body: $_body)';
+  String toString() => 'LetVariableDeclaration(type: $_type)';
 }
 
 base mixin _ImportedSymbolSyntheticElement {
@@ -206,8 +263,8 @@ base mixin _TypeDefinitionElement {
       (this as TypeDefinitionElement).parameters;
   List<TypeVariantElement> get _variants =>
       (this as TypeDefinitionElement).variants;
-  Type? get _type => (this as TypeDefinitionElement).type;
   Type get _definedType => (this as TypeDefinitionElement).definedType;
+  Type? get _type => (this as TypeDefinitionElement).type;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitTypeDefinitionElement((this as TypeDefinitionElement));
   void visitChildren<R>(ElementVisitor<R> visitor) {
@@ -221,7 +278,7 @@ base mixin _TypeDefinitionElement {
 
   @override
   String toString() =>
-      'TypeDefinitionElement(name: $_name, parameters: $_parameters, variants: $_variants, type: $_type, definedType: $_definedType)';
+      'TypeDefinitionElement(name: $_name, parameters: $_parameters, variants: $_variants, definedType: $_definedType, type: $_type)';
 }
 
 base mixin _ProgramElement {

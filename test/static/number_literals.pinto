@@ -6,7 +6,7 @@ let validIntWithMultipleSeparators = 1__000_000__000_000
 let invalidInt = 100_
 //                  ^ number_ending_with_separator
 
-let returnInt _ = 100
+let returnInt () = 100
 
 // Double literals
 let validDouble = 1.0
@@ -30,4 +30,4 @@ let invalidDouble3 = 100._0_
 let invalidDouble4 = 100.0_
 //                        ^ number_ending_with_separator
 
-let returnDouble _ = 10.0
+let returnDouble () = 10.0

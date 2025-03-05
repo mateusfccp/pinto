@@ -1,0 +1,24 @@
+// Structs can be either nameless, valueless or full.
+
+// Full structs specify both the name and the value of the struct.
+let fullStruct = (:name "John", :age 30)
+
+// Valueless structs specify only the name of the struct. The value will be the
+// identifier equivalent to the name.
+//
+// The following struct is equivalent to the full struct `(:name "John")`.
+let name = "John"
+let valuelessStruct = (:name)
+
+let improperValuelessStruct = (:age)
+//                              ^^^ symbol_not_in_scope
+
+// Nameless structs specify only the value of the struct. The name will be the
+// equivalent position in the struct, prefixed with a `$`.
+//
+// The following struct is equivalent to the full struct `(:$0 "John")`.
+let namelessStruct = ("John")
+
+// Positional arguments are nothing but a syntax sugar, so you can make
+// unordered positional arguments by providing explicitly the numbered key.
+let unorderedPositional = (:$1 10, :$0 "John")

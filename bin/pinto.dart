@@ -149,7 +149,7 @@ Future<PintoError?> run({
 
   final buffer = StringBuffer();
   final visitor = Compiler(programElement);
-  visitor.writeToSink(buffer);
+  visitor.write(buffer);
 
   final formatted = DartFormatter(
     languageVersion: DartFormatter.latestLanguageVersion,

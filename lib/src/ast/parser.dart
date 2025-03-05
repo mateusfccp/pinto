@@ -10,10 +10,13 @@ const _expressionTokens = [
   TokenType.falseKeyword,
   TokenType.identifier,
   TokenType.integerLiteral,
+  TokenType.leftParenthesis,
+  TokenType.leftBrace,
+  TokenType.leftBracket,
   // TokenType.letKeyword,
   TokenType.stringLiteral,
+  TokenType.symbolLiteral,
   TokenType.trueKeyword,
-  TokenType.unitLiteral,
 ];
 
 /// A pint° parser.
@@ -205,32 +208,32 @@ final class Parser {
   }
 
   Expression _expression() {
-    // TODO(mateusfccp): Implement let expression parsing
-
     if (_matchExpressionToken()) {
       switch (_previous.type) {
         case TokenType.doubleLiteral:
           return DoubleLiteral(_previous);
         case TokenType.falseKeyword:
-        case TokenType.trueKeyword:
           return BooleanLiteral(_previous);
-        case TokenType.stringLiteral:
-          return StringLiteral(_previous);
-        case TokenType.unitLiteral:
-          return UnitLiteral(_previous);
         case TokenType.identifier:
-          final identifier = IdentifierExpression(_previous);
-          if (_checkExpressionToken()) {
-            return InvocationExpression(
-              identifier,
-              _expression(),
-            );
-          } else {
-            return identifier;
-          }
+          return _identifierOrInvocation();
         case TokenType.integerLiteral:
           return IntegerLiteral(_previous);
+        case TokenType.leftParenthesis:
+          return _structLiteral();
+        case TokenType.stringLiteral:
+          return StringLiteral(_previous);
+        case TokenType.symbolLiteral:
+          return _symbolLiteral();
+        case TokenType.trueKeyword:
+          return BooleanLiteral(_previous);
+        case TokenType.leftBrace:
+        case TokenType.leftBracket:
+        case TokenType.verum:
+        case TokenType.falsum:
+          _current--; // TODO(mateusfccp): We should not rewind the parser.
+          return _typeIdentifier();
         default:
+          // TODO(mateusfccp): We may exhaustively check this case by using a sealed class for tokens instead of enums
           throw StateError('This branch should be unreachable.');
       }
     } else {
@@ -241,15 +244,80 @@ final class Parser {
     }
   }
 
+  IdentifierExpression _identifier() {
+    assert(_previous.type == TokenType.identifier);
+    return IdentifierExpression(_previous);
+  }
+
+  Expression _identifierOrInvocation() {
+    final identifier = _identifier();
+    if (_checkExpressionToken()) {
+      return InvocationExpression(
+        identifier,
+        _expression(),
+      );
+    } else {
+      return identifier;
+    }
+  }
+
+  StructLiteral _structLiteral() {
+    final leftParenthesis = _previous;
+
+    final members = SyntacticEntityList<StructMember>();
+
+    while (!_check(TokenType.rightParenthesis)) {
+      members.add(_structMember());
+      final comma = _match(TokenType.comma);
+
+      if (!comma) break;
+    }
+
+    final rightParenthesis = _consumeExpecting(TokenType.rightParenthesis);
+
+    return StructLiteral(
+      leftParenthesis,
+      members,
+      rightParenthesis,
+    );
+  }
+
+  StructMember _structMember() {
+    if (_match(TokenType.symbolLiteral)) {
+      final name = _symbolLiteral();
+
+      if (_checkExpressionToken()) {
+        final expression = _expression();
+
+        return FullStructMember(
+          name,
+          expression,
+        );
+      } else {
+        return ValuelessStructMember(name);
+      }
+    } else {
+      final value = _expression();
+
+      return NamelessStructMember(value);
+    }
+  }
+
+  SymbolLiteral _symbolLiteral() {
+    assert(_previous.type == TokenType.symbolLiteral);
+    return SymbolLiteral(_previous);
+  }
+
   LetDeclaration _letDeclaration() {
     final keyword = _previous;
     final identifier = _consumeExpecting(TokenType.identifier);
 
-    final Token? parameter;
-    if (_match(TokenType.identifier)) {
-      parameter = _previous;
-    } else {
+    final StructLiteral? parameter;
+    if (_check(TokenType.equalitySign)) {
       parameter = null;
+    } else {
+      _consumeExpecting(TokenType.leftParenthesis);
+      parameter = _structLiteral();
     }
 
     final equals = _consume(
@@ -283,7 +351,7 @@ final class Parser {
       after: TokenType.typeKeyword,
     );
 
-    final typeParameters = <IdentifiedTypeIdentifier>[];
+    final typeParameters = <IdentifierExpression>[];
 
     final Token? leftParenthesis;
     final Token? rightParenthesis;
@@ -291,9 +359,11 @@ final class Parser {
     if (_match(TokenType.leftParenthesis)) {
       leftParenthesis = _previous;
 
-      final firstTypeParameter = _typeParameterLiteral();
+      final firstTypeParameter = _consumeExpecting(TokenType.identifier);
 
-      typeParameters.add(firstTypeParameter);
+      typeParameters.add(
+        IdentifierExpression(firstTypeParameter),
+      );
 
       while (!_check(TokenType.rightParenthesis)) {
         _consumeAfter(
@@ -302,9 +372,11 @@ final class Parser {
           description: 'type parameter',
         );
 
-        final typeParameter = _typeParameterLiteral();
+        final typeParameter = _consumeExpecting(TokenType.identifier);
 
-        typeParameters.add(typeParameter);
+        typeParameters.add(
+          IdentifierExpression(typeParameter),
+        );
       }
 
       rightParenthesis = _consumeAfter(
@@ -342,47 +414,23 @@ final class Parser {
     );
   }
 
-  TypeVariantNode _typeVariant(bool isFirstDefinition) {
+  TypeVariantNode _typeVariant(bool isFirstVariation) {
     final name = _consumeAfter(
       type: TokenType.identifier,
-      after: isFirstDefinition //
+      after: isFirstVariation //
           ? TokenType.equalitySign
           : TokenType.plusSign,
     );
 
-    final parameters = <TypeVariantParameterNode>[];
+    final StructLiteral? parameters;
 
     if (_match(TokenType.leftParenthesis)) {
-      parameters.add(_typeVariationParameter());
-
-      while (_match(TokenType.comma)) {
-        if (_match(TokenType.rightParenthesis)) break;
-
-        parameters.add(_typeVariationParameter());
-      }
-
-      _consumeAfter(
-        type: TokenType.rightParenthesis,
-        after: TokenType.identifier,
-      );
+      parameters = _structLiteral();
+    } else {
+      parameters = null;
     }
 
-    return TypeVariantNode(
-      name,
-      SyntacticEntityList(parameters),
-    );
-  }
-
-  TypeVariantParameterNode _typeVariationParameter() {
-    final type = _typeIdentifier();
-
-    final name = _consumeAfter(
-      type: TokenType.identifier,
-      after: TokenType.identifier,
-      description: 'parameter type',
-    );
-
-    return TypeVariantParameterNode(type, name);
+    return TypeVariantNode(name, parameters);
   }
 
   TypeIdentifier _typeIdentifier() {
@@ -440,51 +488,20 @@ final class Parser {
         );
       }
     } else {
-      final identifier = _consumeExpecting(TokenType.identifier);
-      final parameters = <TypeIdentifier>[];
+      final expression = _expression();
 
-      final Token? leftParenthesis;
-      final Token? rightParenthesis;
-
-      if (_match(TokenType.leftParenthesis)) {
-        leftParenthesis = _previous;
-        parameters.add(_typeIdentifier());
-
-        while (_match(TokenType.comma)) {
-          parameters.add(_typeIdentifier());
-        }
-
-        rightParenthesis = _consumeAfter(
-          type: TokenType.rightParenthesis,
-          after: TokenType.identifier, // TODO(mateusfccp): Fix this
+      if (expression is! TypeIdentifier) {
+        throw ExpectedError(
+          syntacticEntity: expression,
+          expectation: ExpectationType.typeIdentifier(),
         );
-      } else {
-        leftParenthesis = null;
-        rightParenthesis = null;
       }
-
-      final literal = IdentifiedTypeIdentifier(
-        identifier,
-        leftParenthesis,
-        SyntacticEntityList(parameters),
-        rightParenthesis,
-      );
 
       if (_match(TokenType.eroteme)) {
-        return OptionTypeIdentifier(literal, _previous);
+        return OptionTypeIdentifier(expression, _previous);
       } else {
-        return literal;
+        return expression;
       }
     }
-  }
-
-  IdentifiedTypeIdentifier _typeParameterLiteral() {
-    final identifier = _consumeExpecting(TokenType.identifier);
-    return IdentifiedTypeIdentifier(
-      identifier,
-      null,
-      null,
-      null,
-    );
   }
 }

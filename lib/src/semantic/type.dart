@@ -1,24 +1,9 @@
+import 'package:quiver/collection.dart';
+
 import 'element.dart';
-import 'package.dart';
 
 sealed class Type {
   Element? get element;
-}
-
-final class TopType implements Type {
-  const TopType();
-
-  @override
-  Null get element => null;
-
-  @override
-  bool operator ==(Object other) => other is TopType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => 'TopType';
 }
 
 final class BooleanType implements Type {
@@ -37,19 +22,92 @@ final class BooleanType implements Type {
   String toString() => 'bool';
 }
 
+final class BottomType implements Type {
+  const BottomType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is BottomType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '⊥';
+}
+
+final class DoubleType implements Type {
+  const DoubleType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is DoubleType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'double';
+}
+
+final class FunctionType implements Type {
+  FunctionType({
+    required this.returnType,
+    required this.parameterType,
+    this.element,
+  });
+
+  final StructType parameterType;
+
+  final Type returnType;
+
+  @override
+  late LetFunctionDeclaration? element;
+
+  @override
+  bool operator ==(Object other) => other is BottomType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '$parameterType → $returnType';
+}
+
+final class IntegerType implements Type {
+  const IntegerType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is IntegerType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => 'integer';
+}
+
 final class PolymorphicType implements Type {
   PolymorphicType({
     required this.name,
-    required this.source,
     required this.arguments,
     this.element,
   });
 
   final String name;
 
-  final Package source;
-
   final List<Type> arguments;
+
+  bool get option {
+    return name == 'Option';
+  }
 
   @override
   Element? element;
@@ -57,15 +115,11 @@ final class PolymorphicType implements Type {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is PolymorphicType && other.name == name && other.source == source && other.arguments == arguments;
+    return other is PolymorphicType && other.name == name && other.arguments == arguments;
   }
 
   @override
-  int get hashCode => Object.hash(
-        name,
-        source,
-        arguments,
-      );
+  int get hashCode => Object.hash(name, arguments);
 
   @override
   String toString() {
@@ -103,36 +157,77 @@ final class StringType implements Type {
   String toString() => 'String';
 }
 
-final class IntegerType implements Type {
-  const IntegerType();
+final class StructType implements Type {
+  const StructType({required this.members});
+
+  StructType.singleton(Type member) : members = {r'$0': member};
+
+  static const unit = StructType(members: {});
 
   @override
   Null get element => null;
 
-  @override
-  bool operator ==(Object other) => other is IntegerType;
+  final Map<String, Type> members;
+
+  bool get isUnit => members.isEmpty;
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  bool operator ==(Object other) {
+    if (other is! StructType) return false;
+    return mapsEqual(other.members, members);
+  }
 
   @override
-  String toString() => 'Integer';
+  int get hashCode => Object.hashAll(members.entries);
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('(');
+    final entries = [...members.entries];
+
+    for (int i = 0; i < entries.length; i++) {
+      buffer.write(':${entries[i].key} ${entries[i].value}');
+
+      if (i < entries.length - 1) {
+        buffer.write(', ');
+      }
+    }
+
+    buffer.write(')');
+    return buffer.toString();
+  }
 }
 
-final class DoubleType implements Type {
-  const DoubleType();
+final class SymbolType implements Type {
+  const SymbolType();
 
   @override
   Null get element => null;
 
   @override
-  bool operator ==(Object other) => other is DoubleType;
+  bool operator ==(Object other) => other is SymbolType;
 
   @override
   int get hashCode => runtimeType.hashCode;
 
   @override
-  String toString() => 'Double';
+  String toString() => 'Symbol';
+}
+
+final class TopType implements Type {
+  const TopType();
+
+  @override
+  Null get element => null;
+
+  @override
+  bool operator ==(Object other) => other is TopType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() => '⊤';
 }
 
 final class TypeParameterType implements Type {
@@ -157,7 +252,19 @@ final class TypeParameterType implements Type {
 }
 
 final class TypeType implements Type {
-  const TypeType();
+  const TypeType(Type reference) : _reference = reference;
+
+  const TypeType.self() : _reference = null;
+
+  /// The type that this type represents.
+  ///
+  /// This is `null` if this type represents the type of a type (★).
+  Type get reference => _reference ?? this;
+
+  final Type? _reference;
+
+  /// Whether this type represents the type of a type (★).
+  bool get self => _reference == null;
 
   @override
   Null get element => null;
@@ -172,58 +279,58 @@ final class TypeType implements Type {
   String toString() => '★';
 }
 
-// TODO(mateusfccp): Generalize to records-like
-final class UnitType implements Type {
-  const UnitType();
+extension SubtypeExtension on Type {
+  /// Whether [this] is a subtype of [other].
+  ///
+  /// Currently, this is only valid for the top and bottom types. For all other
+  /// types, this method will return `true` if [this] is equal to [other].
+  ///
+  /// Singleton structs types are considered the same as their member type.
+  bool subtypeOf(Type other) {
+    Type flattened(Type type) {
+      if (type is StructType && type.members.length == 1) {
+        return flattened(type.members.values.single);
+      } else {
+        return type;
+      }
+    }
 
-  @override
-  Null get element => null;
+    final self = flattened(this);
+    other = flattened(other);
 
-  @override
-  bool operator ==(Object other) => other is UnitType;
+    return switch ((self, other)) {
+      (BottomType(), _) || (_, TopType())  => true,
+      _ => self == other,
+    };
+  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => '()';
+  /// Whether [this] is a subtype of [other].
+  ///
+  /// This is the same as [subtypeOf].
+  operator <(Type other) => subtypeOf(other);
 }
 
-final class BottomType implements Type {
-  const BottomType();
+/// Maps a parameter type to the expected argument type.
+///
+/// For instance, consider this function:
+///
+/// ```
+/// let printMessage (:message String) = message
+/// ```
+///
+/// `printMessage` parameter has a type (:message ★), but whe calling it, we
+/// must pass a type (:message String).
+StructType parameterTypeToExpectedArgumentType(StructType parameterType) {
+  assert(
+    parameterType.members.values.every((element) => element is TypeType),
+    'All members of a parameter must be a type. Got ${parameterType.members.values} instead.',
+  );
 
-  @override
-  Null get element => null;
+  final castedMembers = parameterType.members.cast<String, TypeType>();
 
-  @override
-  bool operator ==(Object other) => other is BottomType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => '⊥';
-}
-
-final class FunctionType implements Type {
-  FunctionType({
-    required this.returnType,
-    this.element,
-  });
-
-  Type get parameterType => const UnitType(); // Dummy paramter type for now
-
-  final Type returnType;
-
-  @override
-  late LetFunctionDeclaration? element;
-
-  @override
-  bool operator ==(Object other) => other is BottomType;
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() => '$parameterType → $returnType';
+  return StructType(
+    members: {
+      for (final entry in castedMembers.entries) entry.key: entry.value.reference,
+    },
+  );
 }

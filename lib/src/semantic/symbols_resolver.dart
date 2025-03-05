@@ -8,7 +8,6 @@ import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/context/packages.dart' hide Package;
 import 'package:analyzer/dart/element/element.dart' as dart;
 import 'package:analyzer/src/dart/sdk/sdk.dart';
-import 'package:pinto/lexer.dart';
 import 'package:pinto/semantic.dart';
 
 final class SymbolsResolver {
@@ -57,21 +56,19 @@ final class SymbolsResolver {
 
     switch (element) {
       case dart.FunctionTypedElement():
+        final functionType = _dartFunctionTypeToPintoFunctionType(element.type);
+
+        final body = SingletonLiteralElement()
+          ..constantValue = null;
+
         syntheticElement = LetFunctionDeclaration(
           name: element.name!,
-          parameter: Token(
-            type: TokenType.unitLiteral,
-            offset: 0,
-            lexeme: '()',
-          ), // TODO(mateusfccp): Map to proper parameter. As it's synthetic, it shouldn't have an associated token anyway
-          type: FunctionType(
-            returnType: _dartTypeToPintoType(element.returnType),
-          ),
-          body: LiteralElement(
-            constant: true,
-            constantValue: null,
-          ),
-        );
+          parameter: StructLiteralElement()
+            ..constantValue = null
+            ..type = functionType.parameterType,
+        )
+          ..type = functionType
+          ..body = body;
       case dart.InstanceElement():
         final typeDefinition = TypeDefinitionElement(name: element.name!);
 
@@ -97,23 +94,21 @@ final class SymbolsResolver {
 
         syntheticElement = typeDefinition;
       case dart.TopLevelVariableElement():
+        final body = SingletonLiteralElement()
+          ..constantValue = null;
+
         syntheticElement = LetVariableDeclaration(
           name: element.name,
           type: _dartTypeToPintoType(element.type),
-          body: LiteralElement(
-            constant: true,
-            constantValue: null,
-          ),
-        );
+        )..body = body;
       case dart.TypeAliasElement(:final aliasedElement?) when element.aliasedType is! dart.FunctionType:
-        syntheticElement = LetVariableDeclaration(
-          name: element.name,
-          body: IdentifierElement(
-            name: aliasedElement.name!,
-            type: _dartTypeToPintoType(element.aliasedType),
-            constant: false,
-          ),
+        final body = IdentifierElement(
+          name: aliasedElement.name!,
+          type: _dartTypeToPintoType(element.aliasedType),
+          constantValue: null,
         );
+        
+        syntheticElement = LetVariableDeclaration(name: element.name)..body = body;
       default:
         // throw UnimplementedError('No conversion implemented from ${element.runtimeType} to a pint° element.');
         return null;
@@ -156,7 +151,7 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
   // TODO(mateusfccp): Implement T <: Object → Some(T <: NonSome)
   switch (type) {
     case dart.VoidType() when !contravariant:
-      return const UnitType();
+      return StructType.unit;
     case dart.VoidType():
     case dart.DynamicType():
     case dart.DartType(isDartCoreObject: true, nullabilitySuffix: NullabilitySuffix.question):
@@ -168,30 +163,19 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
         name: type.element.declaration.name,
       );
     case dart.FunctionType():
-      return FunctionType(
-        returnType: _dartTypeToPintoType(type.returnType),
-      );
+      return _dartFunctionTypeToPintoFunctionType(type);
     case dart.ParameterizedType():
       if (type.isDartCoreBool) {
         return const BooleanType();
       } else if (type.isDartCoreString) {
         return const StringType();
       } else if (type.isDartCoreNull) {
-        return const UnitType();
+        return StructType.unit;
       } else if (type.isDartCoreType) {
-        return const TypeType();
+        return const TypeType.self();
       } else if (type.element case final dart.InterfaceElement element) {
-        final Package source;
-
-        if (element.library.isInSdk) {
-          source = DartSdkPackage(name: element.library.name); // TODO(mateusfccp): Check if we should remove `dart.` or not
-        } else {
-          source = ExternalPackage(name: element.library.name);
-        }
-
         return PolymorphicType(
           name: element.name,
-          source: source,
           arguments: [
             for (final typeParameter in element.typeParameters) //
               TypeParameterType(name: typeParameter.name),
@@ -204,6 +188,27 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
       throw UnimplementedError("We still don't support importing the type ${type.getDisplayString()} to pint°");
   }
 }
+
+FunctionType _dartFunctionTypeToPintoFunctionType(dart.FunctionType type) {
+  final typeMembers = <String, TypeType>{};
+
+  int index = 0;
+  for (final parameter in type.parameters) {
+    final type = _dartTypeToPintoType(parameter.type);
+
+    if (parameter.isPositional) {
+      typeMembers['\$${index++}'] = TypeType(type);
+    } else {
+      typeMembers[parameter.name] = TypeType(type);
+    }
+  }
+
+  return FunctionType(
+    parameterType: StructType(members: typeMembers),
+    returnType: _dartTypeToPintoType(type.returnType),
+  );
+}
+
 
 final class _SymbolResolvingException implements Exception {
   _SymbolResolvingException(this.package);

@@ -598,6 +598,7 @@ mixin _$ExpectationType {
   TResult when<TResult extends Object?>({
     required TResult Function(Declaration? declaration) declaration,
     required TResult Function(Expression? expression) expression,
+    required TResult Function() typeIdentifier,
     required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) =>
@@ -606,6 +607,7 @@ mixin _$ExpectationType {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Declaration? declaration)? declaration,
     TResult? Function(Expression? expression)? expression,
+    TResult? Function()? typeIdentifier,
     TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) =>
@@ -614,6 +616,7 @@ mixin _$ExpectationType {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Declaration? declaration)? declaration,
     TResult Function(Expression? expression)? expression,
+    TResult Function()? typeIdentifier,
     TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
@@ -623,6 +626,7 @@ mixin _$ExpectationType {
   TResult map<TResult extends Object?>({
     required TResult Function(DeclarationExpectation value) declaration,
     required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(TypeIdentifierExpectation value) typeIdentifier,
     required TResult Function(OneOfExpectation value) oneOf,
     required TResult Function(TokenExpectation value) token,
   }) =>
@@ -631,6 +635,7 @@ mixin _$ExpectationType {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(DeclarationExpectation value)? declaration,
     TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult? Function(OneOfExpectation value)? oneOf,
     TResult? Function(TokenExpectation value)? token,
   }) =>
@@ -639,6 +644,7 @@ mixin _$ExpectationType {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(DeclarationExpectation value)? declaration,
     TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult Function(OneOfExpectation value)? oneOf,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
@@ -736,6 +742,7 @@ class _$DeclarationExpectationImpl extends DeclarationExpectation {
   TResult when<TResult extends Object?>({
     required TResult Function(Declaration? declaration) declaration,
     required TResult Function(Expression? expression) expression,
+    required TResult Function() typeIdentifier,
     required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) {
@@ -747,6 +754,7 @@ class _$DeclarationExpectationImpl extends DeclarationExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Declaration? declaration)? declaration,
     TResult? Function(Expression? expression)? expression,
+    TResult? Function()? typeIdentifier,
     TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) {
@@ -758,6 +766,7 @@ class _$DeclarationExpectationImpl extends DeclarationExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Declaration? declaration)? declaration,
     TResult Function(Expression? expression)? expression,
+    TResult Function()? typeIdentifier,
     TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
@@ -773,6 +782,7 @@ class _$DeclarationExpectationImpl extends DeclarationExpectation {
   TResult map<TResult extends Object?>({
     required TResult Function(DeclarationExpectation value) declaration,
     required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(TypeIdentifierExpectation value) typeIdentifier,
     required TResult Function(OneOfExpectation value) oneOf,
     required TResult Function(TokenExpectation value) token,
   }) {
@@ -784,6 +794,7 @@ class _$DeclarationExpectationImpl extends DeclarationExpectation {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(DeclarationExpectation value)? declaration,
     TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult? Function(OneOfExpectation value)? oneOf,
     TResult? Function(TokenExpectation value)? token,
   }) {
@@ -795,6 +806,7 @@ class _$DeclarationExpectationImpl extends DeclarationExpectation {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(DeclarationExpectation value)? declaration,
     TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult Function(OneOfExpectation value)? oneOf,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
@@ -888,6 +900,7 @@ class _$ExpressionExpectationImpl extends ExpressionExpectation {
   TResult when<TResult extends Object?>({
     required TResult Function(Declaration? declaration) declaration,
     required TResult Function(Expression? expression) expression,
+    required TResult Function() typeIdentifier,
     required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) {
@@ -899,6 +912,7 @@ class _$ExpressionExpectationImpl extends ExpressionExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Declaration? declaration)? declaration,
     TResult? Function(Expression? expression)? expression,
+    TResult? Function()? typeIdentifier,
     TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) {
@@ -910,6 +924,7 @@ class _$ExpressionExpectationImpl extends ExpressionExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Declaration? declaration)? declaration,
     TResult Function(Expression? expression)? expression,
+    TResult Function()? typeIdentifier,
     TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
@@ -925,6 +940,7 @@ class _$ExpressionExpectationImpl extends ExpressionExpectation {
   TResult map<TResult extends Object?>({
     required TResult Function(DeclarationExpectation value) declaration,
     required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(TypeIdentifierExpectation value) typeIdentifier,
     required TResult Function(OneOfExpectation value) oneOf,
     required TResult Function(TokenExpectation value) token,
   }) {
@@ -936,6 +952,7 @@ class _$ExpressionExpectationImpl extends ExpressionExpectation {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(DeclarationExpectation value)? declaration,
     TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult? Function(OneOfExpectation value)? oneOf,
     TResult? Function(TokenExpectation value)? token,
   }) {
@@ -947,6 +964,7 @@ class _$ExpressionExpectationImpl extends ExpressionExpectation {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(DeclarationExpectation value)? declaration,
     TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult Function(OneOfExpectation value)? oneOf,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
@@ -970,6 +988,128 @@ abstract class ExpressionExpectation extends ExpectationType {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExpressionExpectationImplCopyWith<_$ExpressionExpectationImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$TypeIdentifierExpectationImplCopyWith<$Res> {
+  factory _$$TypeIdentifierExpectationImplCopyWith(
+          _$TypeIdentifierExpectationImpl value,
+          $Res Function(_$TypeIdentifierExpectationImpl) then) =
+      __$$TypeIdentifierExpectationImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$TypeIdentifierExpectationImplCopyWithImpl<$Res>
+    extends _$ExpectationTypeCopyWithImpl<$Res, _$TypeIdentifierExpectationImpl>
+    implements _$$TypeIdentifierExpectationImplCopyWith<$Res> {
+  __$$TypeIdentifierExpectationImplCopyWithImpl(
+      _$TypeIdentifierExpectationImpl _value,
+      $Res Function(_$TypeIdentifierExpectationImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ExpectationType
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$TypeIdentifierExpectationImpl extends TypeIdentifierExpectation {
+  const _$TypeIdentifierExpectationImpl() : super._();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TypeIdentifierExpectationImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Declaration? declaration) declaration,
+    required TResult Function(Expression? expression) expression,
+    required TResult Function() typeIdentifier,
+    required TResult Function(List<ExpectationType> expectations) oneOf,
+    required TResult Function(TokenType token, String? description) token,
+  }) {
+    return typeIdentifier();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Declaration? declaration)? declaration,
+    TResult? Function(Expression? expression)? expression,
+    TResult? Function()? typeIdentifier,
+    TResult? Function(List<ExpectationType> expectations)? oneOf,
+    TResult? Function(TokenType token, String? description)? token,
+  }) {
+    return typeIdentifier?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Declaration? declaration)? declaration,
+    TResult Function(Expression? expression)? expression,
+    TResult Function()? typeIdentifier,
+    TResult Function(List<ExpectationType> expectations)? oneOf,
+    TResult Function(TokenType token, String? description)? token,
+    required TResult orElse(),
+  }) {
+    if (typeIdentifier != null) {
+      return typeIdentifier();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(DeclarationExpectation value) declaration,
+    required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(TypeIdentifierExpectation value) typeIdentifier,
+    required TResult Function(OneOfExpectation value) oneOf,
+    required TResult Function(TokenExpectation value) token,
+  }) {
+    return typeIdentifier(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(DeclarationExpectation value)? declaration,
+    TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(TypeIdentifierExpectation value)? typeIdentifier,
+    TResult? Function(OneOfExpectation value)? oneOf,
+    TResult? Function(TokenExpectation value)? token,
+  }) {
+    return typeIdentifier?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(DeclarationExpectation value)? declaration,
+    TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(TypeIdentifierExpectation value)? typeIdentifier,
+    TResult Function(OneOfExpectation value)? oneOf,
+    TResult Function(TokenExpectation value)? token,
+    required TResult orElse(),
+  }) {
+    if (typeIdentifier != null) {
+      return typeIdentifier(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class TypeIdentifierExpectation extends ExpectationType {
+  const factory TypeIdentifierExpectation() = _$TypeIdentifierExpectationImpl;
+  const TypeIdentifierExpectation._() : super._();
 }
 
 /// @nodoc
@@ -1048,6 +1188,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult when<TResult extends Object?>({
     required TResult Function(Declaration? declaration) declaration,
     required TResult Function(Expression? expression) expression,
+    required TResult Function() typeIdentifier,
     required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) {
@@ -1059,6 +1200,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Declaration? declaration)? declaration,
     TResult? Function(Expression? expression)? expression,
+    TResult? Function()? typeIdentifier,
     TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) {
@@ -1070,6 +1212,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Declaration? declaration)? declaration,
     TResult Function(Expression? expression)? expression,
+    TResult Function()? typeIdentifier,
     TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
@@ -1085,6 +1228,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult map<TResult extends Object?>({
     required TResult Function(DeclarationExpectation value) declaration,
     required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(TypeIdentifierExpectation value) typeIdentifier,
     required TResult Function(OneOfExpectation value) oneOf,
     required TResult Function(TokenExpectation value) token,
   }) {
@@ -1096,6 +1240,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(DeclarationExpectation value)? declaration,
     TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult? Function(OneOfExpectation value)? oneOf,
     TResult? Function(TokenExpectation value)? token,
   }) {
@@ -1107,6 +1252,7 @@ class _$OneOfExpectationImpl extends OneOfExpectation {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(DeclarationExpectation value)? declaration,
     TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult Function(OneOfExpectation value)? oneOf,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
@@ -1209,6 +1355,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult when<TResult extends Object?>({
     required TResult Function(Declaration? declaration) declaration,
     required TResult Function(Expression? expression) expression,
+    required TResult Function() typeIdentifier,
     required TResult Function(List<ExpectationType> expectations) oneOf,
     required TResult Function(TokenType token, String? description) token,
   }) {
@@ -1220,6 +1367,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Declaration? declaration)? declaration,
     TResult? Function(Expression? expression)? expression,
+    TResult? Function()? typeIdentifier,
     TResult? Function(List<ExpectationType> expectations)? oneOf,
     TResult? Function(TokenType token, String? description)? token,
   }) {
@@ -1231,6 +1379,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Declaration? declaration)? declaration,
     TResult Function(Expression? expression)? expression,
+    TResult Function()? typeIdentifier,
     TResult Function(List<ExpectationType> expectations)? oneOf,
     TResult Function(TokenType token, String? description)? token,
     required TResult orElse(),
@@ -1246,6 +1395,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult map<TResult extends Object?>({
     required TResult Function(DeclarationExpectation value) declaration,
     required TResult Function(ExpressionExpectation value) expression,
+    required TResult Function(TypeIdentifierExpectation value) typeIdentifier,
     required TResult Function(OneOfExpectation value) oneOf,
     required TResult Function(TokenExpectation value) token,
   }) {
@@ -1257,6 +1407,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(DeclarationExpectation value)? declaration,
     TResult? Function(ExpressionExpectation value)? expression,
+    TResult? Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult? Function(OneOfExpectation value)? oneOf,
     TResult? Function(TokenExpectation value)? token,
   }) {
@@ -1268,6 +1419,7 @@ class _$TokenExpectationImpl extends TokenExpectation {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(DeclarationExpectation value)? declaration,
     TResult Function(ExpressionExpectation value)? expression,
+    TResult Function(TypeIdentifierExpectation value)? typeIdentifier,
     TResult Function(OneOfExpectation value)? oneOf,
     TResult Function(TokenExpectation value)? token,
     required TResult orElse(),
