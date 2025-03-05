@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:pinto/ast.dart';
 import 'package:pinto/error.dart';
 import 'package:pinto/lexer.dart';
+import 'package:pinto/src/other/print_indented.dart';
 
 import 'element.dart';
 import 'environment.dart';
@@ -134,7 +135,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
   }
 
   @override
-  Future<Element> visitIdentifierExpression(IdentifierExpression node) async {
+  Future<IdentifierElement> visitIdentifierExpression(IdentifierExpression node) async {
     final definition = _environment.getDefinition(node.identifier.lexeme);
 
     if (definition == null) {
@@ -362,8 +363,9 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
         }
 
         if (typeMembers.containsKey(memberElement.name)) {
-          // TODO(mateusfccp): Make a proper error
-          throw 'Member already defined';
+          // TODO(mateusfccp): Make a proper error or should we shadow it?
+          // Maybe shadowing is better if we have struct spreads
+          throw 'Duplicated member name';
         }
 
         typeMembers[memberElement.name] = memberElement.value.type!;
@@ -502,15 +504,15 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     final syntheticElement = IdentifierExpression(
       Token(
         type: TokenType.identifier,
-        lexeme: node.name.literal.lexeme,
+        lexeme: node.name.literal.lexeme.substring(1),
         offset: node.name.offset + 1,
       ),
     );
 
-    final value = await syntheticElement.accept(this) as LiteralElement;
+    final value = await syntheticElement.accept(this) as IdentifierElement;
 
     return StructMemberElement() //
-      ..name = node.name.literal.lexeme
+      ..name = node.name.literal.lexeme.substring(1)
       ..value = value;
   }
 

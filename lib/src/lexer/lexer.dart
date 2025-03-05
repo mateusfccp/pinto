@@ -129,8 +129,6 @@ final class Lexer {
   }
 
   void _symbolLiteral() {
-    _advance();
-
     if (!_isIdentifierStart(_peek)) {
       _errorHandler?.emit(
         InvalidIdentifierStart(offset: _current),

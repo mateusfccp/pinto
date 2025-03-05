@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:code_builder/code_builder.dart' hide ClassBuilder, FunctionType;
 import 'package:dart_style/dart_style.dart';
 import 'package:pinto/semantic.dart';
@@ -194,20 +196,23 @@ final class Compiler implements ElementVisitor<List<Spec>> {
     }
 
     final recordLiteral = literalRecord([], {});
+    final positionalArguments = SplayTreeMap<int, Expression>();
 
     for (final StructMemberElement(:name, :value) in node.members) {
-      final valueExpression = value.accept(this) as List<Expression>;
+      final valueExpression = (value.accept(this) as List<Expression>).single;
 
       if (int.tryParse(name.substring(1)) case final index? when name[0] == r'$') {
-        assert(
-          recordLiteral.positionalFieldValues.length == index,
-          'Positional fields must be created in order.',
-        );
-        recordLiteral.positionalFieldValues.add(valueExpression);
+        positionalArguments[index] = valueExpression;
       } else {
         recordLiteral.namedFieldValues[name] = valueExpression;
       }
     }
+
+    // TODO(mateusfccp):
+    // Currently, we simply spread the positioned arguments even if there are
+    // gaps in the numbers. We may want to rethink if this is the desired
+    // behavior.
+    recordLiteral.positionalFieldValues.addAll(positionalArguments.values);
 
     return [recordLiteral];
   }
