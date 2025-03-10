@@ -244,7 +244,7 @@ final class Specific extends ErrorEmission {
 /// A matcher that matches if two sets are equal.
 ///
 /// It gives detailed information about the differences between the sets.
-Matcher sameEmissions(Set<ErrorEmission> expected) => _SetMatcherWithDifferenceDescription(expected);
+Matcher emittedJustLikeTheExpected(Set<ErrorEmission> expected) => _SetMatcherWithDifferenceDescription(expected);
 
 final class _SetMatcherWithDifferenceDescription extends Matcher {
   const _SetMatcherWithDifferenceDescription(this.expected);

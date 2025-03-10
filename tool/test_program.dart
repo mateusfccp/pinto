@@ -11,6 +11,9 @@ import 'package:pinto/lexer.dart';
 import 'package:pinto/semantic.dart';
 import 'package:pinto/compiler.dart';
 import 'package:test/test.dart';
+import 'package:uuid/v1.dart';
+
+final _uuid = UuidV1();
 
 /// Creates a test case with the given [description] and [body] to test [source].
 Future<void> testProgram(
@@ -29,7 +32,9 @@ Future<void> testProgram(
     root: sdkRoot,
   );
 
-  final path = resourceProvider.convertPath('/test.pinto');
+  final id = _uuid.generate();
+
+  final path = resourceProvider.convertPath('/{$id}.pinto');
   final file = resourceProvider.getFile(path);
   file.writeAsStringSync(source);
 
@@ -65,7 +70,7 @@ Future<void> testProgram(
 
   final programElement = await resolver.resolve();
   final compiler = Compiler(programElement);
-  final temporaryFile = File('.test.temp.dart');
+  final temporaryFile = File('.$id.dart');
   final sink = temporaryFile.openWrite(mode: FileMode.writeOnly);
 
   compiler.write(sink);

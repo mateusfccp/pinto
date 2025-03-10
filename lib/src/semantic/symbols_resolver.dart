@@ -143,12 +143,12 @@ final class SymbolsResolver {
   }
 }
 
-Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
+Type _dartTypeToPintoType(dart.DartType type, {TypePosition position = TypePosition.covariant}) {
   // TODO(mateusfccp): Implement Object → Some(NonSome)
   // TODO(mateusfccp): Implement T? → Option(T)
   // TODO(mateusfccp): Implement T <: Object → Some(T <: NonSome)
   switch (type) {
-    case dart.VoidType() when !contravariant:
+    case dart.VoidType() when position == TypePosition.covariant:
       return StructType.unit;
     case dart.VoidType():
     case dart.DynamicType():
@@ -165,10 +165,16 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
     case dart.ParameterizedType():
       if (type.isDartCoreBool) {
         return const BooleanType();
-      } else if (type.isDartCoreString) {
-        return const StringType();
+      } else if (type.isDartCoreDouble) {
+        return const DoubleType();
+      } else if (type.isDartCoreInt) {
+        return const IntegerType();
+      } else if (type.isDartCoreNum) {
+        return const NumberType();
       } else if (type.isDartCoreNull) {
         return StructType.unit;
+      } else if (type.isDartCoreString) {
+        return const StringType();
       } else if (type.isDartCoreType) {
         return const TypeType.self();
       } else if (type.element case final dart.InterfaceElement element) {
@@ -177,6 +183,13 @@ Type _dartTypeToPintoType(dart.DartType type, {bool contravariant = false}) {
           arguments: [
             for (final typeParameter in element.typeParameters) //
               TypeParameterType(name: typeParameter.name),
+          ],
+          declaredSupertypes: [
+            for (final supertype in element.allSupertypes)
+              _dartTypeToPintoType(
+                supertype,
+                position: TypePosition.contravariant,
+              ),
           ],
         );
       } else {
@@ -216,4 +229,20 @@ final class _SymbolResolvingException implements Exception {
   String toString() {
     return "Couldn't resolve symbols for package $package.";
   }
+}
+
+/// The position where a type is used.
+///
+/// This is used to determine how the type should be treated when it is
+/// transpiled to a Dart type or imported from a Dart type.
+enum TypePosition {
+  /// The type is in a position where it is covariant.
+  ///
+  /// This is the case for the return type of a function or the type of a field.
+  covariant,
+
+  /// The type is in a position where it is contravariant.
+  ///
+  /// This is the case for the type of a parameter in a function.
+  contravariant;
 }
