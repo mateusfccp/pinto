@@ -1,0 +1,5 @@
+// The `number` parameter is declared with the type `num`, so it should accept
+// their subtypes `int` and `double`.
+let printNumber (:number num) = print number
+
+let main () = printNumber (:number 42)

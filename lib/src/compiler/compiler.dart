@@ -115,7 +115,7 @@ final class Compiler implements ElementVisitor<List<Spec>> {
                 throw 'Unreachable';
               }
 
-              if (type case PolymorphicType(option: true)) {
+              if (type case PolymorphicType(isOption: true)) {
                 builder.required = false;
               } else {
                 builder.required = true;
@@ -316,6 +316,7 @@ String _buildTypeName(
     DoubleType() => 'double',
     FunctionType() => '${_buildTypeName(type.returnType, position: _ParameterPosition.contravariant)} Function(${_buildTypeName(type.parameterType)})',
     IntegerType() => 'int',
+    NumberType() => 'num',
     PolymorphicType(:final name) || TypeParameterType(:final name) => name,
     StringType() => 'String',
     StructType(isUnit: true) => switch (position) {
@@ -382,6 +383,7 @@ List<TypeParameterType> _typeParametersFromType(Type type) {
     DoubleType() ||
     FunctionType() ||
     IntegerType() ||
+    NumberType() ||
     StringType() ||
     StructType() ||
     SymbolType() ||

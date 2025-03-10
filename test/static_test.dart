@@ -31,8 +31,8 @@ void _testFile(String path) {
       );
 
       expect(
-        expectations,
-        sameEmissions(errors),
+        errors,
+        emittedJustLikeTheExpected(expectations),
       );
     },
   );
