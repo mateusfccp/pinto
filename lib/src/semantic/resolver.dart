@@ -263,7 +263,16 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     // TODO(mateusfccp): We want to allow parameters to be referenced by other parameters
     if (declaration is LetFunctionDeclaration) {
       for (final member in declaration.parameter.members) {
-        _environment.defineSymbol(member.name, member.value);
+        final syntheticDeclaration = LetVariableDeclaration(
+          name: member.name,
+          type: (member.value.type as TypeType).reference,
+        );
+        syntheticDeclaration.body = IdentifierElement(
+          name: member.name,
+          constantValue: null,
+        );
+
+        _environment.defineSymbol(member.name, syntheticDeclaration);
       }
     }
 
