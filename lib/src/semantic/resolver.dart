@@ -152,7 +152,6 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
     }
 
     // TODO (mateusfccp): Deal with recursive definitions?
-
     return IdentifierElement(
       name: node.identifier.lexeme,
       constantValue: constantValue,
@@ -194,7 +193,7 @@ final class Resolver extends SimpleAstNodeVisitor<Future<Element>> {
       return invocationElement;
     } else {
       _errorHandler?.emit(
-        throw NotAFunctionError(
+        NotAFunctionError(
           syntacticEntity: node.identifier,
           calledType: identifier.type!,
         ),
