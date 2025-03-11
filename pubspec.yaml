@@ -1,6 +1,6 @@
 name: pinto
 description: The pint° programming language
-version: 0.0.4+1
+version: 0.1.1
 repository: https://github.com/mateusfccp/pinto
 
 environment:

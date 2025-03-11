@@ -1,3 +1,9 @@
+## 0.1.1
+
+- Implement structs
+- Implement function parameters
+- Implement basic subtyping
+
 ## 0.0.4+1
 
 - Implement a basic static test framework to help us testing the static part of our language
