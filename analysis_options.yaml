@@ -5,3 +5,5 @@ analyzer:
     - lib/**/*.freezed.dart
     - lib/**/*.g.dart
     - lib/**/*.visitors.dart
+  errors:
+    deprecated_member_use: ignore

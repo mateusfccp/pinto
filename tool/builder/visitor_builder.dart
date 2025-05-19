@@ -40,7 +40,9 @@ final class VisitorGenerator extends GeneratorForAnnotation<TreeRoot> {
         "import '$fileName';",
         _emitter.visitClass(_visitorFromElement(element)).toString(),
         _emitter.visitClass(_simpleVisitorFromElement(element)).toString(),
-        _emitter.visitClass(_generalizingVisitorFromElement(element)).toString(),
+        _emitter
+            .visitClass(_generalizingVisitorFromElement(element))
+            .toString(),
       ];
     } else {
       return [];
@@ -131,10 +133,14 @@ Class _generalizingVisitorFromElement(InterfaceElement interface) {
 
           if (child.parentNode case final parent?) {
             builder.lambda = true;
-            builder.body = refer('visit${parent.name}').call([refer('node')]).code;
+            builder.body = refer(
+              'visit${parent.name}',
+            ).call([refer('node')]).code;
           } else {
             builder.body = Block.of([
-              refer('node').property('visitChildren').call([refer('this')]).statement,
+              refer(
+                'node',
+              ).property('visitChildren').call([refer('this')]).statement,
               refer('null').returned.statement,
             ]);
           }

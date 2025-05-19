@@ -247,7 +247,8 @@ base mixin _ImportedSymbolSyntheticElement {
   Type get _type => (this as ImportedSymbolSyntheticElement).type;
   R? accept<R>(ElementVisitor<R> visitor) =>
       visitor.visitImportedSymbolSyntheticElement(
-          (this as ImportedSymbolSyntheticElement));
+        (this as ImportedSymbolSyntheticElement),
+      );
   void visitChildren<R>(ElementVisitor<R> visitor) {
     _syntheticElement.accept(visitor);
   }

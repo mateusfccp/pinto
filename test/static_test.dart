@@ -17,23 +17,13 @@ void main() async {
 }
 
 void _testFile(String path) {
-  test(
-    basename(path),
-    () async {
-      final tester = StaticTester(path);
+  test(basename(path), () async {
+    final tester = StaticTester(path);
 
-      final expectations = SplayTreeSet.of(
-        await tester.expectations.toList(),
-      );
+    final expectations = SplayTreeSet.of(await tester.expectations.toList());
 
-      final errors = SplayTreeSet.of(
-        await tester.errors.toList(),
-      );
+    final errors = SplayTreeSet.of(await tester.errors.toList());
 
-      expect(
-        errors,
-        emittedJustLikeTheExpected(expectations),
-      );
-    },
-  );
+    expect(errors, emittedJustLikeTheExpected(expectations));
+  });
 }

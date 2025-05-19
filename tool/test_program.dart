@@ -27,10 +27,7 @@ Future<void> testProgram(
     resourceProvider.convertPath('/sdk'),
   );
 
-  createMockSdk(
-    resourceProvider: resourceProvider,
-    root: sdkRoot,
-  );
+  createMockSdk(resourceProvider: resourceProvider, root: sdkRoot);
 
   final id = _uuid.generate();
 
@@ -78,17 +75,11 @@ Future<void> testProgram(
   await sink.flush();
   await sink.close();
 
-  final process = Process.runSync(
-    'dart',
-    [temporaryFile.path],
-  );
+  final process = Process.runSync('dart', [temporaryFile.path]);
 
   final stdout = process.stdout as String;
 
-  test(
-    description,
-    () => body(stdout),
-  );
+  test(description, () => body(stdout));
 
   temporaryFile.deleteSync();
   await analysisContextCollection.dispose();

@@ -6,11 +6,7 @@ import 'package:pinto/syntactic_entity.dart';
 @immutable
 final class Token implements SyntacticEntity {
   /// Creates a program token.
-  const Token({
-    required this.type,
-    required this.lexeme,
-    required this.offset,
-  });
+  const Token({required this.type, required this.lexeme, required this.offset});
 
   /// The type of the token.
   final TokenType type;

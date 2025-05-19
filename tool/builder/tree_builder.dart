@@ -7,10 +7,7 @@ import 'package:source_gen/source_gen.dart';
 import 'common.dart';
 
 Builder treeBuilder(BuilderOptions options) {
-  return SharedPartBuilder(
-    [TreeGenerator()],
-    'tree',
-  );
+  return SharedPartBuilder([TreeGenerator()], 'tree');
 }
 
 final _emitter = DartEmitter();
@@ -40,9 +37,7 @@ final class TreeGenerator extends GeneratorForAnnotation<TreeRoot> {
       assert(node is InterfaceElement);
       final element = node as InterfaceElement;
 
-      units.add(
-        _emitter.visitMixin(_mixinForElement(element)).toString(),
-      );
+      units.add(_emitter.visitMixin(_mixinForElement(element)).toString());
     });
 
     return units;
@@ -50,42 +45,36 @@ final class TreeGenerator extends GeneratorForAnnotation<TreeRoot> {
 }
 
 Mixin _mixinForElement(InterfaceElement element) {
-  return Mixin(
-    (builder) {
-      builder.base = true;
-      builder.name = element.privateName;
+  return Mixin((builder) {
+    builder.base = true;
+    builder.name = element.privateName;
 
-      // Generate fields without definitions in the main class.
-      for (final field in element.fields) {
-        builder.methods.add(
-          Method((builder) {
-            builder.returns = refer(field.type.toString());
-            builder.type = MethodType.getter;
-            builder.name = '_${field.name}';
-            builder.body = refer('this').asA(refer(element.name)).property(field.name).code;
-          }),
-        );
-      }
-
-      if (element.isVisitable) {
-        if (element.isLeaf) {
-          builder.methods.add(
-            _acceptMethod(element),
-          );
-        }
-
-        if (!element.isRoot) {
-          builder.methods.add(
-            _visitChildrenMethod(element),
-          );
-        }
-      }
-
+    // Generate fields without definitions in the main class.
+    for (final field in element.fields) {
       builder.methods.add(
-        _toStringMethod(element),
+        Method((builder) {
+          builder.returns = refer(field.type.toString());
+          builder.type = MethodType.getter;
+          builder.name = '_${field.name}';
+          builder.body = refer(
+            'this',
+          ).asA(refer(element.name)).property(field.name).code;
+        }),
       );
-    },
-  );
+    }
+
+    if (element.isVisitable) {
+      if (element.isLeaf) {
+        builder.methods.add(_acceptMethod(element));
+      }
+
+      if (!element.isRoot) {
+        builder.methods.add(_visitChildrenMethod(element));
+      }
+    }
+
+    builder.methods.add(_toStringMethod(element));
+  });
 }
 
 Method _acceptMethod(InterfaceElement element) {
@@ -102,9 +91,11 @@ Method _acceptMethod(InterfaceElement element) {
     );
 
     builder.lambda = true;
-    builder.body = refer('visitor') //
-        .property('visit${element.name}')
-        .call([refer('this').asA(refer(element.name))]).code;
+    builder.body =
+        refer('visitor') //
+            .property('visit${element.name}')
+            .call([refer('this').asA(refer(element.name))])
+            .code;
   });
 }
 
@@ -129,11 +120,17 @@ Method _visitChildrenMethod(InterfaceElement element) {
         if (field.isIterableOfVisitable) {
           final block = Block.of([
             if (isNullable) Code('if (_${field.name} case final nodes?) {'),
-            Code('for (final node in ${isNullable ? 'nodes' : '_${field.name}'}) {'),
+            Code(
+              'for (final node in ${isNullable ? 'nodes' : '_${field.name}'}) {',
+            ),
             if (field.isIterableOfNullable) //
-              refer('node').nullSafeProperty('visitChildren').call([refer('visitor')]).statement
+              refer('node').nullSafeProperty('visitChildren').call([
+                refer('visitor'),
+              ]).statement
             else
-              refer('node').property('visitChildren').call([refer('visitor')]).statement,
+              refer(
+                'node',
+              ).property('visitChildren').call([refer('visitor')]).statement,
             Code('}'),
             if (isNullable) Code('}'),
           ]);
@@ -141,7 +138,9 @@ Method _visitChildrenMethod(InterfaceElement element) {
           builder.statements.add(block);
         } else if (field.isVisitable) {
           final name = refer('_${field.name}');
-          final nameProperty = isNullable ? name.nullSafeProperty : name.property;
+          final nameProperty = isNullable
+              ? name.nullSafeProperty
+              : name.property;
 
           builder.statements.add(
             nameProperty('accept').call([refer('visitor')]).statement,

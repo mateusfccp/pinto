@@ -40,9 +40,7 @@ final class NumberEndingWithSeparatorError implements LexingError {
 }
 
 final class UnexpectedCharacterError implements LexingError {
-  const UnexpectedCharacterError({
-    required this.offset,
-  });
+  const UnexpectedCharacterError({required this.offset});
 
   @override
   final int offset;
@@ -80,7 +78,9 @@ sealed class ExpectedError with _$ExpectedError implements ParseError {
 }
 
 @freezed
-sealed class ExpectedAfterError with _$ExpectedAfterError implements ParseError {
+sealed class ExpectedAfterError
+    with _$ExpectedAfterError
+    implements ParseError {
   const factory ExpectedAfterError({
     required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
@@ -94,7 +94,9 @@ sealed class ExpectedAfterError with _$ExpectedAfterError implements ParseError 
 }
 
 @freezed
-sealed class ExpectedBeforeError with _$ExpectedBeforeError implements ParseError {
+sealed class ExpectedBeforeError
+    with _$ExpectedBeforeError
+    implements ParseError {
   const factory ExpectedBeforeError({
     required SyntacticEntity syntacticEntity,
     required ExpectationType expectation,
@@ -111,13 +113,17 @@ sealed class ExpectedBeforeError with _$ExpectedBeforeError implements ParseErro
 sealed class ExpectationType with _$ExpectationType {
   const ExpectationType._();
 
-  const factory ExpectationType.declaration({Declaration? declaration}) = DeclarationExpectation;
+  const factory ExpectationType.declaration({Declaration? declaration}) =
+      DeclarationExpectation;
 
-  const factory ExpectationType.expression({Expression? expression}) = ExpressionExpectation;
+  const factory ExpectationType.expression({Expression? expression}) =
+      ExpressionExpectation;
 
   const factory ExpectationType.typeIdentifier() = TypeIdentifierExpectation;
 
-  const factory ExpectationType.oneOf({required List<ExpectationType> expectations}) = OneOfExpectation;
+  const factory ExpectationType.oneOf({
+    required List<ExpectationType> expectations,
+  }) = OneOfExpectation;
 
   const factory ExpectationType.token({
     required TokenType token,
@@ -127,11 +133,14 @@ sealed class ExpectationType with _$ExpectationType {
   String get code {
     return switch (this) {
       DeclarationExpectation(declaration: ImportDeclaration()) => 'import',
-      DeclarationExpectation(declaration: LetDeclaration()) => 'let_declaration',
-      DeclarationExpectation(declaration: TypeDefinition()) => 'type_definition',
+      DeclarationExpectation(declaration: LetDeclaration()) =>
+        'let_declaration',
+      DeclarationExpectation(declaration: TypeDefinition()) =>
+        'type_definition',
       DeclarationExpectation() => 'declaration',
       ExpressionExpectation() => 'expression',
-      OneOfExpectation(:final expectations) => expectations.map((expectation) => expectation.code).join('_or_'),
+      OneOfExpectation(:final expectations) =>
+        expectations.map((expectation) => expectation.code).join('_or_'),
       TokenExpectation(:final token) => token.code,
       TypeIdentifierExpectation() => 'type_identifier',
     };
@@ -141,21 +150,24 @@ sealed class ExpectationType with _$ExpectationType {
   String toString() {
     return switch (this) {
       DeclarationExpectation(declaration: ImportDeclaration()) => 'an import',
-      DeclarationExpectation(declaration: LetDeclaration()) => 'a let declaration',
-      DeclarationExpectation(declaration: TypeDefinition()) => 'a type definition',
+      DeclarationExpectation(declaration: LetDeclaration()) =>
+        'a let declaration',
+      DeclarationExpectation(declaration: TypeDefinition()) =>
+        'a type definition',
       DeclarationExpectation() => 'a declaration',
       ExpressionExpectation() => 'an expression',
-      OneOfExpectation(:final expectations) => "${expectations.length > 1 ? 'one of ' : ''}${expectations.join(', ')}",
-      TokenExpectation(:final description, :final token) => description ?? "'$token'",
+      OneOfExpectation(:final expectations) =>
+        "${expectations.length > 1 ? 'one of ' : ''}${expectations.join(', ')}",
+      TokenExpectation(:final description, :final token) =>
+        description ?? "'$token'",
       TypeIdentifierExpectation() => 'a type identifier',
     };
   }
 }
 
 final class MisplacedImport implements ParseError {
-  const MisplacedImport({
-    required ImportDeclaration importDeclaration,
-  }) : syntacticEntity = importDeclaration;
+  const MisplacedImport({required ImportDeclaration importDeclaration})
+    : syntacticEntity = importDeclaration;
 
   @override
   final ImportDeclaration syntacticEntity;
@@ -243,9 +255,7 @@ final class InvalidParameterTypeError implements ResolveError {
 /// type Person = Person(:name String, :age 10) // Invalid, unexpected value
 /// ```
 final class InvalidTypeParameterError implements ResolveError {
-  const InvalidTypeParameterError({
-    required this.syntacticEntity,
-  });
+  const InvalidTypeParameterError({required this.syntacticEntity});
 
   @override
   final SyntacticEntity syntacticEntity;
@@ -327,7 +337,8 @@ final class ErrorHandler {
   ///
   /// A listener will be called whenever an error is emitted. The emmited error
   /// is passed to the listener.
-  void addListener(void Function(PintoError) listener) => _listeners.add(listener);
+  void addListener(void Function(PintoError) listener) =>
+      _listeners.add(listener);
 
   /// Removes [listener] from the handler.
   void removeListener(void Function() listener) => _listeners.remove(listener);

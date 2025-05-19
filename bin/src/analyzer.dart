@@ -65,17 +65,11 @@ final class Analyzer {
   Future<List<Diagnostic>> analyze(String path, String source) async {
     final errorHandler = ErrorHandler();
 
-    final lexer = Lexer(
-      source: source,
-      errorHandler: errorHandler,
-    );
+    final lexer = Lexer(source: source, errorHandler: errorHandler);
 
     final tokens = lexer.scanTokens();
 
-    final parser = Parser(
-      tokens: tokens,
-      errorHandler: errorHandler,
-    );
+    final parser = Parser(tokens: tokens, errorHandler: errorHandler);
 
     final program = parser.parse();
 
@@ -94,7 +88,8 @@ final class Analyzer {
     await resolver.resolve();
 
     final diagnostics = [
-      for (final error in errorHandler.errors) _diagnosticFromError(lexer, error, source),
+      for (final error in errorHandler.errors)
+        _diagnosticFromError(lexer, error, source),
     ];
 
     _analysisCache[path] = diagnostics;
@@ -106,31 +101,24 @@ final class Analyzer {
 Diagnostic _diagnosticFromError(Lexer lexer, PintoError error, String source) {
   final offset = switch (error) {
     LexingError(:final offset) => offset,
-    ParseError(:final syntacticEntity) || ResolveError(:final syntacticEntity) => syntacticEntity.offset,
+    ParseError(:final syntacticEntity) ||
+    ResolveError(:final syntacticEntity) => syntacticEntity.offset,
   };
 
   final (line, column) = lexer.positionForOffset(offset);
 
   final length = switch (error) {
     LexingError() => 1,
-    ParseError(:final syntacticEntity) || ResolveError(:final syntacticEntity) => syntacticEntity.length,
+    ParseError(:final syntacticEntity) ||
+    ResolveError(:final syntacticEntity) => syntacticEntity.length,
   };
 
-  final start = Position(
-    line: line - 1,
-    character: column - 1,
-  );
+  final start = Position(line: line - 1, character: column - 1);
 
-  final end = Position(
-    line: line - 1,
-    character: column - 1 + length,
-  );
+  final end = Position(line: line - 1, character: column - 1 + length);
 
   final range = Range(start: start, end: end);
   final message = messageFromError(error, source);
 
-  return Diagnostic(
-    message: message,
-    range: range,
-  );
+  return Diagnostic(message: message, range: range);
 }

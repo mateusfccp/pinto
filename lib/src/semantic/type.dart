@@ -62,7 +62,8 @@ sealed class Type {
           return false;
         } else {
           for (final MapEntry(:key, value: type) in self.members.entries) {
-            if (other.members[key] case final otherType? when type < otherType) {
+            if (other.members[key] case final otherType?
+                when type < otherType) {
               continue;
             } else {
               return false;
@@ -78,7 +79,7 @@ sealed class Type {
   /// Whether [this] is a subtype of [other].
   ///
   /// This is the same as [subtypeOf].
-  operator <(Type other) => subtypeOf(other);
+  bool operator <(Type other) => subtypeOf(other);
 }
 
 /// A type that represents a boolean value.
@@ -154,10 +155,7 @@ final class DoubleType extends Type {
 /// `int`, and returns an `int`.
 final class FunctionType extends Type {
   /// Creates a function type.
-  FunctionType({
-    required this.returnType,
-    required this.parameterType,
-  });
+  FunctionType({required this.returnType, required this.parameterType});
 
   /// The struct type that represents the parameter of the function.
   final StructType parameterType;
@@ -491,7 +489,8 @@ StructType parameterTypeToExpectedArgumentType(StructType parameterType) {
 
   return StructType(
     members: {
-      for (final entry in castedMembers.entries) entry.key: entry.value.reference,
+      for (final entry in castedMembers.entries)
+        entry.key: entry.value.reference,
     },
   );
 }

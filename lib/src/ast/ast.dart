@@ -33,7 +33,8 @@ final class TopTypeIdentifier extends TypeIdentifier with _TopTypeIdentifier {
   int get end => verum.end;
 }
 
-final class BottomTypeIdentifier extends TypeIdentifier with _BottomTypeIdentifier {
+final class BottomTypeIdentifier extends TypeIdentifier
+    with _BottomTypeIdentifier {
   const BottomTypeIdentifier(this.falsum);
 
   final Token falsum;
@@ -66,11 +67,7 @@ final class ListTypeIdentifier extends TypeIdentifier with _ListTypeIdentifier {
 }
 
 final class SetTypeIdentifier extends TypeIdentifier with _SetTypeIdentifier {
-  const SetTypeIdentifier(
-    this.leftBrace,
-    this.identifier,
-    this.rightBrace,
-  );
+  const SetTypeIdentifier(this.leftBrace, this.identifier, this.rightBrace);
 
   final Token leftBrace;
 
@@ -143,11 +140,9 @@ final class MapTypeIdentifier extends TypeIdentifier with _MapTypeIdentifier {
 //   int get end => rightParenthesis?.end ?? arguments?.end ?? leftParenthesis?.end ?? identifier.end;
 // }
 
-final class OptionTypeIdentifier extends TypeIdentifier with _OptionTypeIdentifier {
-  const OptionTypeIdentifier(
-    this.identifier,
-    this.eroteme,
-  );
+final class OptionTypeIdentifier extends TypeIdentifier
+    with _OptionTypeIdentifier {
+  const OptionTypeIdentifier(this.identifier, this.eroteme);
 
   final TypeIdentifier identifier;
 
@@ -168,7 +163,8 @@ sealed class StructMember extends Node with _StructMember {
   const StructMember();
 }
 
-final class NamelessStructMember extends StructMember with _NamelessStructMember {
+final class NamelessStructMember extends StructMember
+    with _NamelessStructMember {
   const NamelessStructMember(this.value);
 
   final Expression value;
@@ -180,7 +176,8 @@ final class NamelessStructMember extends StructMember with _NamelessStructMember
   int get end => value.end;
 }
 
-final class ValuelessStructMember extends StructMember with _ValuelessStructMember {
+final class ValuelessStructMember extends StructMember
+    with _ValuelessStructMember {
   const ValuelessStructMember(this.name);
 
   final SymbolLiteral name;
@@ -193,10 +190,7 @@ final class ValuelessStructMember extends StructMember with _ValuelessStructMemb
 }
 
 final class FullStructMember extends StructMember with _FullStructMember {
-  const FullStructMember(
-    this.name,
-    this.value,
-  );
+  const FullStructMember(this.name, this.value);
 
   final SymbolLiteral name;
 
@@ -210,10 +204,7 @@ final class FullStructMember extends StructMember with _FullStructMember {
 }
 
 final class TypeVariantNode extends Node with _TypeVariantNode {
-  const TypeVariantNode(
-    this.name,
-    this.parameters,
-  );
+  const TypeVariantNode(this.name, this.parameters);
 
   final Token name;
 
@@ -230,7 +221,8 @@ sealed class Expression extends AstNode with _Expression {
   const Expression();
 }
 
-final class IdentifierExpression extends TypeIdentifier with _IdentifierExpression {
+final class IdentifierExpression extends TypeIdentifier
+    with _IdentifierExpression {
   const IdentifierExpression(this.identifier);
 
   final Token identifier;
@@ -242,11 +234,9 @@ final class IdentifierExpression extends TypeIdentifier with _IdentifierExpressi
   int get end => identifier.end;
 }
 
-final class InvocationExpression extends TypeIdentifier with _InvocationExpression {
-  const InvocationExpression(
-    this.identifier,
-    this.argument,
-  );
+final class InvocationExpression extends TypeIdentifier
+    with _InvocationExpression {
+  const InvocationExpression(this.identifier, this.argument);
 
   final IdentifierExpression identifier;
 
@@ -348,11 +338,7 @@ sealed class Declaration extends AstNode with _Declaration {
 }
 
 final class ImportDeclaration extends Declaration with _ImportDeclaration {
-  const ImportDeclaration(
-    this.keyword,
-    this.type,
-    this.identifier,
-  );
+  const ImportDeclaration(this.keyword, this.type, this.identifier);
 
   final Token keyword;
 

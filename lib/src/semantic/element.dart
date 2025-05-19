@@ -25,7 +25,9 @@ abstract final class TypeDefiningElement extends Element {
   Type get definedType;
 }
 
-final class TypeParameterElement extends Element with _TypeParameterElement implements TypedElement, TypeDefiningElement {
+final class TypeParameterElement extends Element
+    with _TypeParameterElement
+    implements TypedElement, TypeDefiningElement {
   TypeParameterElement({required this.name});
 
   final String name;
@@ -49,11 +51,10 @@ final class StructMemberElement extends Element with _StructMemberElement {
   late LiteralElement enclosingElement;
 }
 
-final class ParameterElement extends Element with _ParameterElement implements TypedElement {
-  ParameterElement({
-    required this.name,
-    this.type,
-  });
+final class ParameterElement extends Element
+    with _ParameterElement
+    implements TypedElement {
+  ParameterElement({required this.name, this.type});
 
   final String name;
 
@@ -64,7 +65,9 @@ final class ParameterElement extends Element with _ParameterElement implements T
   late Element enclosingElement;
 }
 
-sealed class ExpressionElement extends Element with _ExpressionElement implements TypedElement {
+sealed class ExpressionElement extends Element
+    with _ExpressionElement
+    implements TypedElement {
   @override
   late Element enclosingElement;
 
@@ -73,7 +76,8 @@ sealed class ExpressionElement extends Element with _ExpressionElement implement
   Object? get constantValue;
 }
 
-final class InvocationElement extends ExpressionElement with _InvocationElement {
+final class InvocationElement extends ExpressionElement
+    with _InvocationElement {
   InvocationElement({
     this.type,
     required this.identifier,
@@ -92,7 +96,8 @@ final class InvocationElement extends ExpressionElement with _InvocationElement 
   final Object? constantValue;
 }
 
-final class IdentifierElement extends ExpressionElement with _IdentifierElement {
+final class IdentifierElement extends ExpressionElement
+    with _IdentifierElement {
   IdentifierElement({
     required this.name,
     this.type,
@@ -110,7 +115,8 @@ final class IdentifierElement extends ExpressionElement with _IdentifierElement 
 
 sealed class LiteralElement extends ExpressionElement with _LiteralElement {}
 
-final class SingletonLiteralElement extends LiteralElement with _SingletonLiteralElement {
+final class SingletonLiteralElement extends LiteralElement
+    with _SingletonLiteralElement {
   SingletonLiteralElement({this.type});
 
   @override
@@ -120,7 +126,8 @@ final class SingletonLiteralElement extends LiteralElement with _SingletonLitera
   late final Object? constantValue;
 }
 
-final class StructLiteralElement extends LiteralElement with _StructLiteralElement {
+final class StructLiteralElement extends LiteralElement
+    with _StructLiteralElement {
   @override
   late final StructType type;
 
@@ -131,7 +138,8 @@ final class StructLiteralElement extends LiteralElement with _StructLiteralEleme
 }
 
 final class TypeLiteralElement extends LiteralElement with _TypeLiteralElement {
-  TypeLiteralElement({required Type referenceType}) : _referenceType = referenceType;
+  TypeLiteralElement({required Type referenceType})
+    : _referenceType = referenceType;
 
   final Type _referenceType;
 
@@ -164,7 +172,9 @@ final class ImportElement extends DeclarationElement with _ImportElement {
   final Package package;
 }
 
-sealed class LetDeclarationElement extends DeclarationElement with _LetDeclarationElement implements TypedElement {
+sealed class LetDeclarationElement extends DeclarationElement
+    with _LetDeclarationElement
+    implements TypedElement {
   LetDeclarationElement({required this.name});
 
   final String name;
@@ -177,11 +187,9 @@ sealed class LetDeclarationElement extends DeclarationElement with _LetDeclarati
   }
 }
 
-final class LetFunctionDeclaration extends LetDeclarationElement with _LetFunctionDeclaration {
-  LetFunctionDeclaration({
-    required super.name,
-    required this.parameter,
-  });
+final class LetFunctionDeclaration extends LetDeclarationElement
+    with _LetFunctionDeclaration {
+  LetFunctionDeclaration({required super.name, required this.parameter});
 
   final StructLiteralElement parameter;
 
@@ -189,17 +197,17 @@ final class LetFunctionDeclaration extends LetDeclarationElement with _LetFuncti
   late FunctionType type;
 }
 
-final class LetVariableDeclaration extends LetDeclarationElement with _LetVariableDeclaration {
-  LetVariableDeclaration({
-    required super.name,
-    this.type,
-  });
+final class LetVariableDeclaration extends LetDeclarationElement
+    with _LetVariableDeclaration {
+  LetVariableDeclaration({required super.name, this.type});
 
   @override
   Type? type;
 }
 
-final class ImportedSymbolSyntheticElement extends DeclarationElement with _ImportedSymbolSyntheticElement implements TypedElement {
+final class ImportedSymbolSyntheticElement extends DeclarationElement
+    with _ImportedSymbolSyntheticElement
+    implements TypedElement {
   ImportedSymbolSyntheticElement({
     required this.name,
     required this.syntheticElement,
@@ -213,7 +221,9 @@ final class ImportedSymbolSyntheticElement extends DeclarationElement with _Impo
   Type get type => syntheticElement.type!;
 }
 
-final class TypeDefinitionElement extends DeclarationElement with _TypeDefinitionElement implements TypedElement, TypeDefiningElement {
+final class TypeDefinitionElement extends DeclarationElement
+    with _TypeDefinitionElement
+    implements TypedElement, TypeDefiningElement {
   TypeDefinitionElement({required this.name});
 
   final String name;

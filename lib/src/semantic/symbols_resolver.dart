@@ -2,11 +2,11 @@
 
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/element/element2.dart' as dart;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart' as dart;
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/context/packages.dart' hide Package;
-import 'package:analyzer/dart/element/element.dart' as dart;
 import 'package:analyzer/src/dart/sdk/sdk.dart';
 import 'package:pinto/semantic.dart';
 
@@ -27,7 +27,9 @@ final class SymbolsResolver {
   final AbstractDartSdk sdk;
   late Packages _packages;
 
-  Future<List<ImportedSymbolSyntheticElement>> getSymbolsForPackage({required Package package}) async {
+  Future<List<ImportedSymbolSyntheticElement>> getSymbolsForPackage({
+    required Package package,
+  }) async {
     final uri = getUriFromPackage(package);
 
     if (uri == null) {
@@ -39,48 +41,62 @@ final class SymbolsResolver {
       return [];
     }
 
-    final library = await analysisContextCollection.contexts.first.currentSession.getResolvedLibrary(uri);
+    final library = await analysisContextCollection
+        .contexts
+        .first
+        .currentSession
+        .getResolvedLibrary(uri);
 
     if (library is ResolvedLibraryResult) {
       return [
-        for (var element in library.element.exportNamespace.definedNames.values) //
-          if (_dartElementToPintoElement(element) case final element?) element,
+        for (var element
+            in library.element2.exportNamespace.definedNames2.values)
+          ?_dartElementToPintoElement(element),
       ];
     } else {
       throw _SymbolResolvingException(package);
     }
   }
 
-  ImportedSymbolSyntheticElement? _dartElementToPintoElement(dart.Element element) {
+  ImportedSymbolSyntheticElement? _dartElementToPintoElement(
+    dart.Element2 element,
+  ) {
     final TypedElement syntheticElement;
 
     switch (element) {
-      case dart.FunctionTypedElement():
+      case dart.FunctionTypedElement2():
         final functionType = _dartFunctionTypeToPintoFunctionType(element.type);
 
         final body = SingletonLiteralElement()..constantValue = null;
 
-        syntheticElement = LetFunctionDeclaration(
-          name: element.name!,
-          parameter: StructLiteralElement()
-            ..constantValue = null
-            ..type = functionType.parameterType,
-        )
-          ..type = functionType
-          ..body = body;
-      case dart.InstanceElement():
-        final typeDefinition = TypeDefinitionElement(name: element.name!);
+        syntheticElement =
+            LetFunctionDeclaration(
+                name: element.displayName,
+                parameter: StructLiteralElement()
+                  ..constantValue = null
+                  ..type = functionType.parameterType,
+              )
+              ..type = functionType
+              ..body = body;
+      case dart.InstanceElement2():
+        final typeDefinition = TypeDefinitionElement(name: element.displayName);
 
-        final variant = TypeVariantElement(name: element.name!);
+        final variant = TypeVariantElement(name: element.displayName);
         variant.enclosingElement = typeDefinition;
 
-        for (final typeParameter in element.typeParameters) {
-          final typeParameterElement = TypeParameterElement(name: typeParameter.name);
+        for (final typeParameter in element.typeParameters2) {
+          final typeParameterElement = TypeParameterElement(
+            name: typeParameter.displayName,
+          );
           typeParameterElement.enclosingElement = typeDefinition;
           typeDefinition.parameters.add(typeParameterElement);
-          typeParameterElement.definedType = TypeParameterType(name: typeParameterElement.name);
+          typeParameterElement.definedType = TypeParameterType(
+            name: typeParameterElement.name,
+          );
 
-          final parameterElement = ParameterElement(name: typeParameter.name);
+          final parameterElement = ParameterElement(
+            name: typeParameter.displayName,
+          );
           parameterElement.enclosingElement = typeDefinition;
           variant.parameters.add(parameterElement);
         }
@@ -92,28 +108,30 @@ final class SymbolsResolver {
         }
 
         syntheticElement = typeDefinition;
-      case dart.TopLevelVariableElement():
+      case dart.TopLevelVariableElement2():
         final body = SingletonLiteralElement()..constantValue = null;
 
         syntheticElement = LetVariableDeclaration(
-          name: element.name,
+          name: element.displayName,
           type: _dartTypeToPintoType(element.type),
         )..body = body;
-      case dart.TypeAliasElement(:final aliasedElement?) when element.aliasedType is! dart.FunctionType:
+      case dart.TypeAliasElement2(aliasedElement2: final aliasedElement?)
+          when element.aliasedType is! dart.FunctionType:
         final body = IdentifierElement(
-          name: aliasedElement.name!,
+          name: aliasedElement.displayName,
           type: _dartTypeToPintoType(element.aliasedType),
           constantValue: null,
         );
 
-        syntheticElement = LetVariableDeclaration(name: element.name)..body = body;
+        syntheticElement = LetVariableDeclaration(name: element.displayName)
+          ..body = body;
       default:
         // throw UnimplementedError('No conversion implemented from ${element.runtimeType} to a pint° element.');
         return null;
     }
 
     return ImportedSymbolSyntheticElement(
-      name: element.name!,
+      name: element.displayName,
       syntheticElement: syntheticElement,
     );
   }
@@ -143,7 +161,10 @@ final class SymbolsResolver {
   }
 }
 
-Type _dartTypeToPintoType(dart.DartType type, {TypePosition position = TypePosition.covariant}) {
+Type _dartTypeToPintoType(
+  dart.DartType type, {
+  TypePosition position = TypePosition.covariant,
+}) {
   // TODO(mateusfccp): Implement Object → Some(NonSome)
   // TODO(mateusfccp): Implement T? → Option(T)
   // TODO(mateusfccp): Implement T <: Object → Some(T <: NonSome)
@@ -152,14 +173,15 @@ Type _dartTypeToPintoType(dart.DartType type, {TypePosition position = TypePosit
       return StructType.unit;
     case dart.VoidType():
     case dart.DynamicType():
-    case dart.DartType(isDartCoreObject: true, nullabilitySuffix: NullabilitySuffix.question):
+    case dart.DartType(
+      isDartCoreObject: true,
+      nullabilitySuffix: NullabilitySuffix.question,
+    ):
       return const TopType();
     case dart.NeverType():
       return const BottomType();
     case dart.TypeParameterType():
-      return TypeParameterType(
-        name: type.element.declaration.name,
-      );
+      return TypeParameterType(name: type.element3.displayName);
     case dart.FunctionType():
       return _dartFunctionTypeToPintoFunctionType(type);
     case dart.ParameterizedType():
@@ -177,12 +199,12 @@ Type _dartTypeToPintoType(dart.DartType type, {TypePosition position = TypePosit
         return const StringType();
       } else if (type.isDartCoreType) {
         return const TypeType.self();
-      } else if (type.element case final dart.InterfaceElement element) {
+      } else if (type.element3 case final dart.InterfaceElement2 element) {
         return PolymorphicType(
-          name: element.name,
+          name: element.displayName,
           arguments: [
-            for (final typeParameter in element.typeParameters) //
-              TypeParameterType(name: typeParameter.name),
+            for (final typeParameter in element.typeParameters2) //
+              TypeParameterType(name: typeParameter.displayName),
           ],
           declaredSupertypes: [
             for (final supertype in element.allSupertypes)
@@ -193,10 +215,14 @@ Type _dartTypeToPintoType(dart.DartType type, {TypePosition position = TypePosit
           ],
         );
       } else {
-        throw UnimplementedError("We still don't support importing the type ${type.getDisplayString()} to pint°");
+        throw UnimplementedError(
+          "We still don't support importing the type ${type.getDisplayString()} to pint°",
+        );
       }
     default:
-      throw UnimplementedError("We still don't support importing the type ${type.getDisplayString()} to pint°");
+      throw UnimplementedError(
+        "We still don't support importing the type ${type.getDisplayString()} to pint°",
+      );
   }
 }
 
@@ -244,5 +270,5 @@ enum TypePosition {
   /// The type is in a position where it is contravariant.
   ///
   /// This is the case for the type of a parameter in a function.
-  contravariant;
+  contravariant,
 }

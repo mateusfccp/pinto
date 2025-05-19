@@ -3,10 +3,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:pinto/semantic.dart';
 
 final class ClassBuilder {
-  ClassBuilder({
-    required this.name,
-    this.withEquality = false,
-  });
+  ClassBuilder({required this.name, this.withEquality = false});
 
   final String name;
   final bool withEquality;
@@ -28,10 +25,7 @@ final class ClassBuilder {
     assert(_supertype != null);
     final supertype = _supertype!;
 
-    _supertype = (
-      _supertype!.$1,
-      {...supertype.$2, parameter}.toList(),
-    );
+    _supertype = (_supertype!.$1, {...supertype.$2, parameter}.toList());
   }
 
   void addParameter(Reference parameter) {
@@ -93,20 +87,14 @@ final class ClassBuilder {
       builder.fields = _fields;
 
       if (withEquality) {
-        builder.methods.addAll([
-          _equals(),
-          _hashCode(),
-          _toString(),
-        ]);
+        builder.methods.addAll([_equals(), _hashCode(), _toString()]);
       }
     });
   }
 
   Method _toString() {
     return Method((builder) {
-      builder.annotations.add(
-        refer('override'),
-      );
+      builder.annotations.add(refer('override'));
       builder.returns = refer('String');
       builder.name = 'toString';
       builder.lambda = true;
@@ -137,9 +125,7 @@ final class ClassBuilder {
 
   Method _equals() {
     return Method((builder) {
-      builder.annotations.add(
-        refer('override'),
-      );
+      builder.annotations.add(refer('override'));
       builder.returns = refer('bool');
       builder.name = 'operator==';
       builder.requiredParameters.add(
@@ -182,9 +168,7 @@ final class ClassBuilder {
 
   Method _hashCode() {
     return Method((builder) {
-      builder.annotations.add(
-        refer('override'),
-      );
+      builder.annotations.add(refer('override'));
       builder.type = MethodType.getter;
       builder.returns = refer('int');
       builder.name = 'hashCode';
@@ -201,9 +185,7 @@ final class ClassBuilder {
       } else {
         expression = refer('Object');
 
-        final parameters = [
-          for (final field in fields) refer(field.name),
-        ];
+        final parameters = [for (final field in fields) refer(field.name)];
 
         if (fields.length <= 20) {
           expression = expression.property('hash').call(parameters);

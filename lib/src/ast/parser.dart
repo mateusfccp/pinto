@@ -22,11 +22,9 @@ const _expressionTokens = [
 /// A pint° parser.
 final class Parser {
   /// Creates a pint° parser.
-  Parser({
-    required List<Token> tokens,
-    ErrorHandler? errorHandler,
-  })  : _errorHandler = errorHandler,
-        _tokens = tokens;
+  Parser({required List<Token> tokens, ErrorHandler? errorHandler})
+    : _errorHandler = errorHandler,
+      _tokens = tokens;
 
   final List<Token> _tokens;
   final ErrorHandler? _errorHandler;
@@ -48,7 +46,9 @@ final class Parser {
       final declaration = _declaration();
 
       if (declaration != null) {
-        if (body.isNotEmpty && declaration is ImportDeclaration && body[body.length - 1] is! ImportDeclaration) {
+        if (body.isNotEmpty &&
+            declaration is ImportDeclaration &&
+            body[body.length - 1] is! ImportDeclaration) {
           final error = MisplacedImport(importDeclaration: declaration);
 
           _errorHandler?.emit(error);
@@ -89,8 +89,8 @@ final class Parser {
     while (_isNotAtEnd) {
       switch (_peek.type) {
         case TokenType.importKeyword || //
-              TokenType.typeKeyword ||
-              TokenType.letKeyword:
+            TokenType.typeKeyword ||
+            TokenType.letKeyword:
           return;
         default:
           _advance();
@@ -98,8 +98,26 @@ final class Parser {
     }
   }
 
-  bool _match(TokenType type1, [TokenType? type2, TokenType? type3, TokenType? type4, TokenType? type5, TokenType? type6, TokenType? type7, TokenType? type8]) {
-    final types = [type1, type2, type3, type4, type5, type6, type7, type8].nonNulls;
+  bool _match(
+    TokenType type1, [
+    TokenType? type2,
+    TokenType? type3,
+    TokenType? type4,
+    TokenType? type5,
+    TokenType? type6,
+    TokenType? type7,
+    TokenType? type8,
+  ]) {
+    final types = [
+      type1,
+      type2,
+      type3,
+      type4,
+      type5,
+      type6,
+      type7,
+      type8,
+    ].nonNulls;
 
     for (final type in types) {
       if (_check(type)) {
@@ -161,7 +179,8 @@ final class Parser {
         syntacticEntity: _peek,
         expectation: ExpectationType.oneOf(
           expectations: [
-            for (final tokenType in tokenTypes) TokenExpectation(token: tokenType),
+            for (final tokenType in tokenTypes)
+              TokenExpectation(token: tokenType),
           ],
         ),
       ),
@@ -178,10 +197,7 @@ final class Parser {
       ExpectedAfterError(
         syntacticEntity: _peek,
         expectation: TokenExpectation(token: type),
-        after: TokenExpectation(
-          token: after,
-          description: description,
-        ),
+        after: TokenExpectation(token: after, description: description),
       ),
     );
   }
@@ -189,12 +205,10 @@ final class Parser {
   ImportDeclaration _import() {
     final keyword = _previous;
 
-    final Token identifier = _consumeExpectingMany(
-      [
-        TokenType.identifier,
-        TokenType.importIdentifier,
-      ],
-    );
+    final Token identifier = _consumeExpectingMany([
+      TokenType.identifier,
+      TokenType.importIdentifier,
+    ]);
 
     final ImportType type;
 
@@ -252,10 +266,7 @@ final class Parser {
   Expression _identifierOrInvocation() {
     final identifier = _identifier();
     if (_checkExpressionToken()) {
-      return InvocationExpression(
-        identifier,
-        _expression(),
-      );
+      return InvocationExpression(identifier, _expression());
     } else {
       return identifier;
     }
@@ -275,11 +286,7 @@ final class Parser {
 
     final rightParenthesis = _consumeExpecting(TokenType.rightParenthesis);
 
-    return StructLiteral(
-      leftParenthesis,
-      members,
-      rightParenthesis,
-    );
+    return StructLiteral(leftParenthesis, members, rightParenthesis);
   }
 
   StructMember _structMember() {
@@ -289,10 +296,7 @@ final class Parser {
       if (_checkExpressionToken()) {
         final expression = _expression();
 
-        return FullStructMember(
-          name,
-          expression,
-        );
+        return FullStructMember(name, expression);
       } else {
         return ValuelessStructMember(name);
       }
@@ -327,20 +331,16 @@ final class Parser {
         expectation: ExpectationType.token(token: TokenType.equalitySign),
         after: ExpectationType.token(
           token: TokenType.identifier,
-          description: parameter == null ? 'declaration name' : 'parameter name',
+          description: parameter == null
+              ? 'declaration name'
+              : 'parameter name',
         ),
       ),
     );
 
     final body = _expression();
 
-    return LetDeclaration(
-      keyword,
-      identifier,
-      parameter,
-      equals,
-      body,
-    );
+    return LetDeclaration(keyword, identifier, parameter, equals, body);
   }
 
   TypeDefinition _typeDefinition() {
@@ -361,9 +361,7 @@ final class Parser {
 
       final firstTypeParameter = _consumeExpecting(TokenType.identifier);
 
-      typeParameters.add(
-        IdentifierExpression(firstTypeParameter),
-      );
+      typeParameters.add(IdentifierExpression(firstTypeParameter));
 
       while (!_check(TokenType.rightParenthesis)) {
         _consumeAfter(
@@ -374,9 +372,7 @@ final class Parser {
 
         final typeParameter = _consumeExpecting(TokenType.identifier);
 
-        typeParameters.add(
-          IdentifierExpression(typeParameter),
-        );
+        typeParameters.add(IdentifierExpression(typeParameter));
       }
 
       rightParenthesis = _consumeAfter(
@@ -395,9 +391,7 @@ final class Parser {
       description: 'type name',
     );
 
-    final variants = <TypeVariantNode>[
-      _typeVariant(true),
-    ];
+    final variants = <TypeVariantNode>[_typeVariant(true)];
 
     while (_match(TokenType.plusSign)) {
       variants.add(_typeVariant(false));
@@ -417,7 +411,8 @@ final class Parser {
   TypeVariantNode _typeVariant(bool isFirstVariation) {
     final name = _consumeAfter(
       type: TokenType.identifier,
-      after: isFirstVariation //
+      after:
+          isFirstVariation //
           ? TokenType.equalitySign
           : TokenType.plusSign,
     );
@@ -447,11 +442,7 @@ final class Parser {
         after: TokenType.identifier, // TODO(mateusfccp): Fix this
       );
 
-      return ListTypeIdentifier(
-        leftBracket,
-        literal,
-        rightBracket,
-      );
+      return ListTypeIdentifier(leftBracket, literal, rightBracket);
     } else if (_match(TokenType.leftBrace)) {
       final leftBrace = _previous;
       final literal = _typeIdentifier();
@@ -473,11 +464,7 @@ final class Parser {
       );
 
       if (colon == null || valueLiteral == null) {
-        return SetTypeIdentifier(
-          leftBrace,
-          literal,
-          rightBrace,
-        );
+        return SetTypeIdentifier(leftBrace, literal, rightBrace);
       } else {
         return MapTypeIdentifier(
           leftBrace,

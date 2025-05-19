@@ -64,29 +64,43 @@ void main() {
     expect(num < double, isFalse);
   });
 
-  test('A struct is a subtype of another struct with the same shape when the fields are subtypes', () {
-    const singleFieldStruct = StructType(members: {'name': string});
-    const singleFieldStruct2 = StructType(members: {'age': num});
-    const singleFieldStruct3 = StructType(members: {'age': int});
-    const multiFieldStruct = StructType(members: {'name': string, 'age': num});
-    const multiFieldStruct2 = StructType(members: {'name': string, 'age': int});
+  test(
+    'A struct is a subtype of another struct with the same shape when the fields are subtypes',
+    () {
+      const singleFieldStruct = StructType(members: {'name': string});
+      const singleFieldStruct2 = StructType(members: {'age': num});
+      const singleFieldStruct3 = StructType(members: {'age': int});
+      const multiFieldStruct = StructType(
+        members: {'name': string, 'age': num},
+      );
+      const multiFieldStruct2 = StructType(
+        members: {'name': string, 'age': int},
+      );
 
-    expect(singleFieldStruct < singleFieldStruct, isTrue);
-    expect(singleFieldStruct3 < singleFieldStruct2, isTrue);
-    expect(multiFieldStruct2 < multiFieldStruct, isTrue);
-  });
+      expect(singleFieldStruct < singleFieldStruct, isTrue);
+      expect(singleFieldStruct3 < singleFieldStruct2, isTrue);
+      expect(multiFieldStruct2 < multiFieldStruct, isTrue);
+    },
+  );
 
-  test('A struct is not a subtype of another struct with a different shape', () {
-    const singleFieldStruct = StructType(members: {'name': string});
-    const singleFieldStruct2 = StructType(members: {'age': num});
-    const singleFieldStruct3 = StructType(members: {'age': int});
-    const multiFieldStruct = StructType(members: {'name': string, 'age': num});
-    const multiFieldStruct2 = StructType(members: {'name': string, 'age': int});
+  test(
+    'A struct is not a subtype of another struct with a different shape',
+    () {
+      const singleFieldStruct = StructType(members: {'name': string});
+      const singleFieldStruct2 = StructType(members: {'age': num});
+      const singleFieldStruct3 = StructType(members: {'age': int});
+      const multiFieldStruct = StructType(
+        members: {'name': string, 'age': num},
+      );
+      const multiFieldStruct2 = StructType(
+        members: {'name': string, 'age': int},
+      );
 
-    expect(singleFieldStruct < singleFieldStruct2, isFalse);
-    expect(singleFieldStruct < singleFieldStruct3, isFalse);
-    expect(singleFieldStruct < multiFieldStruct, isFalse);
-    expect(singleFieldStruct < multiFieldStruct2, isFalse);
-    expect(multiFieldStruct < multiFieldStruct2, isFalse);
-  });
+      expect(singleFieldStruct < singleFieldStruct2, isFalse);
+      expect(singleFieldStruct < singleFieldStruct3, isFalse);
+      expect(singleFieldStruct < multiFieldStruct, isFalse);
+      expect(singleFieldStruct < multiFieldStruct2, isFalse);
+      expect(multiFieldStruct < multiFieldStruct2, isFalse);
+    },
+  );
 }

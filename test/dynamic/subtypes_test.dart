@@ -11,10 +11,7 @@ let printNumber (:number num) = print number
 let main () = printNumber (:number 42)
 ''',
     (stdout) {
-      expect(
-        stdout,
-        '42\n',
-      );
+      expect(stdout, '42\n');
     },
   );
 }

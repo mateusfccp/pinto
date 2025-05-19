@@ -65,7 +65,9 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   }
 
   @override
-  Null visitImportedSymbolSyntheticElement(ImportedSymbolSyntheticElement node) {}
+  Null visitImportedSymbolSyntheticElement(
+    ImportedSymbolSyntheticElement node,
+  ) {}
 
   @override
   List<Directive> visitImportElement(ImportElement importElement) {
@@ -101,32 +103,30 @@ final class Compiler implements ElementVisitor<List<Spec>> {
 
       for (final member in node.parameter.members) {
         builder.optionalParameters.add(
-          Parameter(
-            (builder) {
-              builder.named = true;
-              final Type type;
+          Parameter((builder) {
+            builder.named = true;
+            final Type type;
 
-              if (member.value case TypeLiteralElement literal) {
-                type = literal.type;
-              } else if (member.value case IdentifierElement identifier) {
-                type = identifier.constantValue as Type;
-              } else {
-                // This shouldn't happen because the resolver should have already validated the type
-                throw 'Unreachable';
-              }
+            if (member.value case TypeLiteralElement literal) {
+              type = literal.type;
+            } else if (member.value case IdentifierElement identifier) {
+              type = identifier.constantValue as Type;
+            } else {
+              // This shouldn't happen because the resolver should have already validated the type
+              throw 'Unreachable';
+            }
 
-              if (type case PolymorphicType(isOption: true)) {
-                builder.required = false;
-              } else {
-                builder.required = true;
-              }
+            if (type case PolymorphicType(isOption: true)) {
+              builder.required = false;
+            } else {
+              builder.required = true;
+            }
 
-              final res = member.value.accept(this);
+            final res = member.value.accept(this);
 
-              builder.type = res?.single as Reference;
-              builder.name = member.name;
-            },
-          ),
+            builder.type = res?.single as Reference;
+            builder.name = member.name;
+          }),
         );
       }
 
@@ -201,7 +201,8 @@ final class Compiler implements ElementVisitor<List<Spec>> {
     for (final StructMemberElement(:name, :value) in node.members) {
       final valueExpression = (value.accept(this) as List<Expression>).single;
 
-      if (int.tryParse(name.substring(1)) case final index? when name[0] == r'$') {
+      if (int.tryParse(name.substring(1)) case final index?
+          when name[0] == r'$') {
         positionalArguments[index] = valueExpression;
       } else {
         recordLiteral.namedFieldValues[name] = valueExpression;
@@ -223,7 +224,9 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   }
 
   @override
-  List<Class> visitTypeDefinitionElement(TypeDefinitionElement typeDefinitionElement) {
+  List<Class> visitTypeDefinitionElement(
+    TypeDefinitionElement typeDefinitionElement,
+  ) {
     final classes = <Class>[];
 
     if (typeDefinitionElement.variants case [final variant]) {
@@ -264,20 +267,15 @@ final class Compiler implements ElementVisitor<List<Spec>> {
   List<Class> visitTypeVariantElement(TypeVariantElement node) {
     final typeDefinitionElement = node.enclosingElement;
 
-    final variantClass = ClassBuilder(
-      name: node.name,
-      withEquality: true,
-    )..final$ = true;
+    final variantClass = ClassBuilder(name: node.name, withEquality: true)
+      ..final$ = true;
 
     for (final parameter in node.parameters) {
       for (final type in _typeParametersFromType(parameter.type!)) {
         variantClass.addParameter(_typeReferenceFromType(type));
       }
 
-      variantClass.addField(
-        _typeReferenceFromType(parameter.type!),
-        parameter,
-      );
+      variantClass.addField(_typeReferenceFromType(parameter.type!), parameter);
     }
 
     if (typeDefinitionElement.variants.length > 1) {
@@ -290,7 +288,8 @@ final class Compiler implements ElementVisitor<List<Spec>> {
       final typeParameters = _typeParametersFromTypeList(currentVariantTypes);
 
       for (final typeParameter in typeDefinitionElement.parameters) {
-        final argument = typeParameters.contains(typeParameter.type) //
+        final argument =
+            typeParameters.contains(typeParameter.type) //
             ? typeParameter.type!
             : const BottomType();
 
@@ -314,15 +313,16 @@ String _buildTypeName(
     BooleanType() => 'bool',
     BottomType() => 'Never',
     DoubleType() => 'double',
-    FunctionType() => '${_buildTypeName(type.returnType, position: _ParameterPosition.contravariant)} Function(${_buildTypeName(type.parameterType)})',
+    FunctionType() =>
+      '${_buildTypeName(type.returnType, position: _ParameterPosition.contravariant)} Function(${_buildTypeName(type.parameterType)})',
     IntegerType() => 'int',
     NumberType() => 'num',
     PolymorphicType(:final name) || TypeParameterType(:final name) => name,
     StringType() => 'String',
     StructType(isUnit: true) => switch (position) {
-        _ParameterPosition.covariant => '',
-        _ParameterPosition.contravariant => 'void',
-      },
+      _ParameterPosition.covariant => '',
+      _ParameterPosition.contravariant => 'void',
+    },
     StructType() => _buildStructTypeName(type),
     SymbolType() => 'Symbol',
     TopType() => 'Object?',
@@ -336,7 +336,8 @@ String _buildStructTypeName(StructType type) {
   for (final MapEntry(key: name, value: type) in type.members.entries) {
     final valueType = _buildTypeName(type);
 
-    if (int.tryParse(name.substring(1)) case final index? when name[0] == r'$') {
+    if (int.tryParse(name.substring(1)) case final index?
+        when name[0] == r'$') {
       recordLiteral.positionalFieldValues[index] = Code(valueType);
     } else {
       recordLiteral.namedFieldValues[name] = Code(valueType);
@@ -388,8 +389,7 @@ List<TypeParameterType> _typeParametersFromType(Type type) {
     StructType() ||
     SymbolType() ||
     TopType() ||
-    TypeType() =>
-      const [],
+    TypeType() => const [],
   };
 }
 

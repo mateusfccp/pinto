@@ -55,7 +55,8 @@ void runServer() async {
   connection.onDidChangeTextDocument((parameters) async {
     final contentChanges = parameters.contentChanges;
     final contentChange = TextDocumentContentChangeEvent2.fromJson(
-      contentChanges[contentChanges.length - 1].toJson() as Map<String, Object?>,
+      contentChanges[contentChanges.length - 1].toJson()
+          as Map<String, Object?>,
     );
 
     final diagnostics = await analyzer.analyze(

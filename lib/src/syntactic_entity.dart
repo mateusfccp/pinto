@@ -20,7 +20,9 @@ abstract interface class SyntacticEntity {
 }
 
 /// A list of syntactic entities that is treated as a syntactic entity itself.
-final class SyntacticEntityList<T extends SyntacticEntity> extends DelegatingList<T> implements SyntacticEntity {
+final class SyntacticEntityList<T extends SyntacticEntity>
+    extends DelegatingList<T>
+    implements SyntacticEntity {
   SyntacticEntityList([List<T>? source]) : super(source ?? []);
 
   @override

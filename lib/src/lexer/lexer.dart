@@ -6,11 +6,9 @@ import 'token.dart';
 /// A Pinto lexer.
 final class Lexer {
   /// Creates a Pinto lexer for [source].
-  Lexer({
-    required String source,
-    ErrorHandler? errorHandler,
-  })  : _errorHandler = errorHandler,
-        _source = source;
+  Lexer({required String source, ErrorHandler? errorHandler})
+    : _errorHandler = errorHandler,
+      _source = source;
 
   final String _source;
   final ErrorHandler? _errorHandler;
@@ -24,7 +22,8 @@ final class Lexer {
   static const _keywords = {
     'import': TokenType.importKeyword,
     'false': TokenType.falseKeyword,
-    'let': TokenType.letKeyword, // TODO: Make it a contextual keyword for iteroperability reasons
+    'let': TokenType
+        .letKeyword, // TODO: Make it a contextual keyword for iteroperability reasons
     'true': TokenType.trueKeyword,
     'type': TokenType.typeKeyword,
 
@@ -71,13 +70,7 @@ final class Lexer {
       _scanToken();
     }
 
-    _tokens.add(
-      Token(
-        type: TokenType.endOfFile,
-        lexeme: '',
-        offset: _start,
-      ),
-    );
+    _tokens.add(Token(type: TokenType.endOfFile, lexeme: '', offset: _start));
     return _tokens;
   }
 
@@ -130,9 +123,7 @@ final class Lexer {
 
   void _symbolLiteral() {
     if (!_isIdentifierStart(_peek)) {
-      _errorHandler?.emit(
-        InvalidIdentifierStart(offset: _current),
-      );
+      _errorHandler?.emit(InvalidIdentifierStart(offset: _current));
     }
 
     while (_isIdentifierPart(_peek)) {
@@ -149,9 +140,7 @@ final class Lexer {
 
     // Strings should not span to more than one line, and should be closed
     if (_peek == '\n' || _isAtEnd) {
-      _errorHandler?.emit(
-        UnterminatedStringError(offset: _current),
-      );
+      _errorHandler?.emit(UnterminatedStringError(offset: _current));
       _lineBreak();
     } else {
       // Advance to the closing quotes (")
@@ -168,9 +157,7 @@ final class Lexer {
     }
 
     if (lastRead == '_') {
-      _errorHandler?.emit(
-        NumberEndingWithSeparatorError(offset: _current - 1),
-      );
+      _errorHandler?.emit(NumberEndingWithSeparatorError(offset: _current - 1));
     }
   }
 
@@ -196,20 +183,14 @@ final class Lexer {
     if (_isIdentifierStart(character)) {
       _identifier(false);
     } else {
-      _errorHandler?.emit(
-        UnexpectedCharacterError(offset: _current - 1),
-      );
+      _errorHandler?.emit(UnexpectedCharacterError(offset: _current - 1));
     }
   }
 
   void _addToken(TokenType type) {
     final text = _source.substring(_start, _current);
 
-    final token = Token(
-      type: type,
-      lexeme: text,
-      offset: _start,
-    );
+    final token = Token(type: type, lexeme: text, offset: _start);
 
     _tokens.add(token);
   }

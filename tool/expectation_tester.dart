@@ -59,7 +59,8 @@ final class StaticTester {
         _expectationsController.add(expectation);
       }
 
-      currentLineOffset = currentLineOffset + line.length + 1; // + 1 for line break
+      currentLineOffset =
+          currentLineOffset + line.length + 1; // + 1 for line break
     }
 
     _expectationsController.close();
@@ -71,7 +72,8 @@ final class StaticTester {
       final expectedError = match[1];
       final begin = lineStartOffset + line.indexOf(_marker);
       final end = lineStartOffset + line.lastIndexOf(_marker) + 1;
-      return expectedError == null //
+      return expectedError ==
+              null //
           ? Any(begin: begin, end: end)
           : Specific(code: expectedError, begin: begin, end: end);
     } else {
@@ -80,17 +82,11 @@ final class StaticTester {
   }
 
   Future<void> _analyze() async {
-    final lexer = Lexer(
-      source: _fileContent,
-      errorHandler: _errorHandler,
-    );
+    final lexer = Lexer(source: _fileContent, errorHandler: _errorHandler);
 
     final tokens = lexer.scanTokens();
 
-    final parser = Parser(
-      tokens: tokens,
-      errorHandler: _errorHandler,
-    );
+    final parser = Parser(tokens: tokens, errorHandler: _errorHandler);
 
     final ast = parser.parse();
 
@@ -123,20 +119,21 @@ final class StaticTester {
   void _processError(PintoError error) {
     final (begin, end) = switch (error) {
       LexingError() => (error.offset, error.offset + 1),
-      ParseError(syntacticEntity: final entity) || ResolveError(syntacticEntity: final entity) => (entity.offset, entity.end),
+      ParseError(syntacticEntity: final entity) ||
+      ResolveError(
+        syntacticEntity: final entity,
+      ) => (entity.offset, entity.end),
     };
 
-    final expectation = Specific(
-      code: error.code,
-      begin: begin,
-      end: end,
-    );
+    final expectation = Specific(code: error.code, begin: begin, end: end);
 
     _errorsController.add(expectation);
   }
 }
 
-final _lineRegex = RegExp('\\s*//\\s*\\$_marker+(?:\\s+(([A-Za-z_\$][A-Za-z_\$0-9]*)+))?');
+final _lineRegex = RegExp(
+  '\\s*//\\s*\\$_marker+(?:\\s+(([A-Za-z_\$][A-Za-z_\$0-9]*)+))?',
+);
 
 /// An error emitted by the parser or resolver.
 sealed class ErrorEmission implements Comparable<ErrorEmission> {
@@ -163,10 +160,7 @@ sealed class ErrorEmission implements Comparable<ErrorEmission> {
 /// An error that matches any emitted error.
 final class Any extends ErrorEmission {
   /// Creates an error that matches any emitted error.
-  const Any({
-    required this.begin,
-    required this.end,
-  });
+  const Any({required this.begin, required this.end});
 
   @override
   final int begin;
@@ -195,11 +189,7 @@ final class Any extends ErrorEmission {
 /// An error that matches an emitted error with the given [code].
 final class Specific extends ErrorEmission {
   /// Creates a specific error with the given [code].
-  const Specific({
-    required this.code,
-    required this.begin,
-    required this.end,
-  });
+  const Specific({required this.code, required this.begin, required this.end});
 
   final String code;
 
@@ -244,7 +234,8 @@ final class Specific extends ErrorEmission {
 /// A matcher that matches if two sets are equal.
 ///
 /// It gives detailed information about the differences between the sets.
-Matcher emittedJustLikeTheExpected(Set<ErrorEmission> expected) => _SetMatcherWithDifferenceDescription(expected);
+Matcher emittedJustLikeTheExpected(Set<ErrorEmission> expected) =>
+    _SetMatcherWithDifferenceDescription(expected);
 
 final class _SetMatcherWithDifferenceDescription extends Matcher {
   const _SetMatcherWithDifferenceDescription(this.expected);
@@ -257,16 +248,25 @@ final class _SetMatcherWithDifferenceDescription extends Matcher {
   }
 
   @override
-  Description describeMismatch(item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (item is Set<ErrorEmission>) {
       final missingExpectations = expected.difference(item);
       final unexpectedErrors = item.difference(expected);
 
       // final buffer = StringBuffer('The static tester did not match the expectations and errors.\n\n');
-      mismatchDescription.add('The static tester did not match the expectations and errors.\n');
+      mismatchDescription.add(
+        'The static tester did not match the expectations and errors.\n',
+      );
 
       if (missingExpectations.isNotEmpty) {
-        mismatchDescription.add('\nThe following expectations were not emitted:');
+        mismatchDescription.add(
+          '\nThe following expectations were not emitted:',
+        );
 
         for (final expectation in missingExpectations) {
           mismatchDescription.add('\n• $expectation');
@@ -276,14 +276,18 @@ final class _SetMatcherWithDifferenceDescription extends Matcher {
       }
 
       if (unexpectedErrors.isNotEmpty) {
-        mismatchDescription.add('\nThe following errors were emitted but should not have been:');
+        mismatchDescription.add(
+          '\nThe following errors were emitted but should not have been:',
+        );
 
         for (final error in unexpectedErrors) {
           mismatchDescription.add('\n• $error');
         }
       }
     } else {
-      mismatchDescription.add('The matched item "$item" is not a Set<ErrorEmission>.');
+      mismatchDescription.add(
+        'The matched item "$item" is not a Set<ErrorEmission>.',
+      );
     }
     return mismatchDescription;
   }

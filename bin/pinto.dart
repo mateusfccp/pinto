@@ -25,11 +25,7 @@ const _padSize = 5;
 final _resourceProvider = PhysicalResourceProvider.INSTANCE;
 
 final _argParser = ArgParser()
-  ..addFlag(
-    'help',
-    help: 'Shows this help.',
-    negatable: false,
-  )
+  ..addFlag('help', help: 'Shows this help.', negatable: false)
   ..addFlag(
     'server',
     help: 'Makes program run in LSP server mode.',
@@ -107,10 +103,7 @@ Future<PintoError?> run({
 }) async {
   final errorHandler = ErrorHandler();
 
-  final lexer = Lexer(
-    source: source,
-    errorHandler: errorHandler,
-  );
+  final lexer = Lexer(source: source, errorHandler: errorHandler);
 
   final errorFormatter = ErrorFormatter(
     lexer: lexer,
@@ -122,10 +115,7 @@ Future<PintoError?> run({
 
   final tokens = lexer.scanTokens();
 
-  final parser = Parser(
-    tokens: tokens,
-    errorHandler: errorHandler,
-  );
+  final parser = Parser(tokens: tokens, errorHandler: errorHandler);
 
   final program = parser.parse();
 
@@ -168,9 +158,7 @@ final class ErrorFormatter {
   }) {
     final lineSplitter = LineSplitter();
 
-    lines.addAll(
-      lineSplitter.convert(source),
-    );
+    lines.addAll(lineSplitter.convert(source));
 
     if (source.endsWith('\n')) {
       lines.add('');
@@ -185,15 +173,18 @@ final class ErrorFormatter {
   void handleError(PintoError error) {
     final offset = switch (error) {
       LexingError() => error.offset,
-      ParseError(syntacticEntity: final token) || ResolveError(syntacticEntity: final token) => token.offset,
+      ParseError(syntacticEntity: final token) ||
+      ResolveError(syntacticEntity: final token) => token.offset,
     };
 
     final (line, column) = lexer.positionForOffset(offset);
 
     final errorHeader = switch (error) {
-      ParseError(syntacticEntity: Token(type: TokenType.endOfFile)) => '[$line:$column] Error at end:',
+      ParseError(syntacticEntity: Token(type: TokenType.endOfFile)) =>
+        '[$line:$column] Error at end:',
       ParseError() => "[$line:$column]:",
-      ResolveError(:final syntacticEntity) => "[$line:$column] Error at ${_syntacticEntityDescription(syntacticEntity)}:",
+      ResolveError(:final syntacticEntity) =>
+        "[$line:$column] Error at ${_syntacticEntityDescription(syntacticEntity)}:",
       LexingError() => '[$line:$column]:',
     };
 
@@ -203,7 +194,8 @@ final class ErrorFormatter {
 
     final length = switch (error) {
       LexingError() => 1,
-      ParseError(:final syntacticEntity) || ResolveError(:final syntacticEntity) => syntacticEntity.length,
+      ParseError(:final syntacticEntity) ||
+      ResolveError(:final syntacticEntity) => syntacticEntity.length,
     };
 
     writeLineWithErrorPointer(line, column, length);
@@ -216,7 +208,9 @@ final class ErrorFormatter {
 
     addLine(line);
 
-    sink.write(' ' * (_padSize + 2)); // Padding equivalent to the line indicators
+    sink.write(
+      ' ' * (_padSize + 2),
+    ); // Padding equivalent to the line indicators
 
     for (int i = 0; i < column - 1; i++) {
       sink.write(' ');
@@ -236,7 +230,9 @@ final class ErrorFormatter {
   }
 
   void addLine(int line) {
-    sink.writeln('${chalk.gray('${line.toString().padLeft(_padSize)}: ')}${lines[line - 1]}');
+    sink.writeln(
+      '${chalk.gray('${line.toString().padLeft(_padSize)}: ')}${lines[line - 1]}',
+    );
   }
 }
 

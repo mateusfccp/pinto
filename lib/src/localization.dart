@@ -5,12 +5,16 @@ import 'package:pinto/semantic.dart';
 String messageFromError(PintoError error, String source) {
   final offset = switch (error) {
     LexingError() => error.offset,
-    ParseError(:final syntacticEntity) || ResolveError(syntacticEntity: final syntacticEntity) => syntacticEntity.offset,
+    ParseError(:final syntacticEntity) ||
+    ResolveError(
+      syntacticEntity: final syntacticEntity,
+    ) => syntacticEntity.offset,
   };
 
   final end = switch (error) {
     LexingError() => error.offset + 1,
-    ParseError(:final syntacticEntity) || ResolveError(syntacticEntity: final syntacticEntity) => syntacticEntity.end,
+    ParseError(:final syntacticEntity) ||
+    ResolveError(syntacticEntity: final syntacticEntity) => syntacticEntity.end,
   };
 
   final fragment = source.substring(offset, end);
@@ -24,20 +28,37 @@ String messageFromError(PintoError error, String source) {
 
     // Parse errors
     ExpectedError error => expectError('${error.expectation}', fragment),
-    ExpectedAfterError error => expectAfterError('${error.expectation}', '${error.after}', fragment),
-    ExpectedBeforeError error => expectBeforeError('${error.expectation}', '${error.before}', fragment),
+    ExpectedAfterError error => expectAfterError(
+      '${error.expectation}',
+      '${error.after}',
+      fragment,
+    ),
+    ExpectedBeforeError error => expectBeforeError(
+      '${error.expectation}',
+      '${error.before}',
+      fragment,
+    ),
     MisplacedImport error => misplacedImportError('${error.syntacticEntity}'),
 
     // Resolve errors
     IdentifierAlreadyDefinedError() => identifierAlreadyDefinedError(fragment),
-    ImportedPackageNotAvailableError() => importedPackageNotAvailableError(fragment),
-    InvalidArgumentTypeError(:final expectedType, :final argumentType) => invalidArgumentTypeError(expectedType, argumentType),
+    ImportedPackageNotAvailableError() => importedPackageNotAvailableError(
+      fragment,
+    ),
+    InvalidArgumentTypeError(:final expectedType, :final argumentType) =>
+      invalidArgumentTypeError(expectedType, argumentType),
     InvalidParameterTypeError() => invalidParameterTypeError(fragment),
     InvalidTypeParameterError() => invalidTypeParameterError(fragment),
     NotAFunctionError() => notAFunctionError(fragment),
     SymbolNotInScopeError() => symbolNotInScopeError(fragment),
-    TypeParameterAlreadyDefinedError() => typeParameterAlreadyDefinedError(fragment),
-    WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(error.argumentsCount, error.expectedArgumentsCount, fragment),
+    TypeParameterAlreadyDefinedError() => typeParameterAlreadyDefinedError(
+      fragment,
+    ),
+    WrongNumberOfArgumentsError error => wrongNumberOfArgumentsError(
+      error.argumentsCount,
+      error.expectedArgumentsCount,
+      fragment,
+    ),
   };
 }
 
@@ -47,7 +68,8 @@ String invalidIdentifierStartError(String character) {
     "The character '$character' is not valid as the first character of a identifier.",
     name: 'invalidIdentifierStartErrorMessage',
     args: [character],
-    desc: "The error message when the lexer tries to parse an identifier that starts with an invalid character.",
+    desc:
+        "The error message when the lexer tries to parse an identifier that starts with an invalid character.",
   );
 }
 
@@ -56,7 +78,8 @@ String numberEndingWithSeparatorError() {
     "Unexpected number termination. Numbers must not end with an underscore '_'.",
     name: 'numberEndingWithSeparatorErrorMessage',
     args: [],
-    desc: "The error message when the lexer finds a number ending with an underscore.",
+    desc:
+        "The error message when the lexer finds a number ending with an underscore.",
   );
 }
 
@@ -65,7 +88,8 @@ String unexpectedCharacterError(String character) {
     "Unexpected character '$character'.",
     name: 'unexpectedCharacterErrorMessage',
     args: [character],
-    desc: "The error message from when the lexer finds a character that it's not supposed to scan.",
+    desc:
+        "The error message from when the lexer finds a character that it's not supposed to scan.",
   );
 }
 
@@ -74,7 +98,8 @@ String unterminatedStringError() {
     "Unexpected string termination.",
     name: 'unterminatedStringErrorMessage',
     args: [],
-    desc: "The error message from when the lexer can't find the end of a string literal.",
+    desc:
+        "The error message from when the lexer can't find the end of a string literal.",
   );
 }
 
@@ -113,7 +138,8 @@ String misplacedImportError(String import) {
     'another kind of declaration.',
     name: 'misplacedBeforeErrorMessage',
     args: [import],
-    desc: 'The error message for when an import is placed after a non-import declaration.',
+    desc:
+        'The error message for when an import is placed after a non-import declaration.',
   );
 }
 
@@ -124,7 +150,8 @@ String identifierAlreadyDefinedError(String identifier) {
     "The identifier '$identifier' is already defined in the context.",
     name: 'identifierAlreadyDefineErrorMessage',
     args: [identifier],
-    desc: 'The error describing that the identifier that is being defined has'
+    desc:
+        'The error describing that the identifier that is being defined has'
         'a named that was already used by other definition.',
   );
 }
@@ -134,7 +161,8 @@ String importedPackageNotAvailableError(String import) {
     "The imported package '$import' does not exist.",
     name: 'importedPackageNotAvailableErrorMessage',
     args: [import],
-    desc: 'The error describing that the package that is being imported does '
+    desc:
+        'The error describing that the package that is being imported does '
         'exist or was not fetched by `pub get`',
   );
 }
@@ -145,7 +173,8 @@ String invalidArgumentTypeError(Type expected, Type argument) {
     "Expected $expected, but found $argument.",
     name: 'invalidArgumentTypeErrorMessage',
     args: [expected, argument],
-    desc: 'The error describing that the expression used as a argument does'
+    desc:
+        'The error describing that the expression used as a argument does'
         'not have the expected type.',
   );
 }
@@ -155,7 +184,8 @@ String invalidParameterTypeError(String identifier) {
     "'$identifier' does not resolve to a type.",
     name: 'invalidParameterTypeErrorMessage',
     args: [identifier],
-    desc: 'The error describing that the expression used as a parameter type'
+    desc:
+        'The error describing that the expression used as a parameter type'
         'does not resolve to a type.',
   );
 }
@@ -166,7 +196,8 @@ String invalidTypeParameterError(String parameterType) {
     'Type parameters should be a full struct with a name and a identifier.',
     name: 'invalidTypeParameterErrorMessage',
     args: [parameterType],
-    desc: 'The error describing that the expression used as a type parameter'
+    desc:
+        'The error describing that the expression used as a type parameter'
         'does not have the expected structure.',
   );
 }
@@ -176,7 +207,8 @@ String notAFunctionError(String identifier) {
     "'$identifier' is not a function, so it can't receive an argument.",
     name: 'notAFunctionErrorMessage',
     args: [identifier],
-    desc: 'The error describing that the identifier that receive as parameter'
+    desc:
+        'The error describing that the identifier that receive as parameter'
         "is not a function, and thus it shouldn't receive a parameter.",
   );
 }
@@ -186,7 +218,8 @@ String symbolNotInScopeError(String symbol) {
     "The symbol '$symbol' was not found in the scope.",
     name: 'symbolNotInScopeErrorMessage',
     args: [symbol],
-    desc: 'The error message describing a symbol that was not found in the scope.',
+    desc:
+        'The error message describing a symbol that was not found in the scope.',
   );
 }
 
@@ -195,33 +228,45 @@ String typeParameterAlreadyDefinedError(String typeParameter) {
     "The type parameter '$typeParameter' is already defined for this type. Try removing it or changing it's name.",
     name: 'typeAlreadyDefinedErrorMessage',
     args: [typeParameter],
-    desc: 'The error message describing that a symbol is already defined in the scope.',
+    desc:
+        'The error message describing that a symbol is already defined in the scope.',
   );
 }
 
-String wrongNumberOfArgumentsError(int argumentsCount, int expectedArgumentsCount, String type) {
+String wrongNumberOfArgumentsError(
+  int argumentsCount,
+  int expectedArgumentsCount,
+  String type,
+) {
   return Intl.message(
     Intl.plural(
       argumentsCount,
       zero: Intl.plural(
         expectedArgumentsCount,
         one: "The type '$type' expects one argument, but none was provided.",
-        other: "The type '$type' expects $expectedArgumentsCount arguments, but none was provided.",
+        other:
+            "The type '$type' expects $expectedArgumentsCount arguments, but none was provided.",
       ),
       one: Intl.plural(
         expectedArgumentsCount,
-        zero: "The type '$type' don't accept arguments, but an argument was provided.",
-        other: "The type '$type' expects $expectedArgumentsCount arguments, but an was provided.",
+        zero:
+            "The type '$type' don't accept arguments, but an argument was provided.",
+        other:
+            "The type '$type' expects $expectedArgumentsCount arguments, but an was provided.",
       ),
       other: Intl.plural(
         expectedArgumentsCount,
-        zero: "The type '$type' don't accept arguments, but $argumentsCount arguments were provided.",
-        one: "The type '$type' expects one argument, but $argumentsCount arguments were provided.",
-        other: "The type '$type' expects $expectedArgumentsCount, but $argumentsCount arguments were provided.",
+        zero:
+            "The type '$type' don't accept arguments, but $argumentsCount arguments were provided.",
+        one:
+            "The type '$type' expects one argument, but $argumentsCount arguments were provided.",
+        other:
+            "The type '$type' expects $expectedArgumentsCount, but $argumentsCount arguments were provided.",
       ),
     ),
     name: 'wrongNumberOfArgumentsErrorMessage',
     args: [argumentsCount, expectedArgumentsCount, type],
-    desc: 'The error message for when the number of type arguments passed to a type is different than the expected.',
+    desc:
+        'The error message for when the number of type arguments passed to a type is different than the expected.',
   );
 }

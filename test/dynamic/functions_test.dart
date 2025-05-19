@@ -12,10 +12,7 @@ let printMessage (:ignored String, :message String) = print message
 let main () = printMessage (:ignored "ignores", :message createMessage ())
 ''',
     (stdout) {
-      expect(
-        stdout,
-        'Hello, world!\n',
-      );
+      expect(stdout, 'Hello, world!\n');
     },
   );
 
@@ -27,10 +24,7 @@ let printMessage (:message String) = print message
 let main () = printMessage (:message "Hello, world!")
 ''',
     (stdout) {
-      expect(
-        stdout,
-        "Hello, world!\n",
-      );
+      expect(stdout, "Hello, world!\n");
     },
   );
 
@@ -43,10 +37,7 @@ let printMessage (:message String) = print message
 let main () = printMessage (:message createMessage ())
 ''',
     (stdout) async {
-      expect(
-        stdout,
-        'Hello, world!\n',
-      );
+      expect(stdout, 'Hello, world!\n');
     },
   );
 
@@ -59,10 +50,7 @@ let printMessage (:ignored String, :message String) = print message
 let main () = printMessage (:ignored "ignores", :message createMessage ())
 ''',
     (stdout) {
-      expect(
-        stdout,
-        'Hello, world!\n',
-      );
+      expect(stdout, 'Hello, world!\n');
     },
   );
 }
